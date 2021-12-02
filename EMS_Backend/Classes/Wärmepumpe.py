@@ -1,8 +1,10 @@
 
 import Stoffdaten
 import pandas as pd
-import os 
-
+import os
+import csv
+import Helper
+obj_helper = Helper()
 cwd = os.getcwd()  # Get the current working directory (cwd)
 print("Working DIR: ", cwd)
 
@@ -20,7 +22,10 @@ class Wärmepumpe():
         self.strom = None #Bekannt
 
 
-    def DefineNewWP(energiequelle, #Außenenergiequelle
+    def DefineNewWP(self,
+                    hersteller, #Name des Herstellers
+                    ModellNr,      #Modellnummer der Wärmepumpe
+                    energiequelle, #Außenenergiequelle
                     energiesenke,   #Abgabemedium
                    länge,breite,höhe, #Maße der WP in cm
                    strombedarf, #Welchen maximalen Strombedarf hat die WP
@@ -49,12 +54,15 @@ class Wärmepumpe():
 
         #Spätere Funktion die die Buttons ausliest rückgabe: Dictionary
         #
-
+        self.str_hersteller = hersteller
+        self.str_modellNr = ModellNr
         self.str_energiequelle = energiequelle
         self.str_energiesenke = energiesenke
-        self.länge
-        self.breite
-        self.höhe
+        self.flt_länge = länge
+        self.flt_breite = breite
+        self.flt_höhe = höhe
+        self.flt_strombedarf = strombedarf
+        self.flt_bivalenztemp = bivalenztemp
         self.b_trinkwassererwärmung = trinkwassererwärmung
         self.flt_heizstableistung = heizstableistung
         self.flt_triwasserspeicher = triwasserspeicher
@@ -64,16 +72,24 @@ class Wärmepumpe():
         self.dic_COP_7 = COP_7
         self.dic_COP_12 = COP_12
         
+        
 
+        str_newrow = ""
         for attr,val in self.__dict__.items():
+            str_newrow = str_newrow + str(getattr(self, attr)) + ";"
             print(attr)
-            #Test this function
+
+        str_newrow = str_newrow[:-1]
+        str_newrow = str_newrow + "\r\n"
+        self.checksum = obj_helper.Create_Checksum(str_newrow)
+        print(self.checksum)
+        print(str_newrow)
         #df_WP = pd.read_csv("./data/Wärmepumpen.csv", sep = ";")
 
   
 
-        #with open('document.csv','a') as fd:
-         #   fd.write(myCsvRow)
+        with open("./data/Wärmepumpen.csv",'a') as fd:
+            fd.write(str_newrow)
 
     def __init__(self):
         pass
@@ -89,3 +105,11 @@ class Wärmepumpe():
 
 
 
+
+
+
+
+
+WP = Wärmepumpe()
+
+WP.DefineNewWP("Stiebel","01-6959_25A","Luft","Wasser",10,20,30,1,-7,50,True,22,78,1,2,3,4,5)

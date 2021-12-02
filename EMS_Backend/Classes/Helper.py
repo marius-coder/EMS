@@ -7,7 +7,7 @@ import hashlib
 class Helper():
     #Diese Klasse bietet diverse Funktionen an
 
-    def Get_Checksum(self,str_toHash : str) -> str:
+    def Create_Checksum(self,str_toHash : str) -> str:
         """Diese Funktion gibt eine 16-stellige Checksum für einen String zurück
         
         Input:
@@ -31,6 +31,7 @@ class Helper():
         else:
             return False
 
+global obj_helper
 obj_helper = Helper()
 
 
