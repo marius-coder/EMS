@@ -18,12 +18,13 @@ class Wärmepumpe():
                    länge,breite,höhe, #Maße der WP in cm
                    strombedarf, #Welchen maximalen Strombedarf hat die WP
                    bivalenztemp, #Welche Bivalenztemperatur hat die WP
+                   schallpegel, #Welchen genormten Schallpegel hat die WP
                    trinkwassererwärmung = False, #WP mit Trinkwassererwärmung?
                    heizstableistung = 0, #Wenn ja, wie viel kW hat die Nachheizung dafür
                    triwasserspeicher = 0, #Wenn ja, wie groß ist der Trinkwasserspeicher (ohne Schichtung)
                    COP_m15 = -1, COP_m7 = -1, COP_2 = -1, COP_7 = -1, COP_12 = -1, #Werte für COP bei verschiedenen Außentemperaturen
                    ):
-        #Diese Fkt soll nachdem der User eine neue WP eingegeben hat, die WP als csv abspeichern
+        #Diese Fkt soll nachdem der User eine neue Wärmepumpe eingegeben hat, die WP als csv abspeichern
         #Diese Fkt prüft auch alle Eingabewerte auf Plausibilität (eg Ob die Eingabe eine positive Zahl ist)
         #Verschiedene Eingabeoptionen sind
         #Energiequelle: Luft, Wasser, Sohle
