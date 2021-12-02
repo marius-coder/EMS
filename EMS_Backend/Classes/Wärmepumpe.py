@@ -1,10 +1,11 @@
 
-import Stoffdaten
+import Classes.Stoffdaten
 import pandas as pd
 import os
 import csv
-import Helper
+from Classes.Helper import Helper
 obj_helper = Helper()
+
 cwd = os.getcwd()  # Get the current working directory (cwd)
 print("Working DIR: ", cwd)
 
@@ -63,6 +64,7 @@ class Wärmepumpe():
         self.flt_höhe = höhe
         self.flt_strombedarf = strombedarf
         self.flt_bivalenztemp = bivalenztemp
+        self.flt_schallpegel = schallpegel
         self.b_trinkwassererwärmung = trinkwassererwärmung
         self.flt_heizstableistung = heizstableistung
         self.flt_triwasserspeicher = triwasserspeicher
@@ -74,40 +76,45 @@ class Wärmepumpe():
         
         
 
-        str_newrow = ""
+        str_newRow = ""
         for attr,val in self.__dict__.items():
-            str_newrow = str_newrow + str(getattr(self, attr)) + ";"
-            print(attr)
+            str_newRow = str_newRow + str(getattr(self, attr)) + ";"
+        str_newRow = str_newRow[:-1]    #Delete last ";"
+        str_newRow = str_newRow + "\r\n" #Add newline and reset
+        self.checksum = obj_helper.Create_Checksum(str_newRow) #Create Checksum for current object
+        str_newRow = self.checksum + ";" + str_newRow #Insert Checksum into our new row
+        self.AppendCSV(str_newRow) #Call Function that handles appending the new row
+        
 
-        str_newrow = str_newrow[:-1]
-        str_newrow = str_newrow + "\r\n"
-        self.checksum = obj_helper.Create_Checksum(str_newrow)
-        print(self.checksum)
-        print(str_newrow)
-        #df_WP = pd.read_csv("./data/Wärmepumpen.csv", sep = ";")
+    def AppendCSV(self,str_newRow):
+        """Diese Funktion kontrolliert ob die neue Zeile alle Spalten ausfüllt
+           Sie kontrolliert ob die Spaltenanzahl der newRow zu der Spaltenanzahl im csv passt
+           Wenn alles passt wir eine neue Zeile zur csv hinzugefügt"""
 
-  
+        #Zuerst wird kontrolliert wie viele Spalten die csv hat
+        with open('./data/Wärmepumpen.csv', newline='') as f:
+            csv_reader = csv.reader(f)
+            csv_headings = str(next(csv_reader))
 
-        with open("./data/Wärmepumpen.csv",'a') as fd:
-            fd.write(str_newrow)
+        #Check if String is empty
+        if str_newRow == "":
+            print("str_newRow is empty")
+            return False
 
-    def __init__(self):
-        pass
+        #Kontrolle ob diese Wärmepumpe schon existiert
+        if obj_helper.Check_Checksums(self.checksum,'./data/Wärmepumpen.csv') == True:
+            print("Objekt existiert bereits")
+            return False
 
-    def Calc_COP(self):
-        pass
-
-    def Calc_Wärmeübergang(self):
-        pass
-
-    def Calc_Temperatur(self):
-        pass
-
-
-
-
-
-
+        #Kontrolle ob die Spaltenanzahl übereinstimmt
+        if len(csv_headings.split(";")) == len(str_newRow.split(";")):
+            print("Writing CSV")
+            with open("./data/Wärmepumpen.csv",'a') as fd:
+                fd.write(str_newRow)
+            return True
+        else:
+            #Spaltenanzahl stimmt nicht überein
+            print("Spaltenanzahl stimmt nicht überein")
 
 
 WP = Wärmepumpe()
