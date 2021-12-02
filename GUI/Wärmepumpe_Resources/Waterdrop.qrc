@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="images">
+    <file>Pictures/Heatpump.png</file>
+    <file>Pictures/Waterdrop.jpg</file>
+  </qresource>
+</RCC>
