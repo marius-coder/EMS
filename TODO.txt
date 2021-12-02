@@ -1,0 +1,3 @@
+Checksum funktion erstellen. Die soll mithilfe der generierten Checksum doppelte Eintrgäge finden
+Inputsanitation: Funktion die userinput kontrolliert.
+Meldesystem: je nach problem mit userinput Warnungen oder Fehler ausgeben.

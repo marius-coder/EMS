@@ -21,6 +21,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Classes\Helper.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Classes\Pumpe.py">
       <SubType>Code</SubType>
     </Compile>
@@ -36,6 +39,9 @@
     <Compile Include="Classes\PV-Anlage.py" />
     <Compile Include="Classes\Erdwärme.py" />
     <Compile Include="Classes\Batteriespeicher.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="module1.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

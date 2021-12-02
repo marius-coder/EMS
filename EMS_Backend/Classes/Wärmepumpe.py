@@ -1,16 +1,23 @@
 
 import Stoffdaten
+import pandas as pd
+import os 
+
+cwd = os.getcwd()  # Get the current working directory (cwd)
+print("Working DIR: ", cwd)
 
 
 class Wärmepumpe():
 
-    self.temp_KW_VL = None
-    self.temp_KW_RL = None #Bekannt
-    self.temp_KÜ_VL = None #Bekannt
-    self.temp_KÜ_RL = None
-    self.COP = None
-    self.Q_wärme = None
-    self.strom = None #Bekannt
+    def __init__(self):
+    
+        self.temp_KW_VL = None
+        self.temp_KW_RL = None #Bekannt
+        self.temp_KÜ_VL = None #Bekannt
+        self.temp_KÜ_RL = None
+        self.COP = None
+        self.Q_wärme = None
+        self.strom = None #Bekannt
 
 
     def DefineNewWP(energiequelle, #Außenenergiequelle
@@ -40,19 +47,33 @@ class Wärmepumpe():
         #Je nach Energiequelle die Verschiedenen Normzustände eingeben
         #zB B = Brine(Sohle) , W = Water, E = Erdreich, A = Air
 
+        #Spätere Funktion die die Buttons ausliest rückgabe: Dictionary
+        #
+
         self.str_energiequelle = energiequelle
         self.str_energiesenke = energiesenke
-        self.dic_maße = { "Länge" : länge,
-                       "Breite" : breite,
-                       "Höhe"   : höhe}
+        self.länge
+        self.breite
+        self.höhe
         self.b_trinkwassererwärmung = trinkwassererwärmung
         self.flt_heizstableistung = heizstableistung
         self.flt_triwasserspeicher = triwasserspeicher
-        self.dic_COP = { "-15°C" : COP_m15,
-                        "-7°C" : COP_m7,
-                        "2°C" : COP_2,
-                        "7°C" : COP_7,
-                        "12°C" : COP_12,}
+        self.dic_COP_m15 = COP_m15
+        self.dic_COP_m7 = COP_m7
+        self.dic_COP_2 = COP_2
+        self.dic_COP_7 = COP_7
+        self.dic_COP_12 = COP_12
+        
+
+        for attr,val in self.__dict__.items():
+            print(attr)
+            #Test this function
+        #df_WP = pd.read_csv("./data/Wärmepumpen.csv", sep = ";")
+
+  
+
+        #with open('document.csv','a') as fd:
+         #   fd.write(myCsvRow)
 
     def __init__(self):
         pass
