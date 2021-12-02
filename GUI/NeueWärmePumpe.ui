@@ -91,12 +91,12 @@
    </property>
    <item>
     <property name="text">
-     <string>Luft</string>
+     <string>Wasser</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Wasser</string>
+     <string>Luft</string>
     </property>
    </item>
   </widget>
@@ -477,7 +477,7 @@
     <rect>
      <x>20</x>
      <y>290</y>
-     <width>231</width>
+     <width>80</width>
      <height>16</height>
     </rect>
    </property>
@@ -519,7 +519,7 @@
     <rect>
      <x>20</x>
      <y>333</y>
-     <width>231</width>
+     <width>100</width>
      <height>16</height>
     </rect>
    </property>
@@ -570,6 +570,61 @@
    </property>
    <property name="pixmap">
     <pixmap resource="Wärmepumpe_Resources/Waterdrop.qrc">:/images/Pictures/Heatpump.png</pixmap>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_15">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>310</y>
+     <width>41</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_trinkwasser_leistung_4">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>310</y>
+     <width>16</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>dB</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_9">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>290</y>
+     <width>100</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Schallleistungspegel</string>
+   </property>
+  </widget>
+  <widget class="Line" name="line_5">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>290</y>
+     <width>20</width>
+     <height>90</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
    </property>
   </widget>
  </widget>
