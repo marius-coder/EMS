@@ -1,2 +1,4 @@
 ﻿Checksum;Hersteller;ModellNr;Energiequelle;Energiesenke;Länge [cm];Breite [cm];Höhe [cm];Stromaufnahme [kW];Bivalenztemperatur [°C];Schallleistungspegel [dB];Trinkwassererwärmung;Heizstab Leistung [kW];Speicherinhalt Warmwasser [l];COP_-15°C;COP_-7°C;COP_2°C;COP_7°C;COP_12°C
+a3e5ea360e4c5b6ec1f15440d9109322;Voltron;01-6959_25A;Luft;Wasser;10;20;30;1;-7;50;True;22;78;1;2;3;4;5
 36ba17a8cf8297dea5a83b74ee1933df;Stiebel;01-6959_25A;Luft;Wasser;10;20;30;1;-7;50;True;22;78;1;2;3;4;5
+909f818443d13a9a360b0cfdd7547094;Stiebelriemen;01-6959_25A;Luft;Wasser;10;20;30;1;-7;50;True;22;78;1;2;3;4;5

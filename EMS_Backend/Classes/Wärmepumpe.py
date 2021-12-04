@@ -13,14 +13,8 @@ print("Working DIR: ", cwd)
 class Wärmepumpe():
 
     def __init__(self):
-    
-        self.temp_KW_VL = None
-        self.temp_KW_RL = None #Bekannt
-        self.temp_KÜ_VL = None #Bekannt
-        self.temp_KÜ_RL = None
-        self.COP = None
-        self.Q_wärme = None
-        self.strom = None #Bekannt
+        pass
+
 
 
     def DefineNewWP(self,
@@ -89,7 +83,7 @@ class Wärmepumpe():
     def AppendCSV(self,str_newRow):
         """Diese Funktion kontrolliert ob die neue Zeile alle Spalten ausfüllt
            Sie kontrolliert ob die Spaltenanzahl der newRow zu der Spaltenanzahl im csv passt
-           Wenn alles passt wir eine neue Zeile zur csv hinzugefügt"""
+           Wenn alles passt wird eine neue Zeile zur csv hinzugefügt"""
 
         #Zuerst wird kontrolliert wie viele Spalten die csv hat
         with open('./data/Wärmepumpen.csv', newline='') as f:
@@ -109,7 +103,7 @@ class Wärmepumpe():
         #Kontrolle ob die Spaltenanzahl übereinstimmt
         if len(csv_headings.split(";")) == len(str_newRow.split(";")):
             print("Writing CSV")
-            with open("./data/Wärmepumpen.csv",'a') as fd:
+            with open("./data/Wärmepumpen.csv",'a',newline= "") as fd:
                 fd.write(str_newRow)
             return True
         else:
@@ -119,4 +113,4 @@ class Wärmepumpe():
 
 WP = Wärmepumpe()
 
-WP.DefineNewWP("Stiebel","01-6959_25A","Luft","Wasser",10,20,30,1,-7,50,True,22,78,1,2,3,4,5)
+WP.DefineNewWP("Stiebelriemen","01-6959_25A","Luft","Wasser",10,20,30,1,-7,50,True,22,78,1,2,3,4,5)
