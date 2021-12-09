@@ -23,7 +23,7 @@ with urllib.request.urlopen("https://data.wien.gv.at/daten/geo?service=WFS&reque
 
 
 #Die relevanten Daten werden extrahiert und in dic_Polygons abgelegt
-#Relevante Daten:
+#Relevante Daten:sdfsdf
     #Koordinaten welche das Polygon bestimmen
 dic_Polygons = {}
 
