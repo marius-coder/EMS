@@ -65,7 +65,7 @@ def from_address(address_string="Stephansplatz, Wien, Österreich"):
     response = requests.get(url).json()
     location = (float(response[0]["lon"]), float(response[0]["lat"]) )
     return location
-coordinateAddress = from_address("Giefinggasse 6, 1020 Wien, Österreich")
+coordinateAddress = from_address("Höchstädtplatz 6, 1200 Wien, Österreich")
 
 def IsPointInsidePolygon(var_polygon, point):
     #Diese Funktion kontrolliert in welchem Polygon sich die Adresse befindet
@@ -102,22 +102,16 @@ for key, value in dic_Polygons.items():
     #STABW_WL_3: Vielleicht statistische Abweichung für 100m Tiefe?
     #ANZWL_100: Keine Ahnung. Anzahl Wärmemessungen vielleicht?
 
-#Fixthis flt_depthprobe kleiner 10 funkt nicht
+
 flt_depthprobe = 35
 if 0 < flt_depthprobe <= 10:
-    print("0-10")
     str_mode = "10M"
 if 10 < flt_depthprobe <= 30:
-    print("0-30")
     str_mode = "30M"
 if 30 < flt_depthprobe <= 100:
-    print("0-100")
     str_mode = "100"
 if 100 < flt_depthprobe <= 200:
-    print("0-200")
     str_mode = "200"
-
-
 
 def DetermineColor(int_class):
     #Diese Funktion erhält einen Integer welcher die Klasse der Wärmeleitfähigkeit represäntiert
@@ -160,6 +154,8 @@ else:
         xs, ys = polygon.exterior.xy    
         axs.fill(xs, ys, alpha=0.5, fc= color , ec='none')
 
-    #x,y = polygon.exterior.xy
-    #plt.plot(x,y)
+    x = coordinateAddress[0]
+    y = coordinateAddress[1]
+    axs.plot(x, y, marker="o", markersize=5, markeredgecolor="white", markerfacecolor="green")
+
     plt.show()
