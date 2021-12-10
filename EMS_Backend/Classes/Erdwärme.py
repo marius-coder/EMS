@@ -48,7 +48,7 @@ for feature in data["features"]:
     
     dic_Polygons[feature["id"]] = li_coordinates
 
-print(sum(li_lengths_feature))
+
 it_floor = 0
 it_ceiling = 0
 li_lengths_new = []
@@ -57,7 +57,7 @@ for it,item in enumerate(li_lengths_feature, start = 1):
     item = sum(li_lengths[it_floor:it_ceiling])
     it_floor = sum(li_lengths_feature[0:it])
     li_lengths_new.append(item)
-print(sum(li_lengths_new))
+
 #Funktion von Simon um eine Adresse in Koordinaten zu wandeln
 def from_address(address_string="Stephansplatz, Wien, Österreich"):
     parsed_address = urllib.parse.quote(address_string)
@@ -102,15 +102,19 @@ for key, value in dic_Polygons.items():
     #STABW_WL_3: Vielleicht statistische Abweichung für 100m Tiefe?
     #ANZWL_100: Keine Ahnung. Anzahl Wärmemessungen vielleicht?
 
-
-flt_depthprobe = 150
-if flt_depthprobe > 10:
+#Fixthis flt_depthprobe kleiner 10 funkt nicht
+flt_depthprobe = 35
+if 0 < flt_depthprobe <= 10:
+    print("0-10")
     str_mode = "10M"
-if flt_depthprobe > 30:
+if 10 < flt_depthprobe <= 30:
+    print("0-30")
     str_mode = "30M"
-if flt_depthprobe > 100:
+if 30 < flt_depthprobe <= 100:
+    print("0-100")
     str_mode = "100"
-if flt_depthprobe > 200:
+if 100 < flt_depthprobe <= 200:
+    print("0-200")
     str_mode = "200"
 
 
@@ -142,7 +146,6 @@ else:
     axs.set_aspect('equal', 'datalim')
 
     li_class = []
-    print(sum(li_lengths))
     it_poly = 0
     for int_lenghts in li_lengths_new:
         

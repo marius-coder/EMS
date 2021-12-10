@@ -108,10 +108,10 @@ class BKA():
 
 
 
-#Test = BKA(5,3)
-#Test.Simulate(500)
-#print(Test.Get_Attr_List("x"))
-#print(Test.Get_Attr_List("y"))
-#print(Test.Get_Attr_List("temperatur"))
-#print(Test.Get_Highest_Temperature())
-#print("")
+Test = BKA(5,3)
+Test.Simulate(500)
+print(Test.Get_Attr_List("x"))
+print(Test.Get_Attr_List("y"))
+print(Test.Get_Attr_List("temperatur"))
+print(Test.Get_Highest_Temperature())
+print("")
