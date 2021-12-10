@@ -22,6 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="EMS_Frontend.py" />
+    <Compile Include="NeueWärmePumpe.py" />
     <Compile Include="Translator.py">
       <SubType>Code</SubType>
     </Compile>
