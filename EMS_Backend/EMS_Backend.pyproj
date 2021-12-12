@@ -31,6 +31,9 @@
     <Compile Include="Classes\Pumpe.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Classes\Simulation.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Classes\Stoffdaten.py">
       <SubType>Code</SubType>
     </Compile>
