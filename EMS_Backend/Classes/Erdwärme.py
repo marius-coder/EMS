@@ -1,8 +1,9 @@
+def Get_GeothermalData(input_GeoData : dict)-> dict: 
 
+    #Inputdictionary entpacken
+    str_address = input_GeoData["Adresse"]
+    flt_depthprobe = input_GeoData["Bohrtiefe"]
 
-
-
-def Get_GeothermalData(str_address, flt_depthprobe):
     import urllib.request, json , urllib.parse
     import requests
     import urllib.parse
@@ -27,7 +28,7 @@ def Get_GeothermalData(str_address, flt_depthprobe):
 
 
     #Die relevanten Daten werden extrahiert und in dic_Polygons abgelegt
-    #Relevante Daten:sdfsdf
+    #Relevante Daten:
         #Koordinaten welche das Polygon bestimmen
     dic_Polygons = {}
 
@@ -117,12 +118,16 @@ def Get_GeothermalData(str_address, flt_depthprobe):
     
     if 0 < flt_depthprobe <= 10:
         str_mode = "10M"
+        str_mode_export = "10"
     if 10 < flt_depthprobe <= 30:
         str_mode = "30M"
+        str_mode_export = "30"
     if 30 < flt_depthprobe <= 100:
         str_mode = "100"
+        str_mode_export = "100"
     if 100 < flt_depthprobe <= 200:
         str_mode = "200"
+        str_mode_export = "200"
 
     def DetermineColor(int_class):
         #Diese Funktion erhält einen Integer welcher die Klasse der Wärmeleitfähigkeit represäntiert
@@ -170,6 +175,7 @@ def Get_GeothermalData(str_address, flt_depthprobe):
                   "color" : li_color, #Liste der Farben die die Polygone haben sollen
                   "coord_target" : coordinateAddress, #Koordinaten der eingegeben Adresse
                   "dic_target" : dic_Properties, #Eigenschaften der Bohrung von der Adresse (Wärmeleitfähigkeit etc.)
+                  "MW_WL" : dic_Properties["MW_WL_" + str_mode_export]
                   }
     if str_ID == "NONE":
         print("No Area found with this address")
@@ -199,12 +205,3 @@ def Get_GeothermalData(str_address, flt_depthprobe):
         plt.show()
 
     return dic_export
-
-
-
-
-flt_depthprobe = 15
-str_address = "Höchstädtplatz 6, 1200 Wien, Österreich"
-
-
-Get_GeothermalData(str_address = str_address, flt_depthprobe = flt_depthprobe)

@@ -53,7 +53,18 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Classes\" />
+    <Folder Include="data\" />
     <Folder Include="Datenbank\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="data\building.xlsx" />
+    <Content Include="data\building_oib_16linie.xlsx" />
+    <Content Include="data\building_ph.xlsx" />
+    <Content Include="data\climate.csv" />
+    <Content Include="data\pv_1kWp.csv" />
+    <Content Include="data\Solar_gains.csv" />
+    <Content Include="data\usage_profiles.csv" />
+    <Content Include="data\Wärmepumpen.csv" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
