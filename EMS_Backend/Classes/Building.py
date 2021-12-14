@@ -32,6 +32,7 @@ class Building():
 
         self.volumen = self.gfa * self.net_storey_height
         self.LT_WandGesamt = 0
+        
 
     def calc_LT(self, Bauteil:str):
         try:

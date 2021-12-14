@@ -42,20 +42,37 @@ class Simulation():
         self.q_loss = np.zeros(8760)    #total thermal losses/gains
         self.qh = np.zeros(8760)        #Heating demand
         self.qc = np.zeros(8760)        #cooling demand
-        self.cp_air = 0.34  # spez. Wärme kapazität Luft (Wh/m3K)
+        self.cp_air = 0.34  # spez. Wärme kapazität * rho von Luft (Wh/m3K)
+
+        self.t_Zul = np.ones(8760) * 20 #Zulufttemperatur TODO:Wärmerückfuhr einbauen. 
+        self.t_Abl = np.ones(8760) * 20 #Ablufttemperatur
             
     def calc_QV(self, t):
         """Ventilation heat losses [W/m²BGF] at timestep t"""
-        dT = self.ta[t - 1] - self.ti[t - 1]
-        room_height = self.building.net_storey_height
-        # thermally effective air change
-        eff_airchange = self.ach_i[t] + self.ach_v[t]  # * M.VentilationSystem.share_cs * rel_ACH_after_heat_recovery
+        #Lüftungswärmeverlust-Koeffizient für mechanische Lüftung
+        Hv = self.cp_air * self.ach_v * self.building.volumen  # W/K
+        qv_mech = Hv * abs(self.t_Zul[t] - self.ti[t]) # W
 
-        self.qv[t] = eff_airchange * room_height * self.cp_air * dT
+        #Lüftungswärmeverlust-Koeffizient für Infiltration
+        Hv = self.cp_air * self.ach_i * self.building.volumen  # W/K
+        qv_inf = Hv * abs(self.ta[t] - self.ti[t]) # W
+
+        self.qv[t] = qv_mech + qv_inf
+
         print(self.qv[t])
 
     def calc_QT(self, t):
         """Transmission heat losses [W/m²BGF] at timestep t"""
+        #Transmisisonsverlust von beheizten Raum an die Außenluft eg. Wand und Dach
+
+        #Transmissionsverlust von beheizten Raum zu unbeheizten Räumen
+
+        #Transmissionsverlust von Bheizten Räumen an das Erdreich
+
+
+
+
+
         dT = self.ta[t] - self.ti[t]
         dT_boden = 6 - self.ti[t] #TODO: Annahme das der Boden konstant 6°C hat. Später durch genaueres ersetzen.
         q_wand = abs(self.building.wand["LT"] * dT)
