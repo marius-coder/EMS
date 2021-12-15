@@ -1,16 +1,18 @@
+import urllib.request, json , urllib.parse
+import requests
+import urllib.parse
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
+from shapely.ops import unary_union
+import matplotlib.pyplot as plt 
+
 def Get_GeothermalData(input_GeoData : dict)-> dict: 
 
     #Inputdictionary entpacken
     str_address = input_GeoData["Adresse"]
     flt_depthprobe = input_GeoData["Bohrtiefe"]
 
-    import urllib.request, json , urllib.parse
-    import requests
-    import urllib.parse
-    from shapely.geometry import Point
-    from shapely.geometry.polygon import Polygon
-    from shapely.ops import unary_union
-    import matplotlib.pyplot as plt 
+  
 
     #Get Erdwärmedaten für Wien
     with urllib.request.urlopen("https://data.wien.gv.at/daten/geo?service=WFS&request=GetFeature&version=1.1.0&srsName=EPSG:4326&outputFormat=json&typeName=ogdwien:ERDWSONDOGD") as url:
@@ -169,7 +171,7 @@ def Get_GeothermalData(input_GeoData : dict)-> dict:
     #Koordinaten der eingegebenen Adresse
     #Id des Erdwärmepolygons in dem sich unsere Adresse befindet
     li_color = []
-    dic_export = {"depthprobe" : flt_depthprobe, #Tiefe der Sonden
+    dic_export = {"Bohrtiefe" : flt_depthprobe, #Tiefe der Sonden
                   "adresse" : str_address,  #eingegebene Adresse
                   "Polygone" : li_Polygons, #Liste an Polygonen zum zeichnen
                   "color" : li_color, #Liste der Farben die die Polygone haben sollen
