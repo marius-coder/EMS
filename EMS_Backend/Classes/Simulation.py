@@ -16,7 +16,7 @@ class Simulation():
          self.b_heatPump = b_heatPump
          self.b_solarPower = b_solarPower
          
-         self.building = Building("./data/building.xlsx")
+         self.building = Building("./data/building_ph.xlsx")
          self.df_usage = pd.read_csv("./data/usage_profiles.csv", encoding="cp1252")
          self.ta = np.genfromtxt("./data/climate.csv", delimiter=";", usecols = (1), skip_header = 1) #°C
          self.qsolar = np.genfromtxt("./data/Solar_gains.csv") #W/m² Solar gains
@@ -25,7 +25,7 @@ class Simulation():
     def Setup_Simulation(self, input_GeoData : dict ):
         """ """
         #TODO: Die Erdwärme in eine eigene Klasse schieben
-        if self.b_geothermal == False:
+        if self.b_geothermal == True:
             self.geo_temp = 13 #°C Bodentemperatur Quelle: https://www.wien.gv.at/stadtentwicklung/energie/themenstadtplan/erdwaerme/erlaeuterungen.html
             self.dt_geo = 5 #Temperaturdiff Quellenseite WP
             self.anz_Sonden = input_GeoData["Anzahl_Sonden"] #Anzahl an Sonden
@@ -156,7 +156,8 @@ class Simulation():
         #Kühllast von Außen
         qt = self.calc_QT(self.ta[hour], self.ti[hour]) #W
         qv = self.calc_QV(self.ach_v[hour], self.ach_i[hour], self.t_soll[hour], self.ta[hour], self.ti[hour] ) #W
-        q_außen = qt + qv + self.qsolar[hour] * self.building.gfa #W
+        qs = self.qsolar[hour] * self.building.window["Fläche"]
+        q_außen = qt + qv + qs #W
 
         #Innere Kühllast
         q_personen = self.building.anz_personen * self.building.gfa * self.CONST_Q_PERSONEN_SPEZ #W
@@ -202,7 +203,7 @@ input_GeoData = {"Adresse" : "Höchstädtplatz 6, 1200 Wien, Österreich",
                  "Bohrtiefe" : 15,
                  "Anzahl_Sonden" : 5}
 
-model = Simulation(b_geothermal = True)
+model = Simulation(b_geothermal = False)
 model.Setup_Simulation(input_GeoData)
 model.Simulate()
 
