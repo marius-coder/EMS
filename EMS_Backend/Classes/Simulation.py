@@ -46,7 +46,7 @@ class Simulation():
         self.q_loss = np.zeros(8760)    #total thermal losses/gains
         self.qh = np.zeros(8760)        #Heating demand
         self.qc = np.zeros(8760)        #cooling demand
-        self.CONST_Q_PERSONEN_SPEZ = 120 #W/m²
+        self.CONST_Q_PERSONEN_SPEZ = 120 #W/Person
         self.cp_air = 0.34  # spez. Wärme kapazität * rho von Luft (Wh/m3K)
 
         self.t_Zul = np.ones(8760) * 20 #Zulufttemperatur TODO:Wärmerückgewinnung hinzufügen
@@ -194,8 +194,6 @@ class Simulation():
 
 
 
-            pass
-        pass
 
 
 
