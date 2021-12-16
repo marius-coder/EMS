@@ -25,7 +25,7 @@ class Simulation():
     def Setup_Simulation(self, input_GeoData : dict ):
         """ """
         #TODO: Die Erdwärme in eine eigene Klasse schieben
-        if self.b_geothermal == False:
+        if self.b_geothermal == True:
             self.geo_temp = 13 #°C Bodentemperatur Quelle: https://www.wien.gv.at/stadtentwicklung/energie/themenstadtplan/erdwaerme/erlaeuterungen.html
             self.dt_geo = 5 #Temperaturdiff Quellenseite WP
             self.anz_Sonden = input_GeoData["Anzahl_Sonden"] #Anzahl an Sonden
@@ -46,7 +46,7 @@ class Simulation():
         self.q_loss = np.zeros(8760)    #total thermal losses/gains
         self.qh = np.zeros(8760)        #Heating demand
         self.qc = np.zeros(8760)        #cooling demand
-        self.CONST_Q_PERSONEN_SPEZ = 120 #W/m²
+        self.CONST_Q_PERSONEN_SPEZ = 120 #W/Person
         self.cp_air = 0.34  # spez. Wärme kapazität * rho von Luft (Wh/m3K)
 
         self.t_Zul = np.ones(8760) * 20 #Zulufttemperatur TODO:Wärmerückgewinnung hinzufügen
@@ -193,8 +193,6 @@ class Simulation():
 
 
 
-            pass
-        pass
 
 
 
