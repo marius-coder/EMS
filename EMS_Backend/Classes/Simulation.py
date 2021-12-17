@@ -43,6 +43,14 @@ class Simulation():
 		self.qi = self.qi_winter                                 #Interne Gewinne als Kombination von Sommer und Winter, f�rs erste = QI_winter
 		self.ach_v = self.df_usage["Luftwechsel_Anlage_1_h"].to_numpy() #Air change per hour through ventilation
 		self.ach_i = self.df_usage["Luftwechsel_Infiltration_1_h"].to_numpy() #Air change per hour through infiltration
+		self.anz_personen = self.df_usage["Pers/m2"] 
+		self.q_warmwater = self.df_usage["Warmwasserbedarf_W_m2"] 
+		self.q_maschinen = self.df_usage['"Aufzug, Regelung etc._W_m2"']
+		self.q_beleuchtung = self.df_usage["Beleuchtung_W_m2"]
+
+
+
+		
 		self.qv = np.zeros(8760)        #Ventilation losses
 		self.qt = np.zeros(8760)        #transmission losses
 		self.ti = np.ones(8760) * 20    #indoor temperature
@@ -72,12 +80,13 @@ class Simulation():
 		print(f"Die statische Kühllast beträgt {round(stat_KL['Kühllast [W]'] / 1000,2)} kW")
 	   
 		#Annahmen TODO: In eine QT Form wandeln für user input
-#		WP_COP = float(input("Bitte COP für Wärmepumpe eingeben: "))
-#		WP_kW_Q = float(input("Bitte Wärmeleistung für eine Wärmepumpe in kW eingeben: "))
-#		WP_Anz = float(input("Bitte Anzahl der Wärmepumpen eingeben: "))
-#		WP_kW_P = WP_kW_Q / WP_COP
+		WP_COP = float(input("Bitte COP für Wärmepumpe eingeben: "))
+		WP_kW_Q = float(input("Bitte Wärmeleistung für eine Wärmepumpe in kW eingeben: "))
+		WP_Anz = float(input("Bitte Anzahl der Wärmepumpen eingeben: "))
+		WP_kW_P = WP_kW_Q / WP_COP
 		#WP_kW_P = input("Bitte elektrische Leistung für Wärmepumpe in kW eingeben: ")
 
+		#B0/W35
 
 		
 
@@ -231,6 +240,6 @@ class Simulation():
 
 
 
-model = Simulation(b_geothermal = False)
+model = Simulation(b_geothermal = True)
 model.Setup_Simulation()
 model.Simulate()
