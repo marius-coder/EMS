@@ -46,10 +46,9 @@ class Simulation():
 		self.qv = np.zeros(8760)        #Ventilation losses
 		self.qt = np.zeros(8760)        #transmission losses
 		self.ti = np.ones(8760) * 20    #indoor temperature
-		self.q_loss = np.zeros(8760)    #total thermal losses/gains
 		self.qh = np.zeros(8760)        #Heating demand
 		self.qc = np.zeros(8760)        #cooling demand
-		self.CONST_Q_PERSONEN_SPEZ = 120 #W/Person
+		self.CONST_Q_PERSONEN_SPEZ = 80 #W/Person
 		self.cp_air = 0.34  # spez. Wärme kapazität * rho von Luft (Wh/m3K)
 
 		self.t_Zul = np.ones(8760) * 20 #Zulufttemperatur TODO:Wärmerückgewinnung hinzufügen
@@ -73,10 +72,10 @@ class Simulation():
 		print(f"Die statische Kühllast beträgt {round(stat_KL['Kühllast [W]'] / 1000,2)} kW")
 	   
 		#Annahmen TODO: In eine QT Form wandeln für user input
-		WP_COP = float(input("Bitte COP für Wärmepumpe eingeben: "))
-		WP_kW_Q = float(input("Bitte Wärmeleistung für eine Wärmepumpe in kW eingeben: "))
-		WP_Anz = float(input("Bitte Anzahl der Wärmepumpen eingeben: "))
-		WP_kW_P = WP_kW_Q / WP_COP
+#		WP_COP = float(input("Bitte COP für Wärmepumpe eingeben: "))
+#		WP_kW_Q = float(input("Bitte Wärmeleistung für eine Wärmepumpe in kW eingeben: "))
+#		WP_Anz = float(input("Bitte Anzahl der Wärmepumpen eingeben: "))
+#		WP_kW_P = WP_kW_Q / WP_COP
 		#WP_kW_P = input("Bitte elektrische Leistung für Wärmepumpe in kW eingeben: ")
 
 
@@ -126,8 +125,8 @@ class Simulation():
 		
 	def handle_losses(self, t, q_toApply):
 		# determine indoor temperature after losses
-		self.ti[t] = self.TI_after_Q(self.ti[t-1], q_toApply, self.building.heat_capacity, self.building.gfa) #°C
-	 
+		self.ti[t] = self.TI_after_Q(self.ti[t], q_toApply, self.building.heat_capacity, self.building.gfa) #°C
+
 
 	def TI_after_Q(self, Ti_before, Q, cp, A):
 		"""cp = spec. building heat_capacity"""
@@ -205,44 +204,34 @@ class Simulation():
 
 			mean_temp = sum(self.ta[day_1 * 24 : day_1 * 24 + 24]) / 24
 
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------
-			#Heizlast berechnen
-			self.qt[hour] = self.calc_QT( self.ta[hour], self.ti[hour]) #Transmissionsverluste
-			self.qv[hour] = self.calc_QV( self.ach_v[hour], self.ach_i[hour], self.t_Zul[hour], self.ta[hour], self.ti[hour] )
-			self.qs[hour] = self.Q_Solar(hour)
-			self.qi[hour] = self.Q_InnerGains(hour)
-			#Heizlast Gesamt
-			self.q_HL_gesamt = self.qt[hour] + self.qv[hour]
-			#Neue Innentemperatur nach Verlusten/Gewinnen
-			self.handle_losses(hour, self.q_HL_gesamt)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------    
-			#Kühllast berechnen
-			#Äußere Kühllast
-			self.qt[hour] = self.calc_QT( self.ta[hour], self.ti[hour])
-			self.qv[hour] = self.calc_QV( self.ach_v[hour], self.ach_i[hour], self.t_Zul[hour], self.ta[hour], self.ti[hour] )
-			self.qs[hour] = self.Q_Solar(hour)
-			self.q_außen[hour] = self.qt[hour] + self.qv[hour] + self.qs[hour] #W
+			#Heiz / Kühllast berechnen
+			#Äußere Wärmeströme
+			self.qt[hour] = self.calc_QT( self.ta[hour], self.ti[hour]) #Transmission
+			self.qv[hour] = self.calc_QV( self.ach_v[hour], self.ach_i[hour], self.t_Zul[hour], self.ta[hour], self.ti[hour]) #Ventilation
+			self.qs[hour] = self.Q_Solar(hour) #Solare Gewinne
+			self.q_außen[hour] = self.qt[hour] + self.qv[hour] + self.qs[hour] #W Gesamt
 
-			#Innere Kühllast
+			#Innere Wärmeströme
 			self.q_personen[hour] = self.Q_Personen()
 			self.q_beleuchtung[hour] = self.Q_Beleuchtung()
 			self.q_maschinen[hour] = self.Q_Maschinen()
 			self.q_innen[hour] = self.q_personen[hour] + self.q_beleuchtung[hour] + self.q_maschinen[hour]
 
-			#Kühllast Gesamt
-			self.q_KL_gesamt = self.q_außen[hour] + self.q_innen[hour]
-			self.handle_losses(hour, self.q_KL_gesamt)
+			#Gesamtwärmeströme
+			self.q_gesamt = self.q_außen[hour] + self.q_innen[hour]
+			self.handle_losses(hour, q_toApply = self.q_gesamt) #Neue Innentemperatur rechnen
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-			#Neue Innentemperatur rechnen
 			#Nun wird mithilfe der neuen Innentemperatur die benötigte Leistung berechnet um auf die gewünschte Innentemp zu kommen
 			#TODO: Variable Sollinnentemperatur, zB Nachtabsenkung, Temperaturhysterese
 			self.q_soll = self.heating_power(self.t_soll[hour], self.ti[hour], self.building.heat_capacity, self.building.gfa)
+			self.handle_losses(hour, q_toApply = self.q_soll)
 
 
 
 
 
-model = Simulation(b_geothermal = True)
+model = Simulation(b_geothermal = False)
 model.Setup_Simulation()
 model.Simulate()
 

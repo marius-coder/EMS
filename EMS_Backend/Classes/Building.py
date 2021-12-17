@@ -9,7 +9,7 @@ class Building():
 
 
     def __init__(self, path:str):
-        self.anz_personen = 0.05 # Personen pro m²
+        self.anz_personen = 0.0277777777777 # Personen pro m²
         self.q_beleuchtung = 6 #W/m²
         self.q_maschinen = 2 #W/m²
 
