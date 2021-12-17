@@ -234,9 +234,3 @@ class Simulation():
 model = Simulation(b_geothermal = False)
 model.Setup_Simulation()
 model.Simulate()
-
-
-
-
-
-
