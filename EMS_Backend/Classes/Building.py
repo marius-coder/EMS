@@ -9,9 +9,6 @@ class Building():
 
 
     def __init__(self, path:str):
-        self.anz_personen = 0.0277777777777 # Personen pro m²
-        self.q_beleuchtung = 6 #W/m²
-        self.q_maschinen = 2 #W/m²
 
         self.df_params = pd.read_excel(path,sheet_name="params")
         self.df_thermal_hull = pd.read_excel(path,sheet_name="thermal_hull")
