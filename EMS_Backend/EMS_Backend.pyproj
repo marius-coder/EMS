@@ -29,9 +29,10 @@
     <Compile Include="Classes\Helper.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Classes\Pumpe.py">
+    <Compile Include="Classes\Heizkomponenten.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Classes\Wärmepumpe_neu.py" />
     <Compile Include="Classes\Simulation.py">
       <SubType>Code</SubType>
     </Compile>
