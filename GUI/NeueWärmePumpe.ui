@@ -287,7 +287,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>COP bei unterschiedlichen Außentemperaturen</string>
+    <string>COP bei unterschiedlichen Quelltemperaturen</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_10">
