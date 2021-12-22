@@ -3,7 +3,6 @@
 import math
 #Library die die physikalischen Werte von Wasser berechen kann
 from iapws._iapws import _Liquid
-from numpy import little_endian
 
 #Dict with calculated properties of water. The available properties are:
 #h: Specific enthalpy, [kJ/kg]
