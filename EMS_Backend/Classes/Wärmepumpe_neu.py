@@ -6,28 +6,6 @@ import numpy as np
 
 class Wärmepumpe:
         
-    def __init__(self,
-                 # WP_Anzahl,
-                 path_COP = r"C:\Users\Chris\Desktop\Inplan\Wärmepumpe\COP.csv",
-                 path_climate = r"C:\Users\Chris\Desktop\Inplan\Wärmepumpe\climate.csv",
-                 t_VL = 45,           #°C
-                 # t_Q = False,       #°C
-                 L_T = 758.27,        #W/K
-                 L_V = 713.24,        #W/K
-                 t_i = 22,            #°C
-                 ):
-
-        
-        self.path_COP = path_COP
-        self.path_climate = path_climate
-        self.t_VL = t_VL
-        self.t_Q = np.genfromtxt(self.path_climate, delimiter = ";")
-        self.L_T = L_T
-        self.L_V = L_V
-        self.L = self.L_T + self.L_V
-        self.t_i = t_i
-        # self.WP_Anzahl = WP_Anzahl
-        
     def calc_COP_csv(self, path:str, t_Q: int, t_VL:int):
         df = pd.read_csv(path, delimiter=";")
             
@@ -56,17 +34,16 @@ class Wärmepumpe:
     
             self.COP_t = y1 + k*(x-x1)                                         #berechnet COP bei Quelltemperatur (linear interpoliert)
         return self.COP_t
-        
-
     
+    #--------------------------------------------------------------------------------------------------------------------------------------
+
+    def calc_COP_GUI(self, path:str, t_Q: int, t_VL:int):
+        pass
+
 ############################################################################################################################################    
     
 WP = Wärmepumpe()
 
-# WP.calc_COP(WP.path_COP,10,35)
+WP.calc_COP_csv(WP.path_COP,14,35)
 
 print(WP.COP_t)
-
-
-
-
