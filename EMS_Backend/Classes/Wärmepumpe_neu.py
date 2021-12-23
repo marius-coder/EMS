@@ -57,35 +57,13 @@ class Wärmepumpe:
             self.COP_t = y1 + k*(x-x1)                                         #berechnet COP bei Quelltemperatur (linear interpoliert)
         return self.COP_t
         
-#------------------------------------------------------------------------------
 
-    def simulate(self):
-        Q = np.zeros(len(self.t_Q)-1)
-        P = np.zeros(len(self.t_Q)-1)
-        for i in range(0,len(self.t_Q)-1,1):
-            dt = (self.t_i - self.t_Q[i+1,1])
-            Q[i] = self.L * dt / 1000                                          #kWh
-            self.calc_COP(self.path_COP, self.t_Q[i+1,1], self.t_VL)
-            P[i] = Q[i] / self.COP_t                                           #kWh
-            print(i)
-        
-        self.f_JAZ = sum(Q) / sum(P)
-        self.Energiekennzahlen = {"JAZ" : self.f_JAZ,
-                    "Q" : Q,
-                    "P" :P}
-        return self.Energiekennzahlen
-       
     
 ############################################################################################################################################    
     
 WP = Wärmepumpe()
 
 # WP.calc_COP(WP.path_COP,10,35)
-WP.simulate()
-
-# JAZ = WP.dic["JAZ"]
-# Q = WP.Energiekennzahlen["Q"]
-# P = WP.Energiekennzahlen["P"]
 
 print(WP.COP_t)
 
