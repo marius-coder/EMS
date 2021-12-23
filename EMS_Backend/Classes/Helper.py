@@ -1,7 +1,7 @@
 
 import hashlib
 import pandas as pd
-
+import logging
 
 
 class Helper():
@@ -34,6 +34,20 @@ class Helper():
             return True
         else:
             return False
+
+  
+
+file_handler = logging.FileHandler("logfile.log")
+
+logger = logging.getLogger()
+logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
+
+logger.critical("Something critical")
+logger.error("An error")
+logger.warning("A warning")
+logger.info("My info is that you are here")
+logger.debug("I'm debugging")
 
 global obj_helper
 obj_helper = Helper()
