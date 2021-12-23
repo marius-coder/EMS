@@ -1,9 +1,9 @@
 
 
 import math
+import matplotlib.pyplot as plt
 #Library die die physikalischen Werte von Wasser berechen kann
 from iapws._iapws import _Liquid
-
 #Dict with calculated properties of water. The available properties are:
 #h: Specific enthalpy, [kJ/kg]
 #u: Specific internal energy, [kJ/kg]
@@ -28,7 +28,8 @@ from iapws._iapws import _Liquid
 
 global debug
 debug = True
-
+global li_test
+li_test = []
 class Wärmespeicher():
 
 	def __init__(self, dicke_dämmung, lambda_dämmung, VL, RL, schichten, height, ladezone, radius = None, diameter = None):
@@ -102,21 +103,22 @@ class Wärmespeicher():
 
 	def Transmission_total(self):
 		"""Diese Funktion berechnet den Transmissionswärmeverlust des Speichers und berechnet anschließend die neue Temperatur"""
-		q_bottom = self.Heat_Transmission_BodenDeckel(self.li_schichten[0])
-		q_top = self.Heat_Transmission_BodenDeckel(self.li_schichten[-1])
-
 		#Alle schichten durchiterieren
 		for i in range(self.anz_schichten):
-			
 
 			q_schicht = self.Heat_Transmission(self.li_schichten[i])
 
 			if i == 0:
+				q_bottom = self.Heat_Transmission_BodenDeckel(self.li_schichten[0])
 				q_toApply = q_schicht + q_bottom
 				self.li_schichten[i]["Temperatur [°C]"] = self.New_Temperature(q_toApply, self.li_schichten[i])
 			elif i == (self.anz_schichten - 1):
+				q_top = self.Heat_Transmission_BodenDeckel(self.li_schichten[-1])
 				q_toApply = q_schicht + q_top
 				self.li_schichten[i]["Temperatur [°C]"] = self.New_Temperature(q_toApply, self.li_schichten[i])
+				
+				li_test.append(self.li_schichten[i]["Temperatur [°C]"])
+				print("Temp: ", self.li_schichten[i]["Temperatur [°C]"])
 			else:
 				q_toApply = q_schicht
 				self.li_schichten[i]["Temperatur [°C]"] = self.New_Temperature(q_toApply, self.li_schichten[i])
@@ -155,8 +157,6 @@ class Wärmespeicher():
 		print("Rayleighzahl ist: ", RA)
 
 		#Nusselt Zahl berechnen
-		#NU = 0.0325 * GR**0.4 #Für Senkrecht ebene Wände Aus TD2 Skriptum
-		#print("Nusselt ist: ", NU)
 		#Formel von hier: https://studyflix.de/ingenieurwissenschaften/naturliche-konvektion-480
 		NU = (0.825 + ((0.387 * RA**(1/6)))/(1 + (0.492 / PR)**(9/16))**(8/27))**2
 		print("Nusseltzahl ist: ", NU)
@@ -171,7 +171,7 @@ class Wärmespeicher():
 		
 		#In Position 0 befindet sich die unterste Schicht. Dieser Loop geht also den Speicher von unten nach oben durch
 		#und sucht ob eine untere Schicht wärmer ist als die obere
-		for i in range(len(self.li_schichten)-1): #Es gibt ímmer um 1 weniger Anzahl an kontaktflächen als Anzahl schichten
+		for i in range(len(self.li_schichten)-1): #Es gibt immer um 1 weniger Anzahl an kontaktflächen als Anzahl schichten
 
 			temp1 = self.li_schichten[i]["Temperatur [°C]"]
 			temp2 = self.li_schichten[i+1]["Temperatur [°C]"]
@@ -182,13 +182,13 @@ class Wärmespeicher():
 				alpha = self.Get_Alpha_Convection(self.li_schichten[i],self.li_schichten[i+1])
 			
 				#Leistung zwischen Schicht berechnen
-				Q_schicht = alpha * dT * self.li_schichten[i]["Fläche [m²]"] * 3600
+				Q_schicht = alpha * dT * self.li_schichten[i]["Fläche [m²]"] 
 
 				
 
 				#Massenstrom der sich in einer Stunde durch natürliche Konvektion ergibt
 				water_data = _Liquid(273 + self.li_schichten[i]["Temperatur [°C]"])
-				m_auftrieb = Q_schicht / (water_data["cp"] * 1000 * (self.li_schichten[i]["Temperatur [°C]"] - self.li_schichten[i+1]["Temperatur [°C]"]))
+				m_auftrieb = (Q_schicht * 3600) / (water_data["cp"] * 1000 * (self.li_schichten[i]["Temperatur [°C]"] - self.li_schichten[i+1]["Temperatur [°C]"]))
 
 
 
@@ -201,6 +201,7 @@ class Wärmespeicher():
 				#Neue Temperaturen rechnen
 				water_data_unten = _Liquid(273 + self.li_schichten[i]["Temperatur [°C]"])
 				water_data_oben = _Liquid(273 + self.li_schichten[i+1]["Temperatur [°C]"])
+
 
 				schicht_unten = self.li_schichten[i]
 				schicht_unten["Masse"] = schicht_unten["Volumen [m³]"] * water_data_unten["rho"]
@@ -242,7 +243,7 @@ class Wärmespeicher():
 		self.li_schichten[self.ladezone-1]["Temperatur [°C]"] = t_neu_schicht_laden
 
 		#Nun werden alle Schichten unter der Ladezone iteriert und die Temperatur angepasst da sich nun Wasser mit unterschiedlicher Temperatur mischt
-		#Dabei wird von der untersten Schicht nach oben iteriert
+		#Dabei wird von der Ladeschicht nach unten iteriert
 		for i in range(self.ladezone - 1, 0, -1 ):
 
 			#Zwischenvariablen definieren zwecks Übersichtlichkeit
@@ -318,18 +319,19 @@ class Wärmespeicher():
 
 
 
-wärmespeicher = Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 35, RL = 30, schichten = 5, height = 2, diameter = 0.5, ladezone = 3)
+wärmespeicher = Wärmespeicher(dicke_dämmung = 1, lambda_dämmung = 0.04,VL = 35, RL = 30, schichten = 5, height = 2, diameter = 0.5, ladezone = 3)
 
 
-for i in range(1):
+for i in range(5000):
 	wärmespeicher.Transmission_total()
-	wärmespeicher.Speicher_Laden(1000, VL = 35)
+	wärmespeicher.Speicher_Laden(100, VL = 40)
 	wärmespeicher.Heat_Convection()
 	
-	#wärmespeicher.Speicher_Entladen(1000, RL = 5)
+	wärmespeicher.Speicher_Entladen(100, RL = 30)
 
 
-
+plt.plot(li_test)
+plt.show()
 
 
 
