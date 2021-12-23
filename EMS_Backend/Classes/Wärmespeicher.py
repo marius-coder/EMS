@@ -94,7 +94,8 @@ class Wärmespeicher():
 		return q_HT
 	
 	def New_Temperature(self, q_toApply, schicht):
-		"""Diese Funktion nimmt eine Schicht und Verlust und berechnet eine neue Temperatur damit"""
+		"""Diese Fun
+		ktion nimmt eine Schicht und Verlust und berechnet eine neue Temperatur damit"""
 		water_data = _Liquid(273 + schicht["Temperatur [°C]"])
 		t_new = schicht["Temperatur [°C]"] - q_toApply / (water_data["cp"] * 1000 * water_data["rho"] * schicht["Volumen [m³]"]) 
 		return t_new

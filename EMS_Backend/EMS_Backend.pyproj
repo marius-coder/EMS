@@ -21,6 +21,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Classes\Wärmepumpe_neu.py" />
     <Compile Include="Classes\Wärmespeicher.py" />
     <Compile Include="Classes\Import.py" />
     <Compile Include="Classes\Model.py" />
@@ -33,7 +34,6 @@
     <Compile Include="Classes\Heizkomponenten.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Classes\Wärmepumpe_neu.py" />
     <Compile Include="Classes\Simulation.py">
       <SubType>Code</SubType>
     </Compile>

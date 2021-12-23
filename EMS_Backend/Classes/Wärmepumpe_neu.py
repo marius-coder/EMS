@@ -2,41 +2,93 @@
 import pandas as pd
 import numpy as np
 
-class Wärmepumpe:
+############################################################################################################################################
+
+class WÃ¤rmepumpe:
         
-    def calc_COP(self, path:str, t_Quelle: int, t_VL:int):
-        self.t_Quelle = t_Quelle
+    def __init__(self,
+                 # WP_Anzahl,
+                 path_COP = r"C:\Users\Chris\Desktop\Inplan\WÃ¤rmepumpe\COP.csv",
+                 path_climate = r"C:\Users\Chris\Desktop\Inplan\WÃ¤rmepumpe\climate.csv",
+                 t_VL = 45,           #Â°C
+                 # t_Q = False,       #Â°C
+                 L_T = 758.27,        #W/K
+                 L_V = 713.24,        #W/K
+                 t_i = 22,            #Â°C
+                 ):
+
+        
+        self.path_COP = path_COP
+        self.path_climate = path_climate
         self.t_VL = t_VL
-        self.df = pd.read_csv(path, delimiter=";")
+        self.t_Q = np.genfromtxt(self.path_climate, delimiter = ";")
+        self.L_T = L_T
+        self.L_V = L_V
+        self.L = self.L_T + self.L_V
+        self.t_i = t_i
+        # self.WP_Anzahl = WP_Anzahl
         
-        self.a = np.zeros(len(self.df))                                     #erstellt ein array mit allen Quelltemperaturen
-        for i in range(0, len(self.df), 1):
-            self.a[i] = self.df.iloc[i,1]
+    def calc_COP_csv(self, path:str, t_Q: int, t_VL:int):
+        df = pd.read_csv(path, delimiter=";")
+            
+        a = np.zeros(len(df))                                                  #erstellt ein array mit allen Quelltemperaturen
+        for i in range(0, len(df), 1):
+            a[i] = df.iloc[i,1]
         
-        boolian = self.t_Quelle in self.a
+        boolian = t_Q in a
         if boolian == True:
-            self.df_1 = self.df.loc[self.df["t_VL"] == self.t_VL]           #erstellt df nur mit gewünschtem VL
-            self.df_2 = self.df_1.loc[self.df_1["t_Q"] == self.t_Quelle]    #erstellt df nur mit gewünschtem VL und Quelltemperatur
-            self.COP_t = self.df_2.iloc[0,10]
+            df_1 = df.loc[df["t_VL"] == t_VL]                                  #erstellt df nur mit gewÃ¼nschtem VL
+            df_2 = df_1.loc[df_1["t_Q"] == t_Q]                                #erstellt df nur mit gewÃ¼nschtem VL und Quelltemperatur
+            self.COP_t = df_2.iloc[0,10]
             
         else:
-            self.x2 = self.a[(np.abs(self.a-t_Quelle)).argmin()]            #Wenn t_Quelle nicht in array a, dann x2 = nächster Wert
+            x2 = a[(np.abs(a-t_Q)).argmin()]                                   #Wenn t_Q nicht in array a, dann x2 = nÃ¤chster Wert
 
-            self.df_1 = self.df.loc[self.df["t_VL"] == self.t_VL]           #erstellt df nur mit gewünschtem VL
-            self.df_2 = self.df_1.loc[self.df_1["t_Q"] == self.x2]          #erstellt df nur mit gewünschtem VL und Quelltemperatur
-            self.y2 = self.df_2.iloc[0,10]   
+            df_1 = df.loc[df["t_VL"] == t_VL]                                  #erstellt df nur mit gewÃ¼nschtem VL
+            df_2 = df_1.loc[df_1["t_Q"] == x2]                                 #erstellt df nur mit gewÃ¼nschtem VL und Quelltemperatur
+            y2 = df_2.iloc[0,10]
+
+            b = df_2.iloc[:,10].index                                          #b = Index von y2  
+            y1 = float(df_1.iloc[b-1,10])           
+            x1 = float(df_1.iloc[b-1,1])
+            x = t_Q
+            k = (y2-y1)/(x2-x1)
     
-            self.b = self.df_2.iloc[:,10].index                             #b = Index von y2  
-            self.y1 = float(self.df_1.iloc[self.b-1,10])           
-            self.x1 = float(self.df_1.iloc[self.b-1,1])
-            self.x = self.t_Quelle
-            self.k = (self.y2-self.y1)/(self.x2-self.x1)
+            self.COP_t = y1 + k*(x-x1)                                         #berechnet COP bei Quelltemperatur (linear interpoliert)
+        return self.COP_t
+        
+#------------------------------------------------------------------------------
+
+    def simulate(self):
+        Q = np.zeros(len(self.t_Q)-1)
+        P = np.zeros(len(self.t_Q)-1)
+        for i in range(0,len(self.t_Q)-1,1):
+            dt = (self.t_i - self.t_Q[i+1,1])
+            Q[i] = self.L * dt / 1000                                          #kWh
+            self.calc_COP(self.path_COP, self.t_Q[i+1,1], self.t_VL)
+            P[i] = Q[i] / self.COP_t                                           #kWh
+            print(i)
+        
+        self.f_JAZ = sum(Q) / sum(P)
+        self.Energiekennzahlen = {"JAZ" : self.f_JAZ,
+                    "Q" : Q,
+                    "P" :P}
+        return self.Energiekennzahlen
+       
     
-            self.COP_t = self.y1 + self.k*(self.x-self.x1)                  #berechnet COP bei Quelltemperatur (linear interpoliert)
-            return self.COP_t
+############################################################################################################################################    
     
-path = "./data/COP.csv"
-WP = Wärmepumpe()
-WP.calc_COP(path, 20, 35)
+WP = WÃ¤rmepumpe()
+
+# WP.calc_COP(WP.path_COP,10,35)
+WP.simulate()
+
+# JAZ = WP.dic["JAZ"]
+# Q = WP.Energiekennzahlen["Q"]
+# P = WP.Energiekennzahlen["P"]
 
 print(WP.COP_t)
+
+
+
+
