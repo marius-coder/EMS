@@ -45,7 +45,7 @@ class Simulation():
 		self.ach_i = self.df_usage["Luftwechsel_Infiltration_1_h"].to_numpy() #Air change per hour through infiltration
 		self.anz_personen = self.df_usage["Pers/m2"] 
 		self.q_warmwater = self.df_usage["Warmwasserbedarf_W_m2"] 
-		self.q_maschinen = self.df_usage['"Aufzug, Regelung etc._W_m2"']
+		self.q_maschinen = self.df_usage['Aufzug, Regelung etc._W_m2']
 		self.q_beleuchtung = self.df_usage["Beleuchtung_W_m2"]
 
 
@@ -165,17 +165,17 @@ class Simulation():
 		return stat_HL
 
 
-	def Q_Personen(self) -> float:
+	def Q_Personen(self, hour) -> float:
 		#TODO: Variable Personenanzahl je nach Stunde
-		return self.building.anz_personen * self.building.gfa * self.CONST_Q_PERSONEN_SPEZ #W
+		return self.anz_personen[hour] * self.building.gfa * self.CONST_Q_PERSONEN_SPEZ #W
 
-	def Q_Beleuchtung(self) -> float:
+	def Q_Beleuchtung(self, hour) -> float:
 		#TODO: Variable Beleuchtung je nach Stunde
-		return self.building.gfa * self.building.q_beleuchtung
+		return self.building.gfa * self.q_beleuchtung[hour]
 	
-	def Q_Maschinen(self) -> float:
+	def Q_Maschinen(self, hour) -> float:
 		#TODO: Variable Maschinenlast je nach Stunde
-		return self.building.gfa * self.building.q_maschinen
+		return self.building.gfa * self.q_maschinen[hour]
 
 	def Q_Solar(self, hour) -> float:
 		return self.qsolar[hour] * self.building.window["Fläche"]
@@ -194,9 +194,9 @@ class Simulation():
 		q_außen = qt + qv + qs #W
 
 		#Innere Kühllast
-		q_personen = self.Q_Personen()
-		q_beleuchtung = self.Q_Beleuchtung()
-		q_maschinen = self.Q_Maschinen()
+		q_personen = self.Q_Personen(hour)
+		q_beleuchtung = self.Q_Beleuchtung(hour)
+		q_maschinen = self.Q_Maschinen(hour)
 		q_innen = q_personen + q_beleuchtung + q_maschinen
 
 		#gesamte Kühllast
@@ -222,9 +222,9 @@ class Simulation():
 			self.q_außen[hour] = self.qt[hour] + self.qv[hour] + self.qs[hour] #W Gesamt
 
 			#Innere Wärmeströme
-			self.q_personen[hour] = self.Q_Personen()
-			self.q_beleuchtung[hour] = self.Q_Beleuchtung()
-			self.q_maschinen[hour] = self.Q_Maschinen()
+			self.q_personen[hour] = self.Q_Personen(hour)
+			self.q_beleuchtung[hour] = self.Q_Beleuchtung(hour)
+			self.q_maschinen[hour] = self.Q_Maschinen(hour)
 			self.q_innen[hour] = self.q_personen[hour] + self.q_beleuchtung[hour] + self.q_maschinen[hour]
 
 			#Gesamtwärmeströme
