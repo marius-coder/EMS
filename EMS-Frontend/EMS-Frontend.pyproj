@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>b9625333-417a-424b-b315-f3821d4925db</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>EMS_Frontend.py</StartupFile>
+    <StartupFile>Warmwasser.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,10 +22,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="EMS_Frontend.py" />
+    <Compile Include="Warmwasser.py" />
     <Compile Include="NeueWärmePumpe.py" />
     <Compile Include="Translator.py">
       <SubType>Code</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="data\Warmwasser_Profile.csv" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

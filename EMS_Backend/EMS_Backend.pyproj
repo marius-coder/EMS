@@ -22,6 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Classes\Wärmepumpe_neu.py" />
+    <Compile Include="Classes\Warmwasser.py" />
     <Compile Include="Classes\Wärmespeicher.py" />
     <Compile Include="Classes\Import.py" />
     <Compile Include="Classes\Model.py" />
