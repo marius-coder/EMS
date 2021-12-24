@@ -29,7 +29,7 @@ from iapws._iapws import _Liquid
 global debug
 debug = True
 global li_test
-li_test = []
+
 class Wärmespeicher():
 
 	def __init__(self, dicke_dämmung, lambda_dämmung, VL, RL, schichten, height, ladezone, radius = None, diameter = None):
@@ -312,26 +312,33 @@ class Wärmespeicher():
 			#Neue Temperatur zuweisen
 			self.li_schichten[i-1]["Temperatur [°C]"] = t_neu
 
-	
+wärmespeicher = Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 35, RL = 30, schichten = 5, ladezone = 3, height = 2, diameter = 0.5)
 
-
-
-
-
-
-wärmespeicher = Wärmespeicher(dicke_dämmung = 1, lambda_dämmung = 0.04,VL = 35, RL = 30, schichten = 5, height = 2, diameter = 0.5, ladezone = 3)
-
-
-for i in range(5000):
+li_test = []
+for i in range(200):
 	wärmespeicher.Transmission_total()
-	wärmespeicher.Speicher_Laden(100, VL = 40)
+	wärmespeicher.Speicher_Laden(20, VL = 35)
 	wärmespeicher.Heat_Convection()
 	
-	wärmespeicher.Speicher_Entladen(100, RL = 30)
+	#wärmespeicher.Speicher_Entladen(100, RL = 30)
 
 
 plt.plot(li_test)
 plt.show()
+
+
+li_test = []
+for i in range(2000):
+	wärmespeicher.Transmission_total()
+	#wärmespeicher.Speicher_Laden(20, VL = 35)
+	#wärmespeicher.Heat_Convection()
+	
+	#wärmespeicher.Speicher_Entladen(100, RL = 30)
+
+
+plt.plot(li_test)
+plt.show()
+
 
 
 

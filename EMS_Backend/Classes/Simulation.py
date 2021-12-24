@@ -80,10 +80,10 @@ class Simulation():
 		print(f"Die statische Kühllast beträgt {round(stat_KL['Kühllast [W]'] / 1000,2)} kW")
 	   
 		#Annahmen TODO: In eine QT Form wandeln für user input
-		WP_COP = float(input("Bitte COP für Wärmepumpe eingeben: "))
-		WP_kW_Q = float(input("Bitte Wärmeleistung für eine Wärmepumpe in kW eingeben: "))
-		WP_Anz = float(input("Bitte Anzahl der Wärmepumpen eingeben: "))
-		WP_kW_P = WP_kW_Q / WP_COP
+		#WP_COP = float(input("Bitte COP für Wärmepumpe eingeben: "))
+		#WP_kW_Q = float(input("Bitte Wärmeleistung für eine Wärmepumpe in kW eingeben: "))
+		#WP_Anz = float(input("Bitte Anzahl der Wärmepumpen eingeben: "))
+		#WP_kW_P = WP_kW_Q / WP_COP
 		#WP_kW_P = input("Bitte elektrische Leistung für Wärmepumpe in kW eingeben: ")
 
 		#B0/W35
