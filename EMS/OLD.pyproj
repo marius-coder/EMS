@@ -8,10 +8,14 @@
     <StartupFile>EMS.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>.</WorkingDirectory>
+    <WorkingDirectory>$(SolutionDir)</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>OLD</Name>
     <RootNamespace>EMS</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <TestFramework>none</TestFramework>
+    <UnitTestPattern>test*.py</UnitTestPattern>
+    <UnitTestRootDirectory>.</UnitTestRootDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

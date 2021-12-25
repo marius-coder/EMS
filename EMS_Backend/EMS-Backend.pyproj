@@ -3,14 +3,16 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>246da768-f2aa-4e23-8e67-6810683fe9dc</ProjectGuid>
-    <ProjectHome>.</ProjectHome>
+    <ProjectHome>
+    </ProjectHome>
     <StartupFile>EMS_Backend.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>.</WorkingDirectory>
+    <WorkingDirectory>$(SolutionDir)</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>EMS_Backend</Name>
+    <Name>EMS-Backend</Name>
     <RootNamespace>EMS_Backend</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

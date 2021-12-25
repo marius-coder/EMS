@@ -7,10 +7,11 @@
     <StartupFile>Warmwasser.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>.</WorkingDirectory>
+    <WorkingDirectory>$(SolutionDir)</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>EMS-Frontend</Name>
     <RootNamespace>EMS-Frontend</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

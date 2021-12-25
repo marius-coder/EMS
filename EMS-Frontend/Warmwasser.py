@@ -1,9 +1,11 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: latin-1 -*-
 import os
 import sys
 import pandas as pd
 import csv
 from pandas.core.frame import DataFrame
+#from Import import importGUI
+
 
 from PyQt5 import *
 from PyQt5 import QtGui
@@ -18,7 +20,7 @@ class Ui_Form(object):
 
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(1600, 600)
+        Form.resize(1500, 250)
         Form.setStyleSheet("QSlider::groove:horizontal\n"
                         "{\n"
                         "border: 1px solid #bbb;\n"
@@ -86,7 +88,7 @@ class Ui_Form(object):
         self.doubleSpinBox_WWValue = QtWidgets.QDoubleSpinBox(Form)
         self.doubleSpinBox_WWValue.setGeometry(QtCore.QRect(1230, 125, 62, 22))
         self.doubleSpinBox_WWValue.setObjectName("doubleSpinBox_WWValue")
-
+        self.doubleSpinBox_WWValue.setRange(0,1000)
         self.radioButton_Person.toggled['bool'].connect(self.radioButton_m2.repaint) # type: ignore
         self.radioButton_m2.toggled['bool'].connect(self.radioButton_Person.repaint) # type: ignore
         
@@ -102,22 +104,27 @@ class Ui_Form(object):
         self.lineEdit_Profil.setGeometry(QtCore.QRect(1230, 20, 81, 20))
         self.lineEdit_Profil.setObjectName("lineEdit_Profil")
         self.comboBox_SelectProfile = QtWidgets.QComboBox(Form)
-        self.comboBox_SelectProfile.setGeometry(QtCore.QRect(1230, 40, 69, 22))
+        self.comboBox_SelectProfile.setGeometry(QtCore.QRect(1230, 45, 69, 22))
         self.comboBox_SelectProfile.setObjectName("comboBox_SelectProfile")
         self.pushButton_SaveProfile = QtWidgets.QPushButton(Form)
-        self.pushButton_SaveProfile.setGeometry(QtCore.QRect(1230, 60, 75, 23))
+        self.pushButton_SaveProfile.setGeometry(QtCore.QRect(1229, 70, 75, 23))
         self.pushButton_SaveProfile.setObjectName("pushButton_SaveProfile")
         self.pushButton_SaveProfile.setText("Save Profile")
         self.pushButton_DeleteProfile = QtWidgets.QPushButton(Form)
-        self.pushButton_DeleteProfile.setGeometry(QtCore.QRect(1260, 60, 75, 23))
+        self.pushButton_DeleteProfile.setGeometry(QtCore.QRect(1320, 70, 75, 23))
         self.pushButton_DeleteProfile.setObjectName("pushButton_DeleteProfile")
         self.pushButton_DeleteProfile.setText("Delete Profile")
+        self.pushButton_UseProfile = QtWidgets.QPushButton(Form)
+        self.pushButton_UseProfile.setGeometry(QtCore.QRect(1300, 185, 150, 30))
+        self.pushButton_UseProfile.setObjectName("pushButton_UseProfile")
+        self.pushButton_UseProfile.setText("Use Profile for Simulation")
         #Combobox befüllen mit vorhandenen Daten
-        names = list(pd.read_csv("./data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",")["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
         self.comboBox_SelectProfile.addItems(names)
         self.comboBox_SelectProfile.activated.connect(self.LoadProfile)
         self.pushButton_SaveProfile.clicked.connect(self.SaveProfile)
         self.pushButton_DeleteProfile.clicked.connect(self.DeleteProfile)
+        self.pushButton_UseProfile.clicked.connect(self.UseProfile)
         
 
 
@@ -162,7 +169,11 @@ class Ui_Form(object):
             self.li_Widgets.append(Create_Slider(i))
 
     def SaveProfile(self):
+
+        
+        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
         name = self.lineEdit_Profil.text() 
+        
         li_toSave = []
         li_toSave.append(name)
         for w in self.li_Widgets:
@@ -175,35 +186,37 @@ class Ui_Form(object):
             value = self.doubleSpinBox_WWValue.value()
             li_toSave.append(value)
             li_toSave.append("None")
-        df_append = pd.DataFrame(li_toSave)
-        with open("./data/Warmwasser_Profile.csv",'a', newline='') as f:
+
+        #Kontrolle ob ein Profil mit diesem Namen bereits existiert
+        if name in names:
+            self.DeleteProfile()
+        #Neues Profil hinzufügen
+        with open("./EMS-Frontend/data/Warmwasser_Profile.csv",'a', newline='') as f:
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(li_toSave)
         self.UpdateProfiles()
+        #self.LoadProfile()
    
     def DeleteProfile(self):
         name = self.comboBox_SelectProfile.currentText()
-        with open("./data/Warmwasser_Profile.csv", 'r') as inp:
+        with open("./EMS-Frontend/data/Warmwasser_Profile.csv", 'r') as inp:
             lines = inp.readlines()
-        with open("./data/Warmwasser_Profile.csv",'w', newline='') as f:
+        with open("./EMS-Frontend/data/Warmwasser_Profile.csv",'w', newline='') as f:
             for line in lines:
-                print(line.split(",")[0])
                 if line.split(",")[0] != name:
                     f.write(line)
         self.UpdateProfiles()
+        
+
     def UpdateProfiles(self):
-        names = list(pd.read_csv("./data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",")["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
         self.comboBox_SelectProfile.clear() 
         self.comboBox_SelectProfile.addItems(names)        
-                    
+        self.comboBox_SelectProfile.setCurrentText(self.lineEdit_Profil.text())
                    
 
-      
-
-
-
     def LoadProfile(self):
-        df = pd.read_csv("./data/Warmwasser_Profile.csv", delimiter = ",")
+        df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", delimiter = ",", encoding='latin1')
         name = self.comboBox_SelectProfile.currentText()
         self.lineEdit_Profil.setText(name)
         df = df[df.values == name].values.flatten().tolist()
@@ -235,7 +248,21 @@ class Ui_Form(object):
                                 "{"
                                 "background : white;"
                                 "}")
-        print("Summe ist: ", var_sum)
+        return var_sum
+
+    def UseProfile(self):
+        if self.PrintSum() != 100:
+            dlg = QMessageBox()
+            dlg.setWindowTitle("Fehler")
+            dlg.setText("Summe Warmwasserprofil ist nicht 100%")
+            dlg.exec()
+            return
+        self.SaveProfile()
+        df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", delimiter = ",", encoding='latin1')
+        name = self.comboBox_SelectProfile.currentText()
+        data = df[df.values == name].values.flatten().tolist()
+        export(data)
+        return data
 
 class MainWindow(QMainWindow):
     def __init__(self):

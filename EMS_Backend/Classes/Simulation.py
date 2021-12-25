@@ -18,10 +18,10 @@ class Simulation():
 		 self.b_heatPump = b_heatPump
 		 self.b_solarPower = b_solarPower
 		 
-		 self.building = Building("./data/building.xlsx")
-		 self.df_usage = pd.read_csv("./data/usage_profiles.csv", encoding="cp1252")
-		 self.ta = np.genfromtxt("./data/climate.csv", delimiter=";", usecols = (1), skip_header = 1) #°C
-		 self.qsolar = np.genfromtxt("./data/Solar_gains.csv") #W/m² Solar gains
+		 self.building = Building("./EMS-Backend/data/building.xlsx")
+		 self.df_usage = pd.read_csv("./EMS-Backend/data/usage_profiles.csv", encoding="cp1252")
+		 self.ta = np.genfromtxt("./EMS-Backend/data/climate.csv", delimiter=";", usecols = (1), skip_header = 1) #°C
+		 self.qsolar = np.genfromtxt("./EMS-Backend/data/Solar_gains.csv") #W/m² Solar gains
 		 self.import_data = Import()
 		 
 
