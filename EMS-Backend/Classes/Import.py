@@ -35,3 +35,4 @@ class Import():
 
 
 importGUI = Import()
+importGUI.Import_Geothermal()

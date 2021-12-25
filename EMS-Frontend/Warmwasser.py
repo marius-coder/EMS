@@ -3,9 +3,9 @@ import os
 import sys
 import pandas as pd
 import csv
-from pandas.core.frame import DataFrame
-#from Import import importGUI
-
+#from pandas.core.frame import DataFrame
+import importlib
+Import = importlib.import_module("EMS-Backend.Classes.Import")
 
 from PyQt5 import *
 from PyQt5 import QtGui
@@ -261,8 +261,7 @@ class Ui_Form(object):
         df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", delimiter = ",", encoding='latin1')
         name = self.comboBox_SelectProfile.currentText()
         data = df[df.values == name].values.flatten().tolist()
-        export(data)
-        return data
+        Import.importGUI.Import_WarmWater(data)
 
 class MainWindow(QMainWindow):
     def __init__(self):

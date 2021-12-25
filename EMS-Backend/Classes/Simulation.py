@@ -4,7 +4,7 @@ import numpy as np
 import math
 from Building import Building
 from Erdwärme import Get_GeothermalData
-from Import import Import
+from Import import importGUI
 
 #TODO: Alle Konstanten zusammenlegen
 
@@ -22,7 +22,7 @@ class Simulation():
 		 self.df_usage = pd.read_csv("./EMS-Backend/data/usage_profiles.csv", encoding="cp1252")
 		 self.ta = np.genfromtxt("./EMS-Backend/data/climate.csv", delimiter=";", usecols = (1), skip_header = 1) #°C
 		 self.qsolar = np.genfromtxt("./EMS-Backend/data/Solar_gains.csv") #W/m² Solar gains
-		 self.import_data = Import()
+		 self.import_data = importGUI
 		 
 
 	def Setup_Simulation(self):
