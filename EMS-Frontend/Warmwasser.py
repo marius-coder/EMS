@@ -81,7 +81,7 @@ class Ui_Form(QMainWindow):
         
 
         #Output der Summe
-        #Stündliche Summe
+        #StÃ¼ndliche Summe
         self.lineEdit = QtWidgets.QLineEdit(Form)
         self.lineEdit.setGeometry(QtCore.QRect(1230, 220, 40, 20))
         self.lineEdit.setReadOnly(True)
@@ -100,7 +100,7 @@ class Ui_Form(QMainWindow):
         self.lineEdit_Profil.setGeometry(QtCore.QRect(730, 280, 150, 20))
         self.lineEdit_Profil.setObjectName("lineEdit_Profil")
 
-        #Combobox für Benutzerprofile
+        #Combobox fÃ¼r Benutzerprofile
         self.label_AuswahlProfil = QtWidgets.QLabel(Form)
         self.label_AuswahlProfil.setGeometry(QtCore.QRect(730, 300, 200, 30))
         self.label_AuswahlProfil.setText("Auswahl benutzerdefinierter Profile")
@@ -114,13 +114,13 @@ class Ui_Form(QMainWindow):
         self.pushButton_SaveProfile.setObjectName("pushButton_SaveProfile")
         self.pushButton_SaveProfile.setText("Save Profile")
 
-        #Profil löschen
+        #Profil lÃ¶schen
         self.pushButton_DeleteProfile = QtWidgets.QPushButton(Form)
         self.pushButton_DeleteProfile.setGeometry(QtCore.QRect(900, 323, 75, 23))
         self.pushButton_DeleteProfile.setObjectName("pushButton_DeleteProfile")
         self.pushButton_DeleteProfile.setText("Delete Profile")
 
-        #Combobox für Standardprofile
+        #Combobox fÃ¼r Standardprofile
         self.label_DefaultProfil = QtWidgets.QLabel(Form)
         self.label_DefaultProfil.setGeometry(QtCore.QRect(730, 345, 200, 30))
         self.label_DefaultProfil.setText("Auswahl default Profile")
@@ -156,7 +156,7 @@ class Ui_Form(QMainWindow):
         
         
         
-        #Combobox befüllen mit vorhandenen Daten
+        #Combobox befÃ¼llen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
         self.comboBox_SelectProfile.addItems(names)
         names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
@@ -167,7 +167,7 @@ class Ui_Form(QMainWindow):
         self.pushButton_DeleteProfile.clicked.connect(self.DeleteProfile)
         self.pushButton_UseProfile.clicked.connect(self.UseProfile)
 
-        #Stuff zum schöner machen der Form
+        #Stuff zum schÃ¶ner machen der Form
         self.frame_Hourly = QtWidgets.QFrame(Form)
         self.frame_Hourly.setGeometry(QtCore.QRect(10, 10, 1300, 240))
         self.frame_Hourly.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -295,7 +295,7 @@ class Ui_Form(QMainWindow):
         #Kontrolle ob ein Profil mit diesem Namen bereits existiert
         if name in names:
             self.DeleteProfile()
-        #Neues Profil hinzufügen
+        #Neues Profil hinzufÃ¼gen
         with open("./EMS-Frontend/data/Warmwasser_Profile.csv",'a', newline='') as f:
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(li_toSave)
@@ -379,7 +379,7 @@ class Ui_Form(QMainWindow):
         if any(x != 100 for x in self.PrintSum()):
             dlg = QMessageBox()
             dlg.setWindowTitle("Fehler")
-            dlg.setText("Summe Warmwasserprofil stündlich oder monatlich ist nicht 100%")
+            dlg.setText("Summe Warmwasserprofil stÃ¼ndlich oder monatlich ist nicht 100%")
             dlg.exec()
             return
         self.SaveProfile()
