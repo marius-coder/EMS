@@ -34,6 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="data\Warmwasser_Profile.csv" />
+    <Content Include="data\Warmwasser_Profile_Default.csv" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
