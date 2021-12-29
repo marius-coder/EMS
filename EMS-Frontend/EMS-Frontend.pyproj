@@ -22,12 +22,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="data\Stylesheets.py" />
     <Compile Include="EMS_Frontend.py" />
     <Compile Include="Warmwasser.py" />
     <Compile Include="NeueWärmePumpe.py" />
     <Compile Include="Translator.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Warmwasser_Nutzungsmischung.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data\" />

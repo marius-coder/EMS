@@ -1,31 +1,25 @@
-
-import os
 import sys
-
-from PyQt5 import *
-from PyQt5 import QtGui
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5 import QtCore, QtGui, QtWidgets
-
-window = QWidget()
-button1 = QPushButton("One")
-button2 = QPushButton("Two")
-button3 = QPushButton("Three")
-button4 = QPushButton("Four")
-button5 = QPushButton("Five")
-
-layout = QHBoxLayout()
-layout.addWidget(button1)
-layout.addWidget(button2)
-layout.addWidget(button3)
-layout.addWidget(button4)
-layout.addWidget(button5)
+from PyQt5.QtWidgets import (QApplication, QLabel, QWidget)
 
 
+class MouseTracker(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.setMouseTracking(True)
+
+    def initUI(self):
+        self.setGeometry(300, 300, 300, 200)
+        self.setWindowTitle('Mouse Tracker')
+        self.label = QLabel(self)
+        self.label.resize(200, 40)
+        self.show()
+
+    def mouseMoveEvent(self, event):
+        self.label.setText('Mouse coords: ( %d : %d )' % (event.x(), event.y()))
 
 
-app = QApplication(sys.argv)
-window.setLayout(layout)
-window.show()
-app.exec()
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = MouseTracker()
+    sys.exit(app.exec_())

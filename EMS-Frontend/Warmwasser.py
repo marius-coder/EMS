@@ -4,6 +4,8 @@ import sys
 import pandas as pd
 import csv
 #from pandas.core.frame import DataFrame
+from data.Stylesheets import GetFancySlider
+from Warmwasser_Nutzungsmischung import WindowGesamtprofil
 import importlib
 Import = importlib.import_module("EMS-Backend.Classes.Import")
 
@@ -15,75 +17,29 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_Form(QMainWindow):
 
-    def layout_widgets(self, Form):
-        return (Form.itemAt(i) for i in range(Form.count()))
+    def __init__(self):
+        super().__init__()
+   
 
+ 
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(1350, 550)
-        Form.setStyleSheet("QSlider::groove:horizontal\n"
-                        "{\n"
-                        "border: 1px solid #bbb;\n"
-                        "background: white;\n"
-                        "width: 10px;\n"
-                        "border-radius: 4px;\n"
-                        "}\n"
-                        "\n"
-                        "QSlider::sub-page:vertical\n"
-                        "{\n"
-                        "background: QLinearGradient( x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #fff, stop: 0.4999 #eee, stop: 0.5 #ddd, stop: 1 #eee );\n"
-                        "border: 1px solid #777;\n"
-                        "width: 10px;\n"
-                        "border-radius: 4px;\n"
-                        "}\n"
-                        "\n"
-                        "QSlider::add-page:vertical {\n"
-                        "background: QLinearGradient( x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #78d, stop: 0.4999 #46a, stop: 0.5 #45a, stop: 1 #238 );\n"
-                        "\n"
-                        "border: 1px solid #777;\n"
-                        "width: 10px;\n"
-                        "border-radius: 4px;\n"
-                        "}\n"
-                        "\n"
-                        "QSlider::handle:vertical {\n"
-                        "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);\n"
-                        "border: 1px solid #777;\n"
-                        "height: 13px;\n"
-                        "margin-top: -2px;\n"
-                        "margin-bottom: -2px;\n"
-                        "border-radius: 4px;\n"
-                        "}\n"
-                        "\n"
-                        "QSlider::handle:vertical:hover {\n"
-                        "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #fff, stop:1 #ddd);\n"
-                        "border: 1px solid #444;\n"
-                        "border-radius: 4px;\n"
-                        "}\n"
-                        "\n"
-                        "QSlider::sub-page:vertical:disabled {\n"
-                        "background: #bbb;\n"
-                        "border-color: #999;\n"
-                        "}\n"
-                        "\n"
-                        "QSlider::add-page:vertical:disabled {\n"
-                        "background: #eee;\n"
-                        "border-color: #999;\n"
-                        "}\n"
-                        "\n"
-                        "QSlider::handle:vertical:disabled {\n"
-                        "background: #eee;\n"
-                        "border: 1px solid #aaa;\n"
-                        "border-radius: 4px;\n"
-                        "}")
+        Form.resize(1050, 550)
+        Form.setStyleSheet(GetFancySlider())
+        self.graphWindow = WindowGesamtprofil()
 
-        #Input
-        
-        
+        #Hier werden beide Fenster richtig positioniert
+        #Die Fenstergröße wird hierbei dynamisch an die Bildschirmgröße angepasst
+        #Desktopmaße
+        coords = QApplication.desktop().availableGeometry()
+        left_Coord = int(coords.height() / 2 - Form.frameGeometry().height() / 2)
+        Form.move(10,left_Coord)
+        self.graphWindow.move(Form.pos().x() + Form.frameGeometry().width() + 10, Form.pos().y())
+        self.graphWindow.resize(coords.width() - Form.frameGeometry().width() - 30, 550)
 
-        #Output der Summe
         #Stündliche Summe
         self.lineEdit = QtWidgets.QLineEdit(Form)
-        self.lineEdit.setGeometry(QtCore.QRect(1230, 220, 40, 20))
+        self.lineEdit.setGeometry(QtCore.QRect(984, 220, 40, 20))
         self.lineEdit.setReadOnly(True)
         self.lineEdit.setObjectName("lineEdit")
         #Monatliche Summe
@@ -169,7 +125,7 @@ class Ui_Form(QMainWindow):
 
         #Stuff zum schöner machen der Form
         self.frame_Hourly = QtWidgets.QFrame(Form)
-        self.frame_Hourly.setGeometry(QtCore.QRect(10, 10, 1300, 240))
+        self.frame_Hourly.setGeometry(QtCore.QRect(10, 10, 1023, 240))
         self.frame_Hourly.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_Hourly.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.frame_Hourly.setObjectName("frame_Hourly")
@@ -199,7 +155,7 @@ class Ui_Form(QMainWindow):
             verticalSlider.setInvertedAppearance(False)
             verticalSlider.setObjectName("verticalSlider" + str(i))
             spinBox = QtWidgets.QSpinBox(Form)
-            spinBox.setGeometry(QtCore.QRect(20, 350, 41, 22))
+            spinBox.setGeometry(QtCore.QRect(20, 350, 35, 22))
             spinBox.setObjectName("spinBox" + str(i))
             label = QtWidgets.QLabel(Form)
             label.setGeometry(QtCore.QRect(35, 160, 16, 16))
@@ -209,7 +165,7 @@ class Ui_Form(QMainWindow):
             verticalSlider.valueChanged['int'].connect(spinBox.setValue) # type: ignore
             spinBox.textChanged.connect(self.PrintSum)
             
-            move = 50
+            move = 40
             verticalSlider.move(i * move+30,50)
             spinBox.move(i * move+20,220)
             label.move(i * move+33,30)
@@ -387,6 +343,20 @@ class Ui_Form(QMainWindow):
         name = self.comboBox_SelectProfile.currentText()
         data = df[df.values == name].values.flatten().tolist()
         Import.importGUI.Import_WarmWater(data)
+
+        data = {
+			"Profilname" : data[0],
+			"WW-Verbrauch_Stunde [%]" : data[1:25],
+            "WW-Verbrauch_Monat [%]" : data[27:],
+			"Verbrauchsart" : data[25:27],
+                }
+        self.graphWindow.AddProfile(data)
+        self.ShowGraph()
+        
+       
+
+    def ShowGraph(self):
+        self.graphWindow.show()
 
 class MainWindow(QMainWindow):
     def __init__(self):
