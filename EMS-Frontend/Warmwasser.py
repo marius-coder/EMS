@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 import os
 import sys
 import pandas as pd
@@ -113,9 +113,9 @@ class Ui_Form(QMainWindow):
         
         
         #Combobox befüllen mit vorhandenen Daten
-        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
         self.comboBox_SelectProfile.addItems(names)
-        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
         self.comboBox_DefaultProfile.addItems(names)
         self.comboBox_SelectProfile.activated.connect(self.LoadProfile)
         self.comboBox_DefaultProfile.activated.connect(self.LoadProfile)
@@ -221,17 +221,20 @@ class Ui_Form(QMainWindow):
 
 
     def SaveProfile(self):
-        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
-        names_default = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
+        names_default = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
 
-        name = self.lineEdit_Profil.text() 
+        name = self.lineEdit_Profil.text()
+        #Wenn nichts im Lineedit steht oder kein Radiobutton ausgewählt ist wird das Profil nicht gespeichert
+        if name == "" or self.radioButton_Person.isChecked() == False and self.radioButton_m2.isChecked() == False:
+            return
         #Kontrolle ob der Profilname bereits in der Defaultliste vorhanden ist
         if name in names_default:
             dlg = QMessageBox()
             dlg.setWindowTitle("Hinweis")
             dlg.setText("Profilname kann nicht Defaultname sein!")
             dlg.exec()
-            return
+            #return
         
         li_toSave = []
         li_toSave.append(name)
@@ -252,16 +255,16 @@ class Ui_Form(QMainWindow):
         if name in names:
             self.DeleteProfile()
         #Neues Profil hinzufügen
-        with open("./EMS-Frontend/data/Warmwasser_Profile.csv",'a', newline='') as f:
+        with open("./EMS-Frontend/data/Warmwasser_Profile.csv",'a', newline='', encoding="utf-8") as f:
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(li_toSave)
         self.UpdateProfiles()
    
     def DeleteProfile(self):
         name = self.comboBox_SelectProfile.currentText()
-        with open("./EMS-Frontend/data/Warmwasser_Profile.csv", 'r') as inp:
+        with open("./EMS-Frontend/data/Warmwasser_Profile.csv", 'r', encoding="utf-8") as inp:
             lines = inp.readlines()
-        with open("./EMS-Frontend/data/Warmwasser_Profile.csv",'w', newline='') as f:
+        with open("./EMS-Frontend/data/Warmwasser_Profile.csv",'w', newline='', encoding="utf-8") as f:
             for line in lines:
                 if line.split(",")[0] != name:
                     f.write(line)
@@ -269,7 +272,7 @@ class Ui_Form(QMainWindow):
         
 
     def UpdateProfiles(self):
-        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='latin1')["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
         self.comboBox_SelectProfile.clear() 
         self.comboBox_SelectProfile.addItems(names)        
         self.comboBox_SelectProfile.setCurrentText(self.lineEdit_Profil.text())
@@ -280,9 +283,9 @@ class Ui_Form(QMainWindow):
         sender = self.sender()
         name = sender.currentText()
         if sender.objectName() == "comboBox_DefaultProfile":
-            df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", delimiter = ",", encoding='latin1')
+            df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", delimiter = ",", encoding='utf-8')
         elif sender.objectName() == "comboBox_SelectProfile":
-            df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", delimiter = ",", encoding='latin1')
+            df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", delimiter = ",", encoding='utf-8')
 
 
         self.lineEdit_Profil.setText(name)
@@ -327,7 +330,7 @@ class Ui_Form(QMainWindow):
             else:
                 li_lineEdits[i].setStyleSheet("QLineEdit"
                                     "{"
-                                    "background : white;"
+                                    "background : lightgrey;"
                                     "}")
         return li_sums
 
@@ -335,12 +338,22 @@ class Ui_Form(QMainWindow):
         if any(x != 100 for x in self.PrintSum()):
             dlg = QMessageBox()
             dlg.setWindowTitle("Fehler")
-            dlg.setText("Summe Warmwasserprofil stündlich oder monatlich ist nicht 100%")
+            dlg.setText(u"Summe Warmwasserprofil stündlich oder monatlich ist nicht 100%")
             dlg.exec()
             return
         self.SaveProfile()
-        df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", delimiter = ",", encoding='latin1')
-        name = self.comboBox_SelectProfile.currentText()
+
+        df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", delimiter = ",", encoding='utf-8')
+        name = self.lineEdit_Profil.text()
+        
+        if name in df["Name"]:
+            pass
+        else:
+            df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", delimiter = ",", encoding='utf-8')
+            name = self.comboBox_SelectProfile.currentText()
+
+
+
         data = df[df.values == name].values.flatten().tolist()
         Import.importGUI.Import_WarmWater(data)
 
