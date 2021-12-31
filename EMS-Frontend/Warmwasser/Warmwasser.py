@@ -3,10 +3,9 @@ import os
 import sys
 import pandas as pd
 import csv
-#from pandas.core.frame import DataFrame
-from data.Stylesheets import GetFancySlider
 from Warmwasser_Nutzungsmischung import WindowGesamtprofil
 import importlib
+Slider = importlib.import_module("EMS-Frontend.data.Stylesheets")
 Import = importlib.import_module("EMS-Backend.Classes.Import")
 
 from PyQt5 import *
@@ -25,7 +24,7 @@ class Ui_Form(QMainWindow):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(1050, 550)
-        Form.setStyleSheet(GetFancySlider())
+        Form.setStyleSheet(Slider.GetFancySlider())
         self.graphWindow = WindowGesamtprofil()
 
         #Hier werden beide Fenster richtig positioniert

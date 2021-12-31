@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>b9625333-417a-424b-b315-f3821d4925db</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Warmwasser.py</StartupFile>
+    <StartupFile>Warmwasser\Warmwasser.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>$(SolutionDir)</WorkingDirectory>
@@ -24,15 +24,16 @@
   <ItemGroup>
     <Compile Include="data\Stylesheets.py" />
     <Compile Include="EMS_Frontend.py" />
-    <Compile Include="Warmwasser.py" />
+    <Compile Include="Warmwasser\Warmwasser.py" />
     <Compile Include="NeueWärmePumpe.py" />
     <Compile Include="Translator.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Warmwasser_Nutzungsmischung.py" />
+    <Compile Include="Warmwasser\Warmwasser_Nutzungsmischung.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data\" />
+    <Folder Include="Warmwasser\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="data\Warmwasser_Profile.csv" />
