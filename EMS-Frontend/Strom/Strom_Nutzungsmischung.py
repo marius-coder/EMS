@@ -13,7 +13,7 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
 
 
-class WindowGesamtprofil(QWidget):
+class WindowGesamtprofil_Strombedarf(QWidget):
     #Eigenes Signal definieren
     keyPressed = QtCore.pyqtSignal(QtCore.QEvent)
 

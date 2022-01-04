@@ -3,7 +3,7 @@ import os
 import sys
 import pandas as pd
 import csv
-from Strom_Nutzungsmischung import WindowGesamtprofil
+from Strom.Strom_Nutzungsmischung import WindowGesamtprofil_Strombedarf
 import importlib
 Slider = importlib.import_module("EMS-Frontend.data.Stylesheets")
 Import = importlib.import_module("EMS-Backend.Classes.Import")
@@ -14,96 +14,93 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_Form(QMainWindow):
+class Ui_Strombedarf(QMainWindow):
 
     def __init__(self):
         super().__init__()
    
-
- 
-    def setupUi(self, Form):
-        Form.setWindowTitle("Strom_Profile")
-        Form.setObjectName("Form")
-        Form.resize(1050, 550)
-        Form.setStyleSheet(Slider.GetFancySlider())
-        self.graphWindow = WindowGesamtprofil()
+        self.setWindowTitle("Strom_Profile")
+        self.setObjectName("self")
+        self.resize(1050, 550)
+        self.setStyleSheet(Slider.GetFancySlider())
+        self.graphWindow = WindowGesamtprofil_Strombedarf()
 
         #Hier werden beide Fenster richtig positioniert
         #Die Fenstergröße wird hierbei dynamisch an die Bildschirmgröße angepasst
         #Desktopmaße
         coords = QApplication.desktop().availableGeometry()
-        left_Coord = int(coords.height() / 2 - Form.frameGeometry().height() / 2)
-        Form.move(10,left_Coord)
-        self.graphWindow.move(Form.pos().x() + Form.frameGeometry().width() + 10, Form.pos().y())
-        self.graphWindow.resize(coords.width() - Form.frameGeometry().width() - 30, 550)
+        left_Coord = int(coords.height() / 2 - self.frameGeometry().height() / 2)
+        self.move(10,left_Coord)
+        self.graphWindow.move(self.pos().x() + self.frameGeometry().width() + 10, self.pos().y())
+        self.graphWindow.resize(coords.width() - self.frameGeometry().width() - 30, 550)
 
         #Stündliche Summe
-        self.lineEdit = QtWidgets.QLineEdit(Form)
+        self.lineEdit = QtWidgets.QLineEdit(self)
         self.lineEdit.setGeometry(QtCore.QRect(984, 220, 40, 20))
         self.lineEdit.setReadOnly(True)
         self.lineEdit.setObjectName("lineEdit")
         #Monatliche Summe
-        self.lineEdit_sumMonth = QtWidgets.QLineEdit(Form)
+        self.lineEdit_sumMonth = QtWidgets.QLineEdit(self)
         self.lineEdit_sumMonth.setGeometry(QtCore.QRect(620, 470, 40, 20))
         self.lineEdit_sumMonth.setReadOnly(True)
         self.lineEdit_sumMonth.setObjectName("lineEdit_sumMonth")
 
         #Auswahl Profilname
-        self.label_Profil = QtWidgets.QLabel(Form)
+        self.label_Profil = QtWidgets.QLabel(self)
         self.label_Profil.setGeometry(QtCore.QRect(730, 255, 200, 30))
         self.label_Profil.setText("Eingabe Profilname")
-        self.lineEdit_Profil = QtWidgets.QLineEdit(Form)
+        self.lineEdit_Profil = QtWidgets.QLineEdit(self)
         self.lineEdit_Profil.setGeometry(QtCore.QRect(730, 280, 150, 20))
         self.lineEdit_Profil.setObjectName("lineEdit_Profil")
 
         #Combobox für Benutzerprofile
-        self.label_AuswahlProfil = QtWidgets.QLabel(Form)
+        self.label_AuswahlProfil = QtWidgets.QLabel(self)
         self.label_AuswahlProfil.setGeometry(QtCore.QRect(730, 300, 200, 30))
         self.label_AuswahlProfil.setText("Auswahl benutzerdefinierter Profile")
-        self.comboBox_SelectProfile = QtWidgets.QComboBox(Form)
+        self.comboBox_SelectProfile = QtWidgets.QComboBox(self)
         self.comboBox_SelectProfile.setGeometry(QtCore.QRect(730, 325, 150, 22))
         self.comboBox_SelectProfile.setObjectName("comboBox_SelectProfile")
 
         #Profil speichern
-        self.pushButton_SaveProfile = QtWidgets.QPushButton(Form)
+        self.pushButton_SaveProfile = QtWidgets.QPushButton(self)
         self.pushButton_SaveProfile.setGeometry(QtCore.QRect(900, 278, 75, 23))
         self.pushButton_SaveProfile.setObjectName("pushButton_SaveProfile")
         self.pushButton_SaveProfile.setText("Save Profile")
 
         #Profil löschen
-        self.pushButton_DeleteProfile = QtWidgets.QPushButton(Form)
+        self.pushButton_DeleteProfile = QtWidgets.QPushButton(self)
         self.pushButton_DeleteProfile.setGeometry(QtCore.QRect(900, 323, 75, 23))
         self.pushButton_DeleteProfile.setObjectName("pushButton_DeleteProfile")
         self.pushButton_DeleteProfile.setText("Delete Profile")
 
         #Combobox für Standardprofile
-        self.label_DefaultProfil = QtWidgets.QLabel(Form)
+        self.label_DefaultProfil = QtWidgets.QLabel(self)
         self.label_DefaultProfil.setGeometry(QtCore.QRect(730, 345, 200, 30))
         self.label_DefaultProfil.setText("Auswahl default Profile")
-        self.comboBox_DefaultProfile = QtWidgets.QComboBox(Form)
+        self.comboBox_DefaultProfile = QtWidgets.QComboBox(self)
         self.comboBox_DefaultProfile.setGeometry(QtCore.QRect(730, 370, 150, 22))
         self.comboBox_DefaultProfile.setObjectName("comboBox_DefaultProfile")
 
         #Input Stromverbrauch
-        self.label_Verbrauch = QtWidgets.QLabel(Form)
+        self.label_Verbrauch = QtWidgets.QLabel(self)
         self.label_Verbrauch.setGeometry(QtCore.QRect(730, 390, 200, 30))
         self.label_Verbrauch.setText("Eingabe Stromverbrauch")
-        self.doubleSpinBox_VerbrauchEingabe = QtWidgets.QDoubleSpinBox(Form)
+        self.doubleSpinBox_VerbrauchEingabe = QtWidgets.QDoubleSpinBox(self)
         self.doubleSpinBox_VerbrauchEingabe.setGeometry(QtCore.QRect(730, 425, 62, 22))
         self.doubleSpinBox_VerbrauchEingabe.setRange(0,999999999999)
-        self.radioButton_kWh_Fläche = QtWidgets.QRadioButton(Form)
+        self.radioButton_kWh_Fläche = QtWidgets.QRadioButton(self)
         self.radioButton_kWh_Fläche.setGeometry(QtCore.QRect(800, 410, 82, 17))
         self.radioButton_kWh_Fläche.setText("kWh/m²a")
-        self.radioButton_kWh = QtWidgets.QRadioButton(Form)
+        self.radioButton_kWh = QtWidgets.QRadioButton(self)
         self.radioButton_kWh.setGeometry(QtCore.QRect(800, 427, 82, 16))
         self.radioButton_kWh.setText("kWh/a")   
-        self.radioButton_kW = QtWidgets.QRadioButton(Form)
+        self.radioButton_kW = QtWidgets.QRadioButton(self)
         self.radioButton_kW.setGeometry(QtCore.QRect(800, 444, 150, 16))
         self.radioButton_kW.setText("kW/Stück (Leistungsspitze)") 
         self.li_RButtons = [self.radioButton_kWh_Fläche, self.radioButton_kWh, self.radioButton_kW]
       
         #Fertig mit Eingabe
-        self.pushButton_UseProfile = QtWidgets.QPushButton(Form)
+        self.pushButton_UseProfile = QtWidgets.QPushButton(self)
         self.pushButton_UseProfile.setGeometry(QtCore.QRect(730, 467, 200, 30))
         self.pushButton_UseProfile.setObjectName("pushButton_UseProfile")
         self.pushButton_UseProfile.setText("Profil zur Nutzungsmischung hinzufügen")
@@ -122,23 +119,23 @@ class Ui_Form(QMainWindow):
         self.pushButton_DeleteProfile.clicked.connect(self.DeleteProfile)
         self.pushButton_UseProfile.clicked.connect(self.UseProfile)
 
-        #Stuff zum schöner machen der Form
-        self.frame_Hourly = QtWidgets.QFrame(Form)
+        #Stuff zum schöner machen der self
+        self.frame_Hourly = QtWidgets.QFrame(self)
         self.frame_Hourly.setGeometry(QtCore.QRect(10, 10, 1023, 240))
         self.frame_Hourly.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_Hourly.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.frame_Hourly.setObjectName("frame_Hourly")
-        self.label_Hourly = QtWidgets.QLabel(Form)
+        self.label_Hourly = QtWidgets.QLabel(self)
         self.label_Hourly.setGeometry(QtCore.QRect(20, 8, 200, 30))
         self.label_Hourly.setObjectName("label_Hourly")
         self.label_Hourly.setText("Eingabe Profil Stundenwerte")
 
-        self.frame_Monthly = QtWidgets.QFrame(Form)
+        self.frame_Monthly = QtWidgets.QFrame(self)
         self.frame_Monthly.setGeometry(QtCore.QRect(10, 260, 700, 240))
         self.frame_Monthly.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_Monthly.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.frame_Monthly.setObjectName("frame_Monthly")
-        self.label_Monthly = QtWidgets.QLabel(Form)
+        self.label_Monthly = QtWidgets.QLabel(self)
         self.label_Monthly.setGeometry(QtCore.QRect(20, 255, 200, 30))
         self.label_Monthly.setObjectName("label_Monthly")
         self.label_Monthly.setText("Eingabe Profil Monatswerte")
@@ -146,17 +143,17 @@ class Ui_Form(QMainWindow):
 
         def Create_Slider_Hourly(i):
             Slider = {}
-            verticalSlider = QtWidgets.QSlider(Form)
+            verticalSlider = QtWidgets.QSlider(self)
             verticalSlider.setGeometry(QtCore.QRect(30, 180, 16, 160))
             verticalSlider.setMaximum(20)
             verticalSlider.setPageStep(2)
             verticalSlider.setOrientation(QtCore.Qt.Vertical)
             verticalSlider.setInvertedAppearance(False)
             verticalSlider.setObjectName("verticalSlider" + str(i))
-            spinBox = QtWidgets.QSpinBox(Form)
+            spinBox = QtWidgets.QSpinBox(self)
             spinBox.setGeometry(QtCore.QRect(20, 350, 35, 22))
             spinBox.setObjectName("spinBox" + str(i))
-            label = QtWidgets.QLabel(Form)
+            label = QtWidgets.QLabel(self)
             label.setGeometry(QtCore.QRect(35, 160, 16, 16))
             label.setObjectName("label" + str(i))
 
@@ -182,17 +179,17 @@ class Ui_Form(QMainWindow):
 
         def Create_Slider_Monthly(i):
             Slider = {}
-            verticalSlider = QtWidgets.QSlider(Form)
+            verticalSlider = QtWidgets.QSlider(self)
             verticalSlider.setGeometry(QtCore.QRect(30, 360, 16, 160))
             verticalSlider.setMaximum(20)
             verticalSlider.setPageStep(2)
             verticalSlider.setOrientation(QtCore.Qt.Vertical)
             verticalSlider.setInvertedAppearance(False)
             verticalSlider.setObjectName("verticalSlider" + str(i))
-            spinBox = QtWidgets.QSpinBox(Form)
+            spinBox = QtWidgets.QSpinBox(self)
             spinBox.setGeometry(QtCore.QRect(20, 700, 41, 22))
             spinBox.setObjectName("spinBox" + str(i))
-            label = QtWidgets.QLabel(Form)
+            label = QtWidgets.QLabel(self)
             label.setGeometry(QtCore.QRect(35, 320, 20, 16))
             label.setObjectName("label" + str(i))
 
@@ -367,10 +364,3 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-
-app = QApplication(sys.argv)
-main = MainWindow()
-w = Ui_Form()
-w.setupUi(main)
-main.show()
-app.exec()

@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>b9625333-417a-424b-b315-f3821d4925db</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Strom\Strom.py</StartupFile>
+    <StartupFile>Main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>$(SolutionDir)</WorkingDirectory>
@@ -24,6 +24,8 @@
   <ItemGroup>
     <Compile Include="data\Stylesheets.py" />
     <Compile Include="EMS_Frontend.py" />
+    <Compile Include="Gebäude\Gebäude.py" />
+    <Compile Include="Main.py" />
     <Compile Include="PV_Batterie\PV_Batterie.py" />
     <Compile Include="Strom\Strom.py" />
     <Compile Include="Strom\Strom_Nutzungsmischung.py" />
@@ -36,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data\" />
+    <Folder Include="Gebäude\" />
     <Folder Include="PV_Batterie\" />
     <Folder Include="Strom\" />
     <Folder Include="Warmwasser\" />
