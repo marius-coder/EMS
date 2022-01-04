@@ -35,12 +35,12 @@ class WindowGesamtprofil(QWidget):
         super().__init__()
 
         self.keyPressed.connect(self.on_key)
-        self.setWindowTitle("Warmwasser_Nutzungsmischung")
+        self.setWindowTitle("Strom_Nutzungsmischungc")
         self.table = QtWidgets.QTableWidget()
         self.table.itemChanged.connect(self.UpdatePlot)
-        self.table.setColumnCount(5)  # We install three columns
+        self.table.setColumnCount(6)  # We install six columns
         # Set table headers
-        self.table.setHorizontalHeaderLabels(["Profilname", "Anteil Fläche [%]", "Liter/m²", "Personenanzahl", "Liter/Person"])
+        self.table.setHorizontalHeaderLabels(["Profilname", "Anteil Fläche [%]", "kWh/m²a","kWh/a", "Stückanzahl", "kW/Stück"])
         #connect Signal
         self.keyPressed.connect(self.on_key)
 
@@ -126,30 +126,38 @@ class WindowGesamtprofil(QWidget):
                 str_xvar = "Stunde"
                 str_yvar = ""
 
+            
             self.y = [0 for i in range(24)]
             sum_Nutzung = 0
             #Alle Zeilen der Tabelle werden durchgegangen
             for row in range(self.table.rowCount()): 
 
                 #Input Validation ob alle Werte Zahlen sind
-                if is_number_tryexcept(self.lineEdit_Fläche.text()) and is_number_tryexcept(self.table.item(row, 1).text()) and is_number_tryexcept(self.table.item(row, 3).text()):
+                if is_number_tryexcept(self.lineEdit_Fläche.text()) and is_number_tryexcept(self.table.item(row, 1).text()) and is_number_tryexcept(self.table.item(row, 4).text()):
 
                     #Zuerst wird kontrolliert ob der Bedarf Absolut oder in Prozent angegeben werden soll
                     if self.radioButton_Absolute.isChecked():
                         #Je nach Eingabeart muss der Absolute Warmwasserbedarf anderst berechnet werden
-                        str_yvar = "Verbrauch [l]"
-                        if self.table.item(row, 4).text() != "None":
-                            #Rechnung mit Liter/Person
-                            percent_consumption = float(self.table.item(row, 1).text())
-                            anz_personen = float(self.table.item(row, 3).text())
-                            literProPerson = float(self.table.item(row, 4).text())
-                            y_temp = [element / 100 * percent_consumption / 100 * anz_personen * literProPerson  for element in y_choose[row]]
-                        else:
-                            #Rechnung mit Liter/m²
+                        str_yvar = "Verbrauch [kWh]"
+                        if self.table.item(row, 2).text() != "None":
+                            #Rechnung mit kWh/m²a
                             percent_consumption = float(self.table.item(row, 1).text())
                             Fläche = float(self.lineEdit_Fläche.text())
-                            literProFläche = float(self.table.item(row, 2).text())
-                            y_temp = [element / 100 * percent_consumption / 100 * Fläche * literProFläche  for element in y_choose[row]]
+                            kWhproFläche = float(self.table.item(row, 2).text()) / 365
+                            y_temp = [element / 100 * percent_consumption / 100 * Fläche * kWhproFläche  for element in y_choose[row]]
+                            
+                        elif self.table.item(row, 3).text() != "None":
+                            #Rechnung mit kWh/a
+                            percent_consumption = float(self.table.item(row, 1).text())
+                            kWhproJahr = float(self.table.item(row, 3).text()) / 365
+                            y_temp = [element / 100 * percent_consumption / 100 * kWhproJahr  for element in y_choose[row]]
+
+                        elif self.table.item(row, 5).text() != "None":
+                            #Rechnung mit kWh/a
+                            percent_consumption = float(self.table.item(row, 1).text())
+                            kW = float(self.table.item(row, 5).text())
+                            anz_Verbraucher = float(self.table.item(row, 4).text())
+                            y_temp = [element / 100 * percent_consumption / 100 * anz_Verbraucher * kW  for element in y_choose[row]]
                     else:
                         #Rechnung mit Prozent
                         str_yvar = "Verbrauch [%]"
@@ -165,7 +173,6 @@ class WindowGesamtprofil(QWidget):
             if self.radioButton_month.isChecked() and self.radioButton_Absolute.isChecked():
                 #Falls Monat ausgewählt ist müssen die Tageswerte in Monatswerte umgewandelt werden
                 self.y = [element * 365 for element in self.y]
-                print(sum(self.y))
 
             self.lineEdit_SumNutzung.setText(str(sum_Nutzung) + "%")
             
@@ -214,10 +221,15 @@ class WindowGesamtprofil(QWidget):
         item = QtWidgets.QTableWidgetItem(str(data["Verbrauchsart"][0]))
         item.setFlags(flags)
         self.table.setItem(rowPosition , 2, item)
-        self.table.setItem(rowPosition , 3, QtWidgets.QTableWidgetItem("0"))
         item = QtWidgets.QTableWidgetItem(str(data["Verbrauchsart"][1]))
         item.setFlags(flags)
-        self.table.setItem(rowPosition , 4, item)
+        self.table.setItem(rowPosition , 3, item)
+        self.table.setItem(rowPosition , 4, QtWidgets.QTableWidgetItem("0"))
+        item = QtWidgets.QTableWidgetItem(str(data["Verbrauchsart"][2]))
+        item.setFlags(flags)
+        self.table.setItem(rowPosition , 5, item)
+
+
         self.table.resizeColumnsToContents()
 
         self.UpdatePlot()

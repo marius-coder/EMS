@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>b9625333-417a-424b-b315-f3821d4925db</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Warmwasser\Warmwasser.py</StartupFile>
+    <StartupFile>Strom\Strom.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>$(SolutionDir)</WorkingDirectory>
@@ -24,6 +24,9 @@
   <ItemGroup>
     <Compile Include="data\Stylesheets.py" />
     <Compile Include="EMS_Frontend.py" />
+    <Compile Include="PV_Batterie\PV_Batterie.py" />
+    <Compile Include="Strom\Strom.py" />
+    <Compile Include="Strom\Strom_Nutzungsmischung.py" />
     <Compile Include="Warmwasser\Warmwasser.py" />
     <Compile Include="NeueWärmePumpe.py" />
     <Compile Include="Translator.py">
@@ -33,9 +36,14 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data\" />
+    <Folder Include="PV_Batterie\" />
+    <Folder Include="Strom\" />
     <Folder Include="Warmwasser\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="data\PV_Bat_Profile.csv" />
+    <Content Include="data\Strom_Profile.csv" />
+    <Content Include="data\Strom_Profile_Default.csv" />
     <Content Include="data\Warmwasser_Profile.csv" />
     <Content Include="data\Warmwasser_Profile_Default.csv" />
   </ItemGroup>

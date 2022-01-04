@@ -3,7 +3,7 @@ import os
 import sys
 import pandas as pd
 import csv
-from Warmwasser_Nutzungsmischung import WindowGesamtprofil
+from Strom_Nutzungsmischung import WindowGesamtprofil
 import importlib
 Slider = importlib.import_module("EMS-Frontend.data.Stylesheets")
 Import = importlib.import_module("EMS-Backend.Classes.Import")
@@ -22,7 +22,7 @@ class Ui_Form(QMainWindow):
 
  
     def setupUi(self, Form):
-        Form.setWindowTitle("Warmwasser_Profile")
+        Form.setWindowTitle("Strom_Profile")
         Form.setObjectName("Form")
         Form.resize(1050, 550)
         Form.setStyleSheet(Slider.GetFancySlider())
@@ -84,26 +84,27 @@ class Ui_Form(QMainWindow):
         self.comboBox_DefaultProfile.setGeometry(QtCore.QRect(730, 370, 150, 22))
         self.comboBox_DefaultProfile.setObjectName("comboBox_DefaultProfile")
 
-        #Input Warmwasserverbrauch
-        self.label_WWVerbrauch = QtWidgets.QLabel(Form)
-        self.label_WWVerbrauch.setGeometry(QtCore.QRect(730, 390, 200, 30))
-        self.label_WWVerbrauch.setText("Eingabe Warmwasserverbrauch pro Tag")
-        self.doubleSpinBox_WWValue = QtWidgets.QDoubleSpinBox(Form)
-        self.doubleSpinBox_WWValue.setGeometry(QtCore.QRect(730, 415, 62, 22))
-        self.doubleSpinBox_WWValue.setObjectName("doubleSpinBox_WWValue")
-        self.doubleSpinBox_WWValue.setRange(0,1000)
-        self.radioButton_Person = QtWidgets.QRadioButton(Form)
-        self.radioButton_Person.setGeometry(QtCore.QRect(800, 410, 82, 17))
-        self.radioButton_Person.setObjectName("radioButton_Person")
-        self.radioButton_Person.setText("Liter/Person")
-        self.radioButton_m2 = QtWidgets.QRadioButton(Form)
-        self.radioButton_m2.setGeometry(QtCore.QRect(800, 427, 82, 16))
-        self.radioButton_m2.setObjectName("radioButton_m2")
-        self.radioButton_m2.setText("Liter/m2")      
-        
+        #Input Stromverbrauch
+        self.label_Verbrauch = QtWidgets.QLabel(Form)
+        self.label_Verbrauch.setGeometry(QtCore.QRect(730, 390, 200, 30))
+        self.label_Verbrauch.setText("Eingabe Stromverbrauch")
+        self.doubleSpinBox_VerbrauchEingabe = QtWidgets.QDoubleSpinBox(Form)
+        self.doubleSpinBox_VerbrauchEingabe.setGeometry(QtCore.QRect(730, 425, 62, 22))
+        self.doubleSpinBox_VerbrauchEingabe.setRange(0,999999999999)
+        self.radioButton_kWh_Fläche = QtWidgets.QRadioButton(Form)
+        self.radioButton_kWh_Fläche.setGeometry(QtCore.QRect(800, 410, 82, 17))
+        self.radioButton_kWh_Fläche.setText("kWh/m²a")
+        self.radioButton_kWh = QtWidgets.QRadioButton(Form)
+        self.radioButton_kWh.setGeometry(QtCore.QRect(800, 427, 82, 16))
+        self.radioButton_kWh.setText("kWh/a")   
+        self.radioButton_kW = QtWidgets.QRadioButton(Form)
+        self.radioButton_kW.setGeometry(QtCore.QRect(800, 444, 150, 16))
+        self.radioButton_kW.setText("kW/Stück (Leistungsspitze)") 
+        self.li_RButtons = [self.radioButton_kWh_Fläche, self.radioButton_kWh, self.radioButton_kW]
+      
         #Fertig mit Eingabe
         self.pushButton_UseProfile = QtWidgets.QPushButton(Form)
-        self.pushButton_UseProfile.setGeometry(QtCore.QRect(730, 450, 200, 30))
+        self.pushButton_UseProfile.setGeometry(QtCore.QRect(730, 467, 200, 30))
         self.pushButton_UseProfile.setObjectName("pushButton_UseProfile")
         self.pushButton_UseProfile.setText("Profil zur Nutzungsmischung hinzufügen")
 
@@ -111,9 +112,9 @@ class Ui_Form(QMainWindow):
         
         
         #Combobox befüllen mit vorhandenen Daten
-        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Strom_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
         self.comboBox_SelectProfile.addItems(names)
-        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Strom_Profile_Default.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
         self.comboBox_DefaultProfile.addItems(names)
         self.comboBox_SelectProfile.activated.connect(self.LoadProfile)
         self.comboBox_DefaultProfile.activated.connect(self.LoadProfile)
@@ -219,26 +220,28 @@ class Ui_Form(QMainWindow):
 
 
     def SaveProfile(self):
-        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
-        names_default = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Strom_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
+        names_default = list(pd.read_csv("./EMS-Frontend/data/Strom_Profile_Default.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
 
         name = self.lineEdit_Profil.text()
         #Wenn nichts im Lineedit steht oder kein Radiobutton ausgewählt ist wird das Profil nicht gespeichert
-        if name == "" or self.radioButton_Person.isChecked() == False and self.radioButton_m2.isChecked() == False:
+        if name == "" or self.radioButton_kWh_Fläche.isChecked() == False and self.radioButton_kWh.isChecked() == False and self.radioButton_kW.isChecked() == False:
             return
         
+   
         li_toSave = []
         li_toSave.append(name)
+
         for w in self.li_Widgets:
             li_toSave.append(w["SpinBox"].value())
-        if self.radioButton_Person.isChecked():
-            li_toSave.append("None")
-            value = self.doubleSpinBox_WWValue.value()
-            li_toSave.append(value)
-        elif self.radioButton_m2.isChecked():
-            value = self.doubleSpinBox_WWValue.value()
-            li_toSave.append(value)
-            li_toSave.append("None")
+
+        value = self.doubleSpinBox_VerbrauchEingabe.value()
+        for button in self.li_RButtons:
+            if button.isChecked():
+                li_toSave.append(value)
+            else:
+                li_toSave.append("None")
+
         for w in self.li_Widgets_months:
             li_toSave.append(w["SpinBox"].value())
 
@@ -246,16 +249,16 @@ class Ui_Form(QMainWindow):
         if name in names:
             self.DeleteProfile()
         #Neues Profil hinzufügen
-        with open("./EMS-Frontend/data/Warmwasser_Profile.csv",'a', newline='', encoding="utf-8") as f:
+        with open("./EMS-Frontend/data/Strom_Profile.csv",'a', newline='', encoding="utf-8") as f:
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(li_toSave)
         self.UpdateProfiles()
    
     def DeleteProfile(self):
         name = self.comboBox_SelectProfile.currentText()
-        with open("./EMS-Frontend/data/Warmwasser_Profile.csv", 'r', encoding="utf-8") as inp:
+        with open("./EMS-Frontend/data/Strom_Profile.csv", 'r', encoding="utf-8") as inp:
             lines = inp.readlines()
-        with open("./EMS-Frontend/data/Warmwasser_Profile.csv",'w', newline='', encoding="utf-8") as f:
+        with open("./EMS-Frontend/data/Strom_Profile.csv",'w', newline='', encoding="utf-8") as f:
             for line in lines:
                 if line.split(",")[0] != name:
                     f.write(line)
@@ -263,7 +266,7 @@ class Ui_Form(QMainWindow):
         
 
     def UpdateProfiles(self):
-        names = list(pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
+        names = list(pd.read_csv("./EMS-Frontend/data/Strom_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
         self.comboBox_SelectProfile.clear() 
         self.comboBox_SelectProfile.addItems(names)        
         self.comboBox_SelectProfile.setCurrentText(self.lineEdit_Profil.text())
@@ -274,9 +277,9 @@ class Ui_Form(QMainWindow):
         sender = self.sender()
         name = sender.currentText()
         if sender.objectName() == "comboBox_DefaultProfile":
-            df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", delimiter = ",", encoding='utf-8')
+            df = pd.read_csv("./EMS-Frontend/data/Strom_Profile_Default.csv", delimiter = ",", encoding='utf-8')
         elif sender.objectName() == "comboBox_SelectProfile":
-            df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", delimiter = ",", encoding='utf-8')
+            df = pd.read_csv("./EMS-Frontend/data/Strom_Profile.csv", delimiter = ",", encoding='utf-8')
 
 
         self.lineEdit_Profil.setText(name)
@@ -286,15 +289,13 @@ class Ui_Form(QMainWindow):
         for i,w in enumerate(self.li_Widgets):
             w["SpinBox"].setValue(values[i])
 
-        ww_values = df[25:27]
-        if ww_values[0] != "None":
-            self.doubleSpinBox_WWValue.setValue(float(ww_values[0]))
-            self.radioButton_m2.setChecked(True)
-        elif ww_values[1] != "None":
-            self.doubleSpinBox_WWValue.setValue(float(ww_values[1]))
-            self.radioButton_Person.setChecked(True)
-        
-        values_monthly = df[27:]        
+        strom_values = df[25:28]
+        for i,value in enumerate(strom_values):
+            if value != "None":
+                self.doubleSpinBox_VerbrauchEingabe.setValue(float(value))
+                self.li_RButtons[i].setChecked(True)
+                        
+        values_monthly = df[28:]        
         for i,w in enumerate(self.li_Widgets_months):
             w["SpinBox"].setValue(values_monthly[i])
 
@@ -334,13 +335,13 @@ class Ui_Form(QMainWindow):
             return
         self.SaveProfile()
 
-        df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile_Default.csv", delimiter = ",", encoding='utf-8')
+        df = pd.read_csv("./EMS-Frontend/data/Strom_Profile_Default.csv", delimiter = ",", encoding='utf-8')
         name = self.lineEdit_Profil.text()
         
         if name in df["Name"]:
             pass
         else:
-            df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Profile.csv", delimiter = ",", encoding='utf-8')
+            df = pd.read_csv("./EMS-Frontend/data/Strom_Profile.csv", delimiter = ",", encoding='utf-8')
             name = self.comboBox_SelectProfile.currentText()
 
 
@@ -351,8 +352,8 @@ class Ui_Form(QMainWindow):
         data = {
 			"Profilname" : data[0],
 			"WW-Verbrauch_Stunde [%]" : data[1:25],
-            "WW-Verbrauch_Monat [%]" : data[27:],
-			"Verbrauchsart" : data[25:27],
+            "WW-Verbrauch_Monat [%]" : data[28:],
+			"Verbrauchsart" : data[25:28],
                 }
         self.graphWindow.AddProfile(data)
         self.ShowGraph()
