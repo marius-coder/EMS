@@ -24,6 +24,8 @@
   <ItemGroup>
     <Compile Include="data\Stylesheets.py" />
     <Compile Include="EMS_Frontend.py" />
+    <Compile Include="Erdwärme\Erdwärme.py" />
+    <Compile Include="Erdwärme\Erdwärme_Karte.py" />
     <Compile Include="Gebäude\Gebäude.py" />
     <Compile Include="Main.py" />
     <Compile Include="PV_Batterie\PV_Batterie.py" />
@@ -39,11 +41,13 @@
   <ItemGroup>
     <Folder Include="data\" />
     <Folder Include="Gebäude\" />
+    <Folder Include="Erdwärme\" />
     <Folder Include="PV_Batterie\" />
     <Folder Include="Strom\" />
     <Folder Include="Warmwasser\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="data\Erdwärme_Profile.csv" />
     <Content Include="data\PV_Bat_Profile.csv" />
     <Content Include="data\Strom_Profile.csv" />
     <Content Include="data\Strom_Profile_Default.csv" />

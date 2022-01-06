@@ -17,9 +17,9 @@ class WindowGesamtprofil_Warmwasser(QWidget):
     #Eigenes Signal definieren
     keyPressed = QtCore.pyqtSignal(QtCore.QEvent)
 
-    #Dieses Signal erkennt ob ein Tastaturkey gedrückt worden ist 
+    #Dieses Signal erkennt ob ein key gedrückt worden ist 
     def keyPressEvent(self, event):
-        super(WindowGesamtprofil, self).keyPressEvent(event)
+        super(WindowGesamtprofil_Warmwasser, self).keyPressEvent(event)
         self.keyPressed.emit(event) 
 
     #on_key kontrolliert welche Taste gedrückt worden ist und löscht den gewählten eintrag in der Tabelle
@@ -38,7 +38,7 @@ class WindowGesamtprofil_Warmwasser(QWidget):
         self.setWindowTitle("Warmwasser_Nutzungsmischung")
         self.table = QtWidgets.QTableWidget()
         self.table.itemChanged.connect(self.UpdatePlot)
-        self.table.setColumnCount(5)  # We install three columns
+        self.table.setColumnCount(5)  
         # Set table headers
         self.table.setHorizontalHeaderLabels(["Profilname", "Anteil Fläche [%]", "Liter/m²", "Personenanzahl", "Liter/Person"])
         #connect Signal

@@ -10,6 +10,7 @@ from Gebäude.Gebäude import Ui_Gebäude
 from Strom.Strom import Ui_Strombedarf
 from Warmwasser.Warmwasser import Ui_Warmwasser
 from PV_Batterie.PV_Batterie import Ui_PV_Batterie
+from Erdwärme.Erdwärme import Ui_Erdwärme
 
 
 class Ui_Main(object):
@@ -47,6 +48,7 @@ class Ui_Main(object):
         self.pushButton_openErdwärme.setGeometry(QtCore.QRect(40, 120, 75, 23))
         self.pushButton_openErdwärme.setObjectName("pushButton_openErdwärme")
         self.pushButton_openErdwärme.setText("Erdwärme")
+        self.pushButton_openErdwärme.clicked.connect(self.OpenErdwarme)
 
         self.pushButton_openWarmwasser = QtWidgets.QPushButton(Form)
         self.pushButton_openWarmwasser.setGeometry(QtCore.QRect(40, 80, 75, 23))
@@ -66,7 +68,9 @@ class Ui_Main(object):
         self.pushButton_Gebäude.clicked.connect(self.OpenGebaude)
 
 
-
+    def OpenErdwarme(self):
+        self.Erdärme = Ui_Erdwärme()
+        self.Erdärme.show()
 
     def OpenGebaude(self):
         self.Gebäude = Ui_Gebäude()

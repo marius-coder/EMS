@@ -19,7 +19,7 @@ class WindowGesamtprofil_Strombedarf(QWidget):
 
     #Dieses Signal erkennt ob ein Tastaturkey gedrückt worden ist 
     def keyPressEvent(self, event):
-        super(WindowGesamtprofil, self).keyPressEvent(event)
+        super(WindowGesamtprofil_Strombedarf, self).keyPressEvent(event)
         self.keyPressed.emit(event) 
 
     #on_key kontrolliert welche Taste gedrückt worden ist und löscht den gewählten eintrag in der Tabelle
@@ -35,7 +35,7 @@ class WindowGesamtprofil_Strombedarf(QWidget):
         super().__init__()
 
         self.keyPressed.connect(self.on_key)
-        self.setWindowTitle("Strom_Nutzungsmischungc")
+        self.setWindowTitle("Strom_Nutzungsmischung")
         self.table = QtWidgets.QTableWidget()
         self.table.itemChanged.connect(self.UpdatePlot)
         self.table.setColumnCount(6)  # We install six columns
