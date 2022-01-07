@@ -6,6 +6,8 @@ import sys
 from bokeh import plotting, embed, resources
 from bokeh.plotting import figure
 from bokeh.models import HoverTool, DataRange1d
+import importlib
+Import = importlib.import_module("EMS-Backend.Classes.Import")
 from PyQt5 import *
 #from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
@@ -110,18 +112,99 @@ class WindowGesamtprofil_Strombedarf(QWidget):
                                     "{"
                                     "background : lightgrey;"
                                     "}")
+        #Nutzungsmischung verwenden
+        self.pushButton_UseNutzungsmischung = QtWidgets.QPushButton(self)
+        self.pushButton_UseNutzungsmischung.setGeometry(QtCore.QRect(350, 385, 180, 25))
+        self.pushButton_UseNutzungsmischung.setObjectName("pushButton_UseNutzungsmischung")
+        self.pushButton_UseNutzungsmischung.setText("Nutzungsmischung verwenden")
+        self.pushButton_UseNutzungsmischung.clicked.connect(self.UseNutzungsmischung)
+
+
+       
+
+    def CalcStrom_KWHproFlächeJahr(self,row):
+        #Rechnung mit kWh/m²a
+        percent_consumption = float(self.table.item(row, 1).text())
+        Fläche = float(self.lineEdit_Fläche.text())
+        kWhproFläche = float(self.table.item(row, 2).text()) / 365
+        y_temp = [element / 100 * percent_consumption / 100 * Fläche * kWhproFläche  for element in self.y_choose[row]]
+        return y_temp
+
+    def CalcStrom_KWHproJahr(self,row):
+        #Rechnung mit kWh/a
+        percent_consumption = float(self.table.item(row, 1).text())
+        kWhproJahr = float(self.table.item(row, 3).text()) / 365
+        y_temp = [element / 100 * percent_consumption / 100 * kWhproJahr  for element in self.y_choose[row]]
+        return y_temp
+
+    def CalcStrom_KWHproStück(self,row):
+        #Rechnung mit kW/Stück
+        percent_consumption = float(self.table.item(row, 1).text())
+        kW = float(self.table.item(row, 5).text())
+        anz_Verbraucher = float(self.table.item(row, 4).text())
+        y_temp = [element / 100 * percent_consumption / 100 * anz_Verbraucher * kW  for element in self.y_choose[row]]
+        return y_temp
+
+    def CalcStrom_Prozent(self,row):
+        y_temp = [element * float(self.table.item(row, 1).text()) / 100 for element in self.y_choose[row]]
+        return y_temp
+
+    
+    def UseNutzungsmischung(self):
+        Strom_Gesamt = {}
+        Strom_temp = [0 for i in range(24)]
+        self.y_choose = self.y_month
+        for row in range(self.table.rowCount()): 
+
+            #Input Validation ob alle Werte Zahlen sind
+            if is_number_tryexcept(self.lineEdit_Fläche.text()) and is_number_tryexcept(self.table.item(row, 1).text()) and is_number_tryexcept(self.table.item(row, 4).text()):
+                if self.table.item(row, 2).text() != "None":
+                    #Rechnung mit kWh/m²a
+                    y_temp = self.CalcStrom_KWHproFlächeJahr(row)                                                        
+                elif self.table.item(row, 3).text() != "None":
+                    #Rechnung mit kWh/a
+                    y_temp = self.CalcStrom_KWHproJahr(row)   
+                elif self.table.item(row, 5).text() != "None":
+                    #Rechnung mit kW/Stück
+                    y_temp = self.CalcStrom_KWHproStück(row)  
+                    
+                Strom_temp = [a + b for a, b in zip(Strom_temp, y_temp)]
+            else:
+                return
+
+        Strom_Gesamt["month [kWh]"] = [element * 365 for element in Strom_temp]
+        #Prozent berechnen
+        Strom_temp_percent = [0 for i in range(24)]
+        self.y_choose = self.y_hour
+        for row in range(self.table.rowCount()): 
+            y_temp_percent = self.CalcStrom_Prozent(row)
+            Strom_temp_percent = [a + b for a, b in zip(Strom_temp_percent, y_temp_percent)]
+        Strom_Gesamt["percent [%/h]"] = Strom_temp_percent
+        li_daysperMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
+
+        Strom_Gesamt["hour [kWh/h]"] = []
+        for i,value in enumerate(Strom_Gesamt["month [kWh]"]):
+            li_temp = []
+            strom_daily = value / li_daysperMonth[i]
+            for percent in Strom_Gesamt["percent [%/h]"]:
+                
+                li_temp.append(percent/100 * strom_daily)
+            Strom_Gesamt["hour [kWh/h]"].append(li_temp)
+        Import.importGUI.Import_Strombedarf(Strom_Gesamt)
+
+
 
     def UpdatePlot(self):
         try:
             if self.radioButton_month.isChecked():
-                y_choose = self.y_month
+                self.y_choose = self.y_month
                 self.x = np.linspace(1,12,12)
                 str_xvar = "Monat"
                 str_yvar = ""
                 
 
             else:
-                y_choose = self.y_hour
+                self.y_choose = self.y_hour
                 self.x = np.linspace(1,24,24)
                 str_xvar = "Stunde"
                 str_yvar = ""
@@ -141,27 +224,18 @@ class WindowGesamtprofil_Strombedarf(QWidget):
                         str_yvar = "Verbrauch [kWh]"
                         if self.table.item(row, 2).text() != "None":
                             #Rechnung mit kWh/m²a
-                            percent_consumption = float(self.table.item(row, 1).text())
-                            Fläche = float(self.lineEdit_Fläche.text())
-                            kWhproFläche = float(self.table.item(row, 2).text()) / 365
-                            y_temp = [element / 100 * percent_consumption / 100 * Fläche * kWhproFläche  for element in y_choose[row]]
-                            
+                            y_temp = self.CalcStrom_KWHproFlächeJahr(row)                                                        
                         elif self.table.item(row, 3).text() != "None":
                             #Rechnung mit kWh/a
-                            percent_consumption = float(self.table.item(row, 1).text())
-                            kWhproJahr = float(self.table.item(row, 3).text()) / 365
-                            y_temp = [element / 100 * percent_consumption / 100 * kWhproJahr  for element in y_choose[row]]
-
+                            y_temp = self.CalcStrom_KWHproJahr(row)   
                         elif self.table.item(row, 5).text() != "None":
-                            #Rechnung mit kWh/a
-                            percent_consumption = float(self.table.item(row, 1).text())
-                            kW = float(self.table.item(row, 5).text())
-                            anz_Verbraucher = float(self.table.item(row, 4).text())
-                            y_temp = [element / 100 * percent_consumption / 100 * anz_Verbraucher * kW  for element in y_choose[row]]
+                            #Rechnung mit kW/Stück
+                            y_temp = self.CalcStrom_KWHproStück(row)   
                     else:
                         #Rechnung mit Prozent
                         str_yvar = "Verbrauch [%]"
-                        y_temp = [element * float(self.table.item(row, 1).text()) / 100 for element in y_choose[row]]
+                        y_temp = self.CalcStrom_Prozent(row)   
+
                 else:
                     #Return falls ein Wert keine Zahl enthält
                     return

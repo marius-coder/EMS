@@ -147,13 +147,16 @@ class WindowGesamtprofil_Warmwasser(QWidget):
         WW_temp = [0 for i in range(24)]
         self.y_choose = self.y_month
         for row in range(self.table.rowCount()): 
-            if self.table.item(row, 4).text() != "None":
-                y_temp = self.CalcWW_LiterproPerson(row)
+            if is_number_tryexcept(self.lineEdit_Fläche.text()) and is_number_tryexcept(self.table.item(row, 1).text()) and is_number_tryexcept(self.table.item(row, 3).text()):
+                if self.table.item(row, 4).text() != "None":
+                    y_temp = self.CalcWW_LiterproPerson(row)
 
+                else:
+                    y_temp = self.CalcWW_LiterproFläche(row)
+
+                WW_temp = [a + b for a, b in zip(WW_temp, y_temp)]
             else:
-                y_temp = self.CalcWW_LiterproFläche(row)
-
-            WW_temp = [a + b for a, b in zip(WW_temp, y_temp)]
+                return
        
         WW_Gesamt["month [l]"] = [element * 365 for element in WW_temp]
         #Prozent berechnen

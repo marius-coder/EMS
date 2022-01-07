@@ -344,7 +344,6 @@ class Ui_Strombedarf(QMainWindow):
 
 
         data = df[df.values == name].values.flatten().tolist()
-        Import.importGUI.Import_WarmWater(data)
 
         data = {
 			"Profilname" : data[0],

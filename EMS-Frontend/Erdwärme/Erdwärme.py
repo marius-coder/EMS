@@ -70,6 +70,8 @@ class Ui_Erdwärme(QMainWindow):
         self.spinBox_AnzSonden = QtWidgets.QSpinBox(self)
         self.spinBox_AnzSonden.setGeometry(QtCore.QRect(10, 150, 71, 22))
         self.spinBox_AnzSonden.setObjectName("spinBox_AnzSonden")
+        self.spinBox_AnzSonden.setRange(0,1000)
+
 
         #Eingabe Bohrtiefe
         self.label_3 = QtWidgets.QLabel(self)
@@ -79,6 +81,8 @@ class Ui_Erdwärme(QMainWindow):
         self.doubleSpinBox_Bohrtiefe = QtWidgets.QDoubleSpinBox(self)
         self.doubleSpinBox_Bohrtiefe.setGeometry(QtCore.QRect(110, 150, 62, 22))
         self.doubleSpinBox_Bohrtiefe.setObjectName("doubleSpinBox_Bohrtiefe")
+        self.doubleSpinBox_Bohrtiefe.setRange(0,300)
+
 
         #Ausgabe Wärmeleitfähigkeit/Leistung 
         self.label_WM_spez = QtWidgets.QLabel(self)

@@ -259,26 +259,27 @@ class Ui_PV_Batterie(QMainWindow):
 
         self.SaveProfile()
 
-        df = pd.read_csv("./EMS-Frontend/data/PV_Bat_Profile_Default.csv", delimiter = ",", encoding='utf-8')
-        name = self.lineEdit_Profil.text()
-        
-        if name in df["Name"]:
-            pass
-        else:
-            df = pd.read_csv("./EMS-Frontend/data/PV_Bat_Profile.csv", delimiter = ",", encoding='utf-8')
-            name = self.comboBox_SelectProfile.currentText()
+
+        df = pd.read_csv("./EMS-Frontend/data/PV_Bat_Profile.csv", delimiter = ",", encoding='utf-8')
+        name = self.comboBox_SelectProfile.currentText()
 
 
 
         data = df[df.values == name].values.flatten().tolist()
-        Import.importGUI.Import_WarmWater(data)
 
-        data = {
-			"Profilname" : data[0],
-			"WW-Verbrauch_Stunde [%]" : data[1:25],
-            "WW-Verbrauch_Monat [%]" : data[28:],
-			"Verbrauchsart" : data[25:28],
-                }
+
+        PV_Batterie = {
+            "PV_kWp" : data[1],
+            "Bat_kWh": data[2],
+            "Entladetiefe" : data[3],
+            "Selbstentladung" : data[4],
+            "Effizienz" : data[5],
+            "Leistung [kW]" : data[6],
+            "Leistung [%]" : data[7],
+            }
+        Import.importGUI.Import_PV_Batterie(PV_Batterie)
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self):

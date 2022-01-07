@@ -19,7 +19,12 @@ class Import():
 	def Import_WarmWater(self, data):
 		self.input_Warmwater = data
 
+	def Import_Strombedarf(self, data):
+		self.input_Strombedarf = data
 
+	def Import_PV_Batterie(self, data):
+		self.input_PV_Batterie = data
+		
 
 
 

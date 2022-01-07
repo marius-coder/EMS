@@ -1,14 +1,14 @@
-
+# -*- coding: latin-1 -*-
   
 class cla_Batterie():
     
-    def __init__(self, var_EntTiefe, var_Effizienz, var_kapMAX, var_LadeEntladeLeistung = 0, var_SelbstEntladung = 0):
+    def __init__(self, var_EntTiefe, var_Effizienz, var_kapMAX, var_LadeEntladeLeistung, var_SelbstEntladung = 0):
         self.Entladetiefe = var_kapMAX * var_EntTiefe / 100  #%
         self.Effizienz = var_Effizienz # Einheit %/100
         self.Kapazität = 0 #kWh
         self.Kapazität_MAX = var_kapMAX #kWh
-        self.Leistung = var_LadeEntladeLeistung #kW
-        self.Leistung_MAX = var_kapMAX * 0.5 #kW
+        self.Leistung = 0 #kW
+        self.Leistung_MAX = var_LadeEntladeLeistung #kW
         self.Verlust = 0 #kW
         self.Selbstentladung = var_SelbstEntladung / 8760 #in %/Stunde
 
@@ -64,3 +64,6 @@ class cla_Batterie():
         arg_Reslast -= (self.Leistung + self.Verlust)
         
         return arg_Reslast
+
+
+   
