@@ -163,7 +163,8 @@ def Get_GeothermalData(input_GeoData : dict)-> dict:
                   "color" : li_color, #Liste der Farben die die Polygone haben sollen
                   "coord_target" : coordinateAddress, #Koordinaten der eingegeben Adresse
                   "dic_target" : dic_Properties, #Eigenschaften der Bohrung von der Adresse (Wärmeleitfähigkeit etc.)
-                  "MW_WL" : dic_Properties["MW_WL_" + str_mode_export]
+                  "MW_WL" : dic_Properties["MW_WL_" + str_mode_export],
+                  "Layer" : "MW_WL_" + str_mode_export
                   }
 
     return dic_export

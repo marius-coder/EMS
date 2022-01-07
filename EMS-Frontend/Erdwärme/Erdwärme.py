@@ -242,13 +242,14 @@ class Ui_Erdwärme(QMainWindow):
     def OpenMap(self):
         if self.lineEdit_InputAdresse.text() == "" or self.doubleSpinBox_Bohrtiefe.value() == 0:
             return
-        self.windowKarte.UpdatePlot(self.lineEdit_InputAdresse.text())
+        
         input_GeoData = {"Adresse" : self.lineEdit_InputAdresse.text(),
 								"Bohrtiefe" : self.doubleSpinBox_Bohrtiefe.value(),
 								"Anzahl_Sonden" : self.spinBox_AnzSonden.value()}
         Output_GeoData = BackErdwärme.Get_GeothermalData(input_GeoData)
         self.lineEdit_WM_spez.setText(str(round(Output_GeoData["MW_WL"],3)))
         self.lineEdit_Leistung.setText(str(round(float(self.lineEdit_WM_spez.text()) * float(self.spinBox_AnzSonden.value()) * float(self.doubleSpinBox_Bohrtiefe.value()) * 5/1000,3)))
+        self.windowKarte.UpdatePlot(self.lineEdit_InputAdresse.text(),Output_GeoData["Layer"])
         self.windowKarte.show()
 
 

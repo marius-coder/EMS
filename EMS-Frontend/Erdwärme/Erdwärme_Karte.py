@@ -40,7 +40,7 @@ class WindowErdwärmeKarte(QWidget):
         lay.addWidget(self.m_output)
         
 
-    def UpdatePlot(self, address):
+    def UpdatePlot(self, address, layer):
 
         def get_gdf_from_wfs(layer):
             """
@@ -61,7 +61,7 @@ class WindowErdwärmeKarte(QWidget):
         pandas_bokeh.output_file("EMS-Frontend/data/ErdwarmeKarte.html")
         gdf = get_gdf_from_wfs("ERDWSONDOGD")
 
-        plot1 = gdf.plot_bokeh(figsize=(1000, 1000),colormap = "Magma",category="MW_WL_200",show_colorbar = True, alpha = 0.3,
+        plot1 = gdf.plot_bokeh(figsize=(1000, 1000),colormap = "Magma",category=layer,show_colorbar = True, alpha = 0.3,
                       return_html = True, show_figure = False)
 
         df_coordinateAddress = pd.DataFrame(from_address(address))
