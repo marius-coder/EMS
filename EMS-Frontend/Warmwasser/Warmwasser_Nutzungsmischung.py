@@ -6,6 +6,8 @@ import sys
 from bokeh import plotting, embed, resources
 from bokeh.plotting import figure
 from bokeh.models import HoverTool, DataRange1d
+import importlib
+Import = importlib.import_module("EMS-Backend.Classes.Import")
 from PyQt5 import *
 #from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
@@ -111,17 +113,81 @@ class WindowGesamtprofil_Warmwasser(QWidget):
                                     "background : lightgrey;"
                                     "}")
 
+        #Nutzungsmischung verwenden
+        self.pushButton_UseNutzungsmischung = QtWidgets.QPushButton(self)
+        self.pushButton_UseNutzungsmischung.setGeometry(QtCore.QRect(350, 385, 180, 25))
+        self.pushButton_UseNutzungsmischung.setObjectName("pushButton_UseNutzungsmischung")
+        self.pushButton_UseNutzungsmischung.setText("Nutzungsmischung verwenden")
+        self.pushButton_UseNutzungsmischung.clicked.connect(self.UseNutzungsmischung)
+
+
+    def CalcWW_LiterproPerson(self,row):
+        percent_consumption = float(self.table.item(row, 1).text())
+        anz_personen = float(self.table.item(row, 3).text())
+        literProPerson = float(self.table.item(row, 4).text())
+        y_temp = [element / 100 * percent_consumption / 100 * anz_personen * literProPerson  for element in self.y_choose[row]]
+        return y_temp
+
+    def CalcWW_LiterproFläche(self,row):
+        percent_consumption = float(self.table.item(row, 1).text())
+        Fläche = float(self.lineEdit_Fläche.text())
+        literProFläche = float(self.table.item(row, 2).text())
+        y_temp = [element / 100 * percent_consumption / 100 * Fläche * literProFläche  for element in self.y_choose[row]]
+        return y_temp
+
+    def CalcWW_Prozent(self,row):
+        y_temp = [element * float(self.table.item(row, 1).text()) / 100 for element in self.y_choose[row]]
+        return y_temp
+
+    def UseNutzungsmischung(self):
+        """Diese Funktion summiert die derzeitinge Nutzungsmischung und schickt macht diese für die Simulation verfügbar"""
+        #if int(self.lineEdit_SumNutzung.text().split("%")[0]) != 100:
+        #    return
+        WW_Gesamt = {}
+        WW_temp = [0 for i in range(24)]
+        self.y_choose = self.y_month
+        for row in range(self.table.rowCount()): 
+            if self.table.item(row, 4).text() != "None":
+                y_temp = self.CalcWW_LiterproPerson(row)
+
+            else:
+                y_temp = self.CalcWW_LiterproFläche(row)
+
+            WW_temp = [a + b for a, b in zip(WW_temp, y_temp)]
+       
+        WW_Gesamt["month [l]"] = [element * 365 for element in WW_temp]
+        #Prozent berechnen
+        WW_temp_percent = [0 for i in range(24)]
+        self.y_choose = self.y_hour
+        for row in range(self.table.rowCount()): 
+            y_temp_percent = self.CalcWW_Prozent(row)
+            WW_temp_percent = [a + b for a, b in zip(WW_temp_percent, y_temp_percent)]
+        WW_Gesamt["percent [%/h]"] = WW_temp_percent
+        li_daysperMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
+
+        WW_Gesamt["hour [l/h]"] = []
+        for i,value in enumerate(WW_Gesamt["month [l]"]):
+            li_temp = []
+            ww_daily = value / li_daysperMonth[i]
+            for percent in WW_Gesamt["percent [%/h]"]:
+                
+                li_temp.append(percent/100 * ww_daily)
+            WW_Gesamt["hour [l/h]"].append(li_temp)
+        Import.importGUI.Import_WarmWater(WW_Gesamt)
+
+
+
     def UpdatePlot(self):
         try:
             if self.radioButton_month.isChecked():
-                y_choose = self.y_month
+                self.y_choose = self.y_month
                 self.x = np.linspace(1,12,12)
                 str_xvar = "Monat"
                 str_yvar = ""
                 
 
             else:
-                y_choose = self.y_hour
+                self.y_choose = self.y_hour
                 self.x = np.linspace(1,24,24)
                 str_xvar = "Stunde"
                 str_yvar = ""
@@ -140,20 +206,14 @@ class WindowGesamtprofil_Warmwasser(QWidget):
                         str_yvar = "Verbrauch [l]"
                         if self.table.item(row, 4).text() != "None":
                             #Rechnung mit Liter/Person
-                            percent_consumption = float(self.table.item(row, 1).text())
-                            anz_personen = float(self.table.item(row, 3).text())
-                            literProPerson = float(self.table.item(row, 4).text())
-                            y_temp = [element / 100 * percent_consumption / 100 * anz_personen * literProPerson  for element in y_choose[row]]
+                            y_temp = self.CalcWW_LiterproPerson(row)
                         else:
                             #Rechnung mit Liter/m²
-                            percent_consumption = float(self.table.item(row, 1).text())
-                            Fläche = float(self.lineEdit_Fläche.text())
-                            literProFläche = float(self.table.item(row, 2).text())
-                            y_temp = [element / 100 * percent_consumption / 100 * Fläche * literProFläche  for element in y_choose[row]]
+                            y_temp = self.CalcWW_LiterproFläche(row)
                     else:
                         #Rechnung mit Prozent
                         str_yvar = "Verbrauch [%]"
-                        y_temp = [element * float(self.table.item(row, 1).text()) / 100 for element in y_choose[row]]
+                        y_temp = self.CalcWW_Prozent(row)
                 else:
                     #Return falls ein Wert keine Zahl enthält
                     return

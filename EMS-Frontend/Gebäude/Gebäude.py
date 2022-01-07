@@ -155,8 +155,8 @@ class Ui_Gebäude(QMainWindow):
         self.pushButton_DeleteProfile.clicked.connect(self.DeleteProfile)
         self.pushButton_UseProfile.clicked.connect(self.UseProfile)
 
-        self.li_inputWidgets = [self.doubleSpinBox_BGF,self.doubleSpinBox_GF,self.doubleSpinBox_Geschosshoehe,
-                           self.doubleSpinBox_cp_Gebaeude]
+        self.li_inputWidgets = [self.doubleSpinBox_BGF,self.doubleSpinBox_GF,self.doubleSpinBox_cp_Gebaeude,
+                                self.doubleSpinBox_Geschosshoehe]
 
 
     def SaveProfile(self):
@@ -255,10 +255,22 @@ class Ui_Gebäude(QMainWindow):
 
         df = pd.read_csv("./EMS-Frontend/data/Gebäude_Profile.csv", delimiter = ",", encoding='utf-8')
         name = self.comboBox_SelectProfile.currentText()
-
-
-
         data = df[df.values == name].values.flatten().tolist()
+
+        from openpyxl import load_workbook
+        wb = load_workbook(filename = "./EMS-Backend/data/building.xlsx")
+        ws_params = wb["params"]
+        ws_hull = wb["thermal_hull"]
+
+        for row in range(1, 5):
+            ws_params.cell(row=row+1,column=2).value = data[row]
+
+        it = 5
+        for row in range(2, 6): 
+            for column in range(1,5):
+                ws_hull.cell(row=row,column=column).value = data[it]
+                it += 1
+        wb.save("./EMS-Backend/data/building.xlsx")
 
 
 def is_number_tryexcept(s):

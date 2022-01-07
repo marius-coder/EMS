@@ -1,20 +1,24 @@
 
-#import Classes.Stoffdaten
 import pandas as pd
 import os
 import csv
 import numpy as np
-#from Classes.Helper import Helper
-#obj_helper = Helper()
+import importlib
+ImportSpeicher = importlib.import_module("EMS-Backend.Classes.Wärmespeicher")
 
-cwd = os.getcwd()  # Get the current working directory (cwd)
-print("Working DIR: ", cwd)
 
 
 class Wärmepumpe():
 
-    def __init__(self):
-        pass
+    def __init__(self, Pel, COP, speicher, WP_VL_HZG, geb_VL_HZG, WP_VL_KLG, geb_VL_KLG):
+        self.Pel = Pel
+        self.COP = COP
+        self.speicher = speicher
+        self.WP_VL_HZG = WP_VL_HZG
+        self.geb_VL_HZG = geb_VL_HZG
+        self.WP_VL_KLG = WP_VL_KLG
+        self.geb_VL_KLG = geb_VL_KLG
+        self.Pel_Betrieb = np.zeros(8760)
 
 
 
@@ -50,19 +54,8 @@ class Wärmepumpe():
 
         #Spätere Funktion die die Buttons ausliest rückgabe: Dictionary
         #
-        self.str_hersteller = hersteller
-        self.str_modellNr = ModellNr
-        self.str_energiequelle = energiequelle
-        self.str_energiesenke = energiesenke
-        self.flt_länge = länge
-        self.flt_breite = breite
-        self.flt_höhe = höhe
         self.flt_strombedarf = strombedarf
-        self.flt_bivalenztemp = bivalenztemp
-        self.flt_schallpegel = schallpegel
-        self.b_trinkwassererwärmung = trinkwassererwärmung
-        self.flt_heizstableistung = heizstableistung
-        self.flt_triwasserspeicher = triwasserspeicher
+        self.COP = COP
         self.dic_COP_m15 = COP_m15
         self.dic_COP_m7 = COP_m7
         self.dic_COP_2 = COP_2
@@ -147,20 +140,54 @@ class Wärmepumpe():
     def calc_COP_GUI(self, path:str, t_Q: int, t_VL:int):
         pass
 
+    def Check_SpeicherHeizen(self):
+        """Diese Funktion kontrolliert zu jeder Stunde den dazugehörigen Speicher auf Temperatur
+           Wenn die Temperatur außerhalb des Sollwertes liegt wird WP_TurnOn aufgerufen"""
 
+        #Verlust und Ausgleichsvorgänge
+        self.speicher.UpdateSpeicher()
 
+        schichttoCheck = int(self.speicher.anz_schichten / 2) #Wenn der Speicher halb durchgeladen ist wird abgedreht
+        print("Kontrollschicht Vorletzte: ", self.speicher.li_schichten[-2]["Temperatur [°C]"])
+        print("Kontrollschicht 5: ", self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"])
+                
+        if self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"] > self.geb_VL_HZG:
+            print("TurnOff1")
+            self.WP_TurnOff()
+        elif self.speicher.li_schichten[-2]["Temperatur [°C]"] < self.geb_VL_HZG:
+            print("TurnOn")
+            self.WP_TurnOn(self.WP_VL_HZG, self.COP)
+        else:
+            print("TurnOff2")
+            self.WP_TurnOff()
 
+    def Check_SpeicherKühlen(self):
+        """Diese Funktion kontrolliert zu jeder Stunde den dazugehörigen Speicher auf Temperatur
+           Wenn die Temperatur außerhalb des Sollwertes liegt wird WP_TurnOn aufgerufen"""
 
+        #Verlust und Ausgleichsvorgänge
+        self.speicher.UpdateSpeicher()
 
-
-
-
-
-
-
-WP = Wärmepumpe()
-path_COP = r"C:\Users\Chris\Desktop\Inplan\Wärmepumpe\COP.csv"
-WP.calc_COP_csv(path_COP,14,35)
-
-print(WP.COP_t)
-
+        schichttoCheck = int(self.speicher.anz_schichten / 2) #Wenn der Speicher halb durchgeladen ist wird abgedreht
+        #print("Kontrollschicht Vorletzte: ", self.speicher.li_schichten[-2]["Temperatur [°C]"])
+        #print("Kontrollschicht 5: ", self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"])
+                
+        if self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"] < self.geb_VL_KLG:
+            #print("TurnOff1")
+            self.WP_TurnOff()
+        elif self.speicher.li_schichten[-2]["Temperatur [°C]"] > self.geb_VL_KLG:
+            #print("TurnOn")
+            self.WP_TurnOn(self.WP_VL_KLG, self.COP-1)
+        else:
+            #print("TurnOff2")
+            self.WP_TurnOff()
+        
+    def WP_TurnOn(self, t_VL, COP):
+        #TODO: Logik um COP und Pel dynamisch zu berechnen
+        QtoLoad = self.Pel * COP * 1000
+        self.speicher.Speicher_Laden(QtoLoad, VL = t_VL)
+        
+    def WP_TurnOff(self):
+        pass
+#Speicher = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 6, RL = 14, schichten = 10, ladezone = 5, height = 2, diameter = 0.5)
+#WP = Wärmepumpe(0.5,3,Speicher,WP_VL_HZG = 35, geb_VL_HZG = 30, WP_VL_KLG = 6, geb_VL_KLG = 8)

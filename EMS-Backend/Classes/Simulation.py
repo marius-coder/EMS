@@ -2,9 +2,19 @@
 import pandas as pd
 import numpy as np
 import math
-from Building import Building
-from Erdwärme import Get_GeothermalData
-from Import import importGUI
+#from Building import Building
+#from Erdwärme import Get_GeothermalData
+#from Import import importGUI
+import importlib
+
+ImportBuilding = importlib.import_module("EMS-Backend.Classes.Building")
+ImportSpeicher = importlib.import_module("EMS-Backend.Classes.Wärmespeicher")
+ImportWP = importlib.import_module("EMS-Backend.Classes.Wärmepumpe")
+Import = importlib.import_module("EMS-Backend.Classes.Import")
+
+
+
+from bokeh.plotting import figure, show
 
 #TODO: Alle Konstanten zusammenlegen
 
@@ -18,24 +28,24 @@ class Simulation():
 		 self.b_heatPump = b_heatPump
 		 self.b_solarPower = b_solarPower
 		 
-		 self.building = Building("./EMS-Backend/data/building.xlsx")
+		 self.building = ImportBuilding.Building("./EMS-Backend/data/building.xlsx")
 		 self.df_usage = pd.read_csv("./EMS-Backend/data/usage_profiles.csv", encoding="cp1252")
 		 self.ta = np.genfromtxt("./EMS-Backend/data/climate.csv", delimiter=";", usecols = (1), skip_header = 1) #°C
 		 self.qsolar = np.genfromtxt("./EMS-Backend/data/Solar_gains.csv") #W/m² Solar gains
-		 self.import_data = importGUI
-		 
+		 self.import_data = Import.importGUI
+		 self.warmwater_data = self.import_data.input_Warmwater
 
 	def Setup_Simulation(self):
 		""" """
 		#TODO: Die Erdwärme in eine eigene Klasse schieben
 		if self.b_geothermal == True:
 			self.geo_temp = 13 #°C Bodentemperatur Quelle: https://www.wien.gv.at/stadtentwicklung/energie/themenstadtplan/erdwaerme/erlaeuterungen.html
-			self.dt_geo = 5 #Temperaturdiff Quellenseite WP
-			self.anz_Sonden = self.import_data.input_GeoData["Anzahl_Sonden"] #Anzahl an Sonden
-			self.dic_geoData_out = Get_GeothermalData(self.import_data.input_GeoData)
-			self.Q_quelleBoden = self.dic_geoData_out["Bohrtiefe"] * self.dic_geoData_out["MW_WL"] * self.anz_Sonden * self.dt_geo # W
+			#self.dt_geo = 5 #Temperaturdiff Quellenseite WP
+			#self.anz_Sonden = self.import_data.input_GeoData["Anzahl_Sonden"] #Anzahl an Sonden
+			#self.dic_geoData_out = Get_GeothermalData(self.import_data.input_GeoData)
+			#self.Q_quelleBoden = self.dic_geoData_out["Bohrtiefe"] * self.dic_geoData_out["MW_WL"] * self.anz_Sonden * self.dt_geo # W
 
-	  
+		
 
 
 		self.qi_winter = self.df_usage["Qi Winter W/m²"].to_numpy()
@@ -44,7 +54,8 @@ class Simulation():
 		self.ach_v = self.df_usage["Luftwechsel_Anlage_1_h"].to_numpy() #Air change per hour through ventilation
 		self.ach_i = self.df_usage["Luftwechsel_Infiltration_1_h"].to_numpy() #Air change per hour through infiltration
 		self.anz_personen = self.df_usage["Pers/m2"] 
-		self.q_warmwater = self.df_usage["Warmwasserbedarf_W_m2"] 
+		#self.q_warmwater = self.df_usage["Warmwasserbedarf_W_m2"] 
+		self.q_warmwater = np.zeros(8760)
 		self.q_maschinen = self.df_usage['Aufzug, Regelung etc._W_m2']
 		self.q_beleuchtung = self.df_usage["Beleuchtung_W_m2"]
 
@@ -53,13 +64,15 @@ class Simulation():
 		
 		self.qv = np.zeros(8760)        #Ventilation losses
 		self.qt = np.zeros(8760)        #transmission losses
-		self.ti = np.ones(8760) * 20    #indoor temperature
+		self.ti = np.zeros(8760)        #indoor temperature
+		self.ti_sim = 20                #Laufvariable für die Innentemperatur
 		self.qh = np.zeros(8760)        #Heating demand
 		self.qc = np.zeros(8760)        #cooling demand
 		self.CONST_Q_PERSONEN_SPEZ = 80 #W/Person
 		self.cp_air = 0.34  # spez. Wärme kapazität * rho von Luft (Wh/m3K)
 
 		self.t_Zul = np.ones(8760) * 20 #Zulufttemperatur TODO:Wärmerückgewinnung hinzufügen
+		self.t_Zul = self.ta
 		self.t_Abl = np.ones(8760) * 20 #Ablufttemperatur
 		self.t_soll = np.ones(8760) * 20   #Soll Rauminnentemperatur
 		self.qs = np.zeros(8760) #Solar gains array in Watt
@@ -70,31 +83,27 @@ class Simulation():
 		self.q_innen = np.zeros(8760)
 		self.t_heating = 20
 		self.t_cooling = 26
+		self.b_heating = True
+
+		self.Speicher_HZG = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 2, diameter = 1)
+		self.WP_HZG = ImportWP.Wärmepumpe(10,4.5,self.Speicher_HZG,WP_VL_HZG = 35, geb_VL_HZG = 30, WP_VL_KLG = 6, geb_VL_KLG = 8)
+
+		self.Speicher_WW = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 2, diameter = 1)
+		self.WP_WW = ImportWP.Wärmepumpe(20,4,self.Speicher_WW,WP_VL_HZG = 65, geb_VL_HZG = 60, WP_VL_KLG = 0, geb_VL_KLG = 0)
+
 		
 		self.building.insert_windows(1.2, 25)
 		stat_HL = self.Static_HL()
 		stat_KL = self.Static_KL()
 
+		self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]
+		self.cooling_months = [4, 5, 6, 7, 8, 9]
 		
 		print(f"Die statische Heizlast beträgt {round(stat_HL['Heizlast [W]'] / 1000,2)} kW")
 		print(f"Die statische Kühllast beträgt {round(stat_KL['Kühllast [W]'] / 1000,2)} kW")
+
+
 	   
-		#Annahmen TODO: In eine QT Form wandeln für user input
-		#WP_COP = float(input("Bitte COP für Wärmepumpe eingeben: "))
-		#WP_kW_Q = float(input("Bitte Wärmeleistung für eine Wärmepumpe in kW eingeben: "))
-		#WP_Anz = float(input("Bitte Anzahl der Wärmepumpen eingeben: "))
-		#WP_kW_P = WP_kW_Q / WP_COP
-		#WP_kW_P = input("Bitte elektrische Leistung für Wärmepumpe in kW eingeben: ")
-
-		#B0/W35
-
-		
-
-
-
-
-
-
 
 
 
@@ -109,7 +118,7 @@ class Simulation():
 		qv_inf = Hv * (ta - ti) # W
 
 		#Gesamtlüftungsverluste in Watt
-		qv = qv_mech + qv_inf
+		qv = (qv_mech + qv_inf)
 		return qv
 	 
 
@@ -128,13 +137,13 @@ class Simulation():
 		q_fußboden = self.building.fußboden["LT"] * dT_boden
 
 		#Gesamttransmissionswärmeverlust in Watt
-		qt = q_wand + q_fußboden + q_dach + q_fenster #Watt
+		qt = (q_wand + q_fußboden + q_dach + q_fenster) #Watt
 		return qt
 
 		
 	def handle_losses(self, t, q_toApply):
 		# determine indoor temperature after losses
-		self.ti[t] = self.TI_after_Q(self.ti[t], q_toApply, self.building.heat_capacity, self.building.gfa) #°C
+		self.ti_sim = self.TI_after_Q(self.ti_sim, q_toApply, self.building.heat_capacity, self.building.gfa) #°C
 
 
 	def TI_after_Q(self, Ti_before, Q, cp, A):
@@ -153,7 +162,8 @@ class Simulation():
 		ti = max(self.t_soll)
 		max_achi = max(self.ach_i)
 		max_achv = max(self.ach_v)
-		t_Zul = ti #TODO: Genauer machen mit WRG
+		t_Zul = min_ta
+		#t_Zul = ti #TODO: Genauer machen mit WRG
 
 		qt = self.calc_QT(min_ta, ti)
 		qv = self.calc_QV(max_achv, max_achi, t_Zul, min_ta, ti )
@@ -188,8 +198,8 @@ class Simulation():
 		hour = list(self.ta).index(max_value)
 
 		#Kühllast von Außen
-		qt = self.calc_QT(self.ta[hour], self.ti[hour]) #W
-		qv = self.calc_QV(self.ach_v[hour], self.ach_i[hour], self.t_soll[hour], self.ta[hour], self.ti[hour] ) #W
+		qt = self.calc_QT(self.ta[hour], 26) #W
+		qv = self.calc_QV(self.ach_v[hour], self.ach_i[hour], self.t_soll[hour], self.ta[hour], 26 ) #W
 		qs = self.Q_Solar(hour)
 		q_außen = qt + qv + qs #W
 
@@ -216,8 +226,8 @@ class Simulation():
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------    
 			#Heiz / Kühllast berechnen
 			#Äußere Wärmeströme
-			self.qt[hour] = self.calc_QT( self.ta[hour], self.ti[hour]) #Transmission
-			self.qv[hour] = self.calc_QV( self.ach_v[hour], self.ach_i[hour], self.t_Zul[hour], self.ta[hour], self.ti[hour]) #Ventilation
+			self.qt[hour] = self.calc_QT( self.ta[hour], self.ti_sim) #Transmission
+			self.qv[hour] = self.calc_QV( self.ach_v[hour], self.ach_i[hour], self.t_Zul[hour], self.ta[hour], self.ti_sim) #Ventilation
 			self.qs[hour] = self.Q_Solar(hour) #Solare Gewinne
 			self.q_außen[hour] = self.qt[hour] + self.qv[hour] + self.qs[hour] #W Gesamt
 
@@ -231,15 +241,126 @@ class Simulation():
 			self.q_gesamt = self.q_außen[hour] + self.q_innen[hour]
 			self.handle_losses(hour, q_toApply = self.q_gesamt) #Neue Innentemperatur rechnen
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-			#Nun wird mithilfe der neuen Innentemperatur die benötigte Leistung berechnet um auf die gewünschte Innentemp zu kommen
-			#TODO: Variable Sollinnentemperatur, zB Nachtabsenkung, Temperaturhysterese
-			self.q_soll = self.heating_power(self.t_soll[hour], self.ti[hour], self.building.heat_capacity, self.building.gfa)
-			self.handle_losses(hour, q_toApply = self.q_soll)
+			print("Verluste: ",self.q_gesamt)
+			print("Temp vor Heizen: ",self.ti_sim)
+			self.ti[hour] = self.ti_sim
+			#Heizen
+			if DetermineMonth(hour) in self.heating_months:
+				self.WP_HZG.Pel_Betrieb[hour] = self.q_gesamt / self.WP_HZG.COP
+				self.q_soll = self.heating_power(self.t_soll[hour], self.ti_sim, self.building.heat_capacity, self.building.gfa)
+				self.handle_losses(hour, q_toApply = self.q_soll)
 
 
 
+			elif DetermineMonth(hour) in self.cooling_months:
+				self.WP_HZG.Pel_Betrieb[hour] = self.q_gesamt / (self.WP_HZG.COP - 1)
+				self.q_soll = self.heating_power(self.t_soll[hour], self.ti_sim, self.building.heat_capacity, self.building.gfa)
+				self.handle_losses(hour, q_toApply = self.q_soll)
+			if self.ti[hour] < 19.99:
+				print("")
+			print("Temp nach Heizen: ",self.ti_sim)
+			print("---------------------------------------------------------------")
+
+			#Warmwasser
+			self.warmwater_data
+			month = DetermineMonth(hour)
+			hourofDay = DetermineHourofDay(hour)
+
+			Q_warmwater = self.CalcWarmwaterEnergy(month, hourofDay)
+			self.WP_WW.Pel_Betrieb[hour] = Q_warmwater / self.WP_WW.COP
+			self.q_warmwater[hour] = Q_warmwater
+			continue
+			if hour == 200:
+				print("")
+			if DetermineMonth(hour) in self.heating_months:
+				if self.b_heating == False:
+					pass
+					#ChangeOver
+					#Changeoverbetrieb für 24h
+
+				self.b_heating = True
+				#Check_SpeicherHeizen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
+				self.WP_HZG.Check_SpeicherHeizen()
+
+				if self.ti[hour] < self.t_heating:
+					self.q_soll = self.heating_power(self.t_soll[hour], self.ti[hour], self.building.heat_capacity, self.building.gfa)
+					self.Speicher_HZG.Speicher_Entladen(self.q_soll, 27)
+
+					self.handle_losses(hour, q_toApply = self.q_soll)
+					print("Temp nach Heizen: ",self.ti[hour])
+					print("---------------------------------------------------------------")
+
+			elif DetermineMonth(hour) in self.cooling_months:
+				if self.b_heating == True:
+					pass
+					#ChangeOver
+					#Changeoverbetrieb für 24h
+				self.b_heating = False
+				#Check_SpeicherKühlen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
+				self.WP_HZG.Check_SpeicherKühlen()
+
+				if self.ti[hour] > self.t_cooling:
+					self.q_soll = self.heating_power(self.t_soll[hour], self.ti[hour], self.building.heat_capacity, self.building.gfa)
+					self.Speicher_HZG.Speicher_Entladen(self.q_soll, 27)
+
+					self.handle_losses(hour, q_toApply = self.q_soll)
+					print("Temp nach Heizen: ",self.ti[hour])
+					print("---------------------------------------------------------------")
+		x = np.linspace(0,8760,8760)
+		y = self.q_warmwater
+		p = figure(title="Simple line example", x_axis_label='x', y_axis_label='y')
+
+		p.line(x, y, legend_label="Temp.", line_width=2)
+		show(p)
 
 
-model = Simulation(b_geothermal = True)
-model.Setup_Simulation()
-model.Simulate()
+			
+	def CalcWarmwaterEnergy(self, month, hourofDay):
+		print("monat: ", month)
+		print("hourofDay: ", hourofDay)
+		m_water = self.import_data.input_Warmwater["hour [l/h]"][month-1][hourofDay] / 3600 #liter/sekunde
+		Q_waterheating = m_water * 4180 * (60-15)
+		return Q_waterheating
+
+def DetermineHourofDay(hour):
+	return (hour+1) % 24
+
+
+def DetermineMonth(hour):
+	if 0 <= hour <= 744:
+		return 1
+	elif 744 < hour <= 1416:
+		return 2
+	elif 1416 < hour <= 2160:
+		return 3
+	elif 2160 < hour <= 2880:
+		return 4
+	elif 2880 < hour <= 3624:
+		return 5
+	elif 3624 < hour <= 4344:
+		return 6
+	elif 4344 < hour <= 5088:
+		return 7
+	elif 5088 < hour <= 5832:
+		return 8
+	elif 5832 < hour <= 6552:
+		return 9
+	elif 6552 < hour <= 7296:
+		return 10
+	elif 7296 < hour <= 8016:
+		return 11
+	elif 8016 < hour <= 8760:
+		return 12
+
+
+
+#model = Simulation(b_geothermal = False)
+#model.Setup_Simulation()
+#model.Simulate()
+
+#x = np.linspace(0,8760,8760)
+#y = model.ti
+#p = figure(title="Simple line example", x_axis_label='x', y_axis_label='y')
+
+#p.line(x, y, legend_label="Temp.", line_width=2)
+#show(p)

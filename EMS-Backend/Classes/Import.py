@@ -17,22 +17,11 @@ class Import():
 
 
 	def Import_WarmWater(self, data):
-
-		profileName = data[0]
-		values = data[1:25]
-		ww_values = data[25:]    
-		
-   
-
-		self.input_Warmwater = {
-			"Profilname" : profileName,
-			"WW-Verbrauch [%]" : values,
-			"Verbrauchsart" : ww_values
-			}
+		self.input_Warmwater = data
 
 
 
 
 
 importGUI = Import()
-importGUI.Import_Geothermal()
+#importGUI.Import_Geothermal()

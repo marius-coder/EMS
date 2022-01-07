@@ -6,6 +6,9 @@ from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
+import importlib
+Sim = importlib.import_module("EMS-Backend.Classes.Simulation")
+
 from Gebäude.Gebäude import Ui_Gebäude
 from Strom.Strom import Ui_Strombedarf
 from Warmwasser.Warmwasser import Ui_Warmwasser
@@ -20,7 +23,9 @@ class Ui_Main(object):
         self.pushButton_Simulate = QtWidgets.QPushButton(Form)
         self.pushButton_Simulate.setGeometry(QtCore.QRect(150, 240, 75, 23))
         self.pushButton_Simulate.setObjectName("pushButton_Simulate")
-        self.pushButton_Simulate.setText("Simulate!")
+        self.pushButton_Simulate.setText("Simulate!")        
+        self.pushButton_Simulate.clicked.connect(self.Simulate)
+
 
         self.pushButton_openSpeicher = QtWidgets.QPushButton(Form)
         self.pushButton_openSpeicher.setGeometry(QtCore.QRect(40, 200, 75, 23))
@@ -88,8 +93,10 @@ class Ui_Main(object):
         self.PV_Batterie = Ui_PV_Batterie()
         self.PV_Batterie.show()
 
-
-
+    def Simulate(self):
+        model = Sim.Simulation(b_geothermal = False)
+        model.Setup_Simulation()
+        model.Simulate()
             
        
 class MainWindow(QMainWindow):
