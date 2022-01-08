@@ -90,8 +90,9 @@ class Wärmespeicher():
 	def Heat_Transmission(self, schicht):
 		r1 = self.geometry["Radius [m]"] 
 		r2 = self.geometry["Radius [m]"] + self.dicke_dämmung	
+		oben = 2 * (math.pi * schicht["Höhe [m]"] * (schicht["Temperatur [°C]"] - self.t_umg))
+		unten = ((1/self.lambda_dämmung)* math.log(r2/r1))
 		q_HT = 2 * (math.pi * schicht["Höhe [m]"] * (schicht["Temperatur [°C]"] - self.t_umg)) / ((1/self.lambda_dämmung)* math.log(r2/r1)) #Watt
-		q_HT = q_HT
 		return q_HT
 	
 	def New_Temperature(self, q_toApply, schicht):
@@ -124,7 +125,7 @@ class Wärmespeicher():
 				q_toApply = q_schicht
 				self.li_schichten[i]["Temperatur [°C]"] = self.New_Temperature(q_toApply, self.li_schichten[i])
 			q_trans_Sum += q_toApply
-		print("Speicher Verlust durch Transmission: ", q_trans_Sum)
+		print("Speicher Verlust durch Transmission: ", q_trans_Sum, " Watt")
 
 
 	def Get_Alpha_Convection(self, schicht_hoch, schicht_niedrig):
@@ -182,17 +183,13 @@ class Wärmespeicher():
 
 				dT = self.li_schichten[i]["Temperatur [°C]"] - self.li_schichten[i+1]["Temperatur [°C]"]
 				alpha = self.Get_Alpha_Convection(self.li_schichten[i],self.li_schichten[i+1])
-			
-				#Leistung zwischen Schicht berechnen
-				Q_schicht = alpha * dT * self.li_schichten[i]["Fläche [m²]"] 
-
 				
+				#Leistung zwischen Schicht berechnen
+				Q_schicht = alpha * dT * self.li_schichten[i]["Fläche [m²]"] 				
 
 				#Massenstrom der sich in einer Stunde durch natürliche Konvektion ergibt
 				water_data = _Liquid(273 + self.li_schichten[i]["Temperatur [°C]"])
-				m_auftrieb = (Q_schicht) / (water_data["cp"] * 1000 * (self.li_schichten[i]["Temperatur [°C]"] - self.li_schichten[i+1]["Temperatur [°C]"]))
-
-
+				m_auftrieb = (Q_schicht) / (water_data["cp"] * 1000 * (self.li_schichten[i]["Temperatur [°C]"] - self.li_schichten[i+1]["Temperatur [°C]"])) * 3600
 
 				if debug == True:
 					print(f"Alpha: {alpha} W/m²K")
@@ -201,14 +198,10 @@ class Wärmespeicher():
 					print(f"Leistung zwischen Schicht {i} und Schicht {i+1} ist {Q_schicht} Watt")
 					print("-------------------------------------------------------------------------------")
 				#Neue Temperaturen rechnen
-				water_data_unten = _Liquid(273 + self.li_schichten[i]["Temperatur [°C]"])
-				water_data_oben = _Liquid(273 + self.li_schichten[i+1]["Temperatur [°C]"])
-
-
 				schicht_unten = self.li_schichten[i]
-				schicht_unten["Masse"] = schicht_unten["Volumen [m³]"] * water_data_unten["rho"]
+				schicht_unten["Masse"] = schicht_unten["Volumen [m³]"] * water_data["rho"]
 				schicht_oben = self.li_schichten[i+1]
-				schicht_oben["Masse"] = schicht_oben["Volumen [m³]"] * water_data_oben["rho"]
+				schicht_oben["Masse"] = schicht_oben["Volumen [m³]"] * water_data["rho"]
 
 				t_neu_oben = ((m_auftrieb * schicht_unten["Temperatur [°C]"]) + (schicht_oben["Masse"] * schicht_oben["Temperatur [°C]"])) / \
 						(m_auftrieb + schicht_oben["Masse"])
@@ -227,92 +220,102 @@ class Wärmespeicher():
 					print("-------------------------------------------------------------------------------")	
 
 
-	def Speicher_Laden(self, Q_laden, VL):
-
+	def Speicher_Laden(self, massenstrom, VL):
+		"""
+		Parameters:
+		massenstrom: Massenstrom der geladen wird in kg/h
+		VL: Temperatur des Massenstromes in °C kommend von der WP
+		"""
 		#Zwischenvariablen
-		water_data_laden = _Liquid(273 + self.li_schichten[self.ladezone-1]["Temperatur [°C]"])
-		water_data_VL = _Liquid(273 + VL)
+		water_data = _Liquid(273 + VL)
 		schicht_laden = self.li_schichten[self.ladezone-1]
+		schicht_laden["Masse"] = schicht_laden["Volumen [m³]"] * water_data["rho"]
+		m_new = massenstrom / 10 #pro timestep werden nur 10% der Masse verwendet
 
-		#Massenstrom der nach unten gedrückt wird
-		m_new = Q_laden / (water_data_VL["cp"] * 1000 * abs(VL-schicht_laden["Temperatur [°C]"]))
-
+		for timestep in range(10):
+		#Diese Iterierung wird 10 mal gemacht um einerseits die Durchmischung als auch die Verdrängung der einzelnen Schichten zu simulieren.
 		#Neue Temperatur für Ladeschicht
-		t_neu_schicht_laden = (schicht_laden["Volumen [m³]"] * water_data_laden["rho"] * water_data_laden["cp"] * 1000 * (schicht_laden["Temperatur [°C]"]) + \
-					m_new * water_data_VL["cp"] * 1000 * (VL)) /  \
-					(schicht_laden["Volumen [m³]"] * water_data_laden["rho"] * water_data_laden["cp"] * 1000 + m_new * water_data_VL["cp"] * 1000)
+			t_neu_schicht_laden = ((m_new * VL) + (schicht_laden["Masse"] * schicht_laden["Temperatur [°C]"])) / \
+							(m_new + schicht_laden["Masse"])	
 
-		self.li_schichten[self.ladezone-1]["Temperatur [°C]"] = t_neu_schicht_laden
+			self.li_schichten[self.ladezone-1]["Temperatur [°C]"] = t_neu_schicht_laden
 
 		#Nun werden alle Schichten unter der Ladezone iteriert und die Temperatur angepasst da sich nun Wasser mit unterschiedlicher Temperatur mischt
-		#Dabei wird von der Ladeschicht nach unten iteriert
-		for i in range(self.ladezone - 1, 0, -1 ):
+		#Dabei wird von der Ladeschicht nach unten iteriert				
+			for i in range(self.ladezone - 1, 0, -1 ):
 
-			#Zwischenvariablen definieren zwecks Übersichtlichkeit
-			schicht_unten = self.li_schichten[i-1]
-			schicht_oben = self.li_schichten[i]
-
-			#Wasserdaten definieren
-			water_data_base = _Liquid(273 + schicht_unten["Temperatur [°C]"])
-			water_data_new = _Liquid(273 + schicht_oben["Temperatur [°C]"])
+				#Zwischenvariablen definieren zwecks Übersichtlichkeit
+				schicht_unten = self.li_schichten[i-1]
+				schicht_oben = self.li_schichten[i]
 			
-			#Zwischenvariable
-			schicht_unten["Masse"] = schicht_unten["Volumen [m³]"] * water_data_base["rho"]
+				#Zwischenvariable
+				schicht_unten["Masse"] = schicht_unten["Volumen [m³]"] * water_data["rho"]
 
+				t_neu = ((m_new * schicht_oben["Temperatur [°C]"]) + (schicht_unten["Masse"] * schicht_unten["Temperatur [°C]"])) / \
+							(m_new + schicht_unten["Masse"])
+				self.li_schichten[i-1]["Temperatur [°C]"] = t_neu
 
-			t_neu = (schicht_unten["Masse"] * water_data_base["cp"] * 1000 * schicht_unten["Temperatur [°C]"] + \
-					m_new * water_data_new["cp"] * 1000 * schicht_oben["Temperatur [°C]"]) /  \
-					(schicht_unten["Masse"] * water_data_base["cp"] * 1000 + m_new * water_data_new["cp"] * 1000)
+		if debug == True:
+			for i in range(self.ladezone - 1, 0, -1 ):		
+				print(f"Funktion: Speicher_Laden")
+				print(f"Ort: Iterierung nach Speicherladung")
+				print(f"Temperatur Schicht {i+1} {self.li_schichten[i]['Temperatur [°C]']} °C")
+				print(f"Temperatur Schicht {i} {self.li_schichten[i-1]['Temperatur [°C]']} °C")
+				print(f"Massenstrom zwischen Schicht {i} und Schicht {i+1} ist {m_new*10} kg/h")
+				print(f"TNEU in Schicht {i} {t_neu} °C")
 			
-			#print(f"Temperatur Schicht {i+1} {self.li_schichten[i]['Temperatur [°C]']} °C")
-			#print(f"Temperatur Schicht {i} {self.li_schichten[i-1]['Temperatur [°C]']} °C")
-			#print(f"Massenstrom zwischen Schicht {i} und Schicht {i+1} ist {m_new} kg/h")
-			#print(f"TNEU in Schicht {i} {t_neu} °C")
-			self.li_schichten[i-1]["Temperatur [°C]"] = t_neu
 
 	def Speicher_Entladen(self, Q_Entladen, RL):
+		"""
+		Parameters:
+		Q_Entladen: Leistung die entladen wird in W
+		RL: Temperatur des Massenstromes in °C kommend vom Heiz-/Kühlkreis
+		"""
 
-		#Es wird gerade immer aus der obersten Schicht Wasser entnommen
-		water_data = _Liquid(273 + self.li_schichten[0]["Temperatur [°C]"])
-
-		#Massenstrom der entnommen wird
-		m_new = (Q_Entladen / (water_data["cp"] * 1000 * abs(self.li_schichten[-1]["Temperatur [°C]"] - RL)))
+		#Zwischenvariablen
+		water_data = _Liquid(273 + RL)
+		schicht_entladen = self.li_schichten[0]
+		schicht_entladen["Masse"] = schicht_entladen["Volumen [m³]"] * water_data["rho"]
+		Q_Entladen_step = Q_Entladen / 10 #pro timestep werden nur 10% der Masse verwendet
 
 		#Neue Temperatur für unterste schicht
-		water_data_zero = _Liquid(273 + self.li_schichten[-1]["Temperatur [°C]"])
-		water_data_RL = _Liquid(273 + RL)
-		t_neu_schicht_0 = (self.li_schichten[-1]["Volumen [m³]"] * water_data_zero["rho"] * water_data_zero["cp"] * 1000 * (self.li_schichten[-1]["Temperatur [°C]"]) + \
-					m_new * water_data_RL["cp"] * 1000 * (RL)) /  \
-					(self.li_schichten[-1]["Volumen [m³]"] * water_data_zero["rho"] * water_data_zero["cp"] * 1000 + m_new * water_data_RL["cp"] * 1000)
-		#Neue Temperatur zuweisen
-		self.li_schichten[-1]["Temperatur [°C]"] = t_neu_schicht_0
+		for timestep in range(10):
+		#Diese Iterierung wird 10 mal gemacht um einerseits die Durchmischung als auch die Verdrängung der einzelnen Schichten zu simulieren.
+		#Neue Temperatur für Ladeschicht
+			m_new = Q_Entladen_step / (water_data["cp"] * 1000 * abs(self.li_schichten[-1]["Temperatur [°C]"]-RL)) * 3600
+			t_neu_schicht_entladen = ((m_new * RL) + (schicht_entladen["Masse"] * schicht_entladen["Temperatur [°C]"])) / \
+							(m_new + schicht_entladen["Masse"])	
+
+			self.li_schichten[0]["Temperatur [°C]"] = t_neu_schicht_entladen
+
+		#Nun werden alle Schichten unter der Ladezone iteriert und die Temperatur angepasst da sich nun Wasser mit unterschiedlicher Temperatur mischt
+		#Dabei wird von der Ladeschicht nach unten iteriert				
+			for i in range(0, self.anz_schichten-1):
+
+				#Zwischenvariablen definieren zwecks Übersichtlichkeit
+				schicht_unten = self.li_schichten[i]
+				schicht_oben = self.li_schichten[i+1]
+			
+				#Zwischenvariable
+				schicht_oben["Masse"] = schicht_oben["Volumen [m³]"] * water_data["rho"]
+
+				t_oben_neu = ((m_new * schicht_unten["Temperatur [°C]"]) + (schicht_oben["Masse"] * schicht_oben["Temperatur [°C]"])) / \
+							(m_new + schicht_oben["Masse"])
+				self.li_schichten[i+1]["Temperatur [°C]"] = t_oben_neu
+
+		if debug == True:
+			for i in range(0, self.anz_schichten-1):		
+				print(f"Funktion: Speicher_Entladen")
+				print(f"Ort: Iterierung nach Speicherentladung")
+				print(f"Temperatur Schicht {i} {self.li_schichten[i]['Temperatur [°C]']} °C")
+				print(f"Temperatur Schicht {i+1} {self.li_schichten[i+1]['Temperatur [°C]']} °C")
+				print(f"Massenstrom zwischen Schicht {i} und Schicht {i+1} ist {m_new*10} kg/h")
+				print(f"TNEU in Schicht {i+1} {t_oben_neu} °C")
+			
 		#Nun werden alle Schichten iteriert und die Temperatur angepasst da sich nun Wasser mit unterschiedlicher Temperatur mischt
 		#Dabei wird von der untersten Schicht nach oben iteriert
-		for i in range(self.anz_schichten - 1, 0, -1 ):
 
-			#Zwischenvariablen definieren zwecks Übersichtlichkeit
-			schicht_unten = self.li_schichten[i]
-			schicht_oben = self.li_schichten[i-1]
 
-			#Wasserdaten definieren
-			water_data_base = _Liquid(273 + schicht_unten["Temperatur [°C]"])
-			water_data_new = _Liquid(273 + schicht_oben["Temperatur [°C]"])
-			
-			#Zwischenvariable
-			schicht_oben["Masse"] = schicht_oben["Volumen [m³]"] * water_data_base["rho"]
-
-			#Neue Temperatur für obere Schicht berechnen
-			#Formel von hier: https://rechneronline.de/chemie-rechner/temperaturen-mischen.php
-			t_neu = (schicht_oben["Masse"] * water_data_new["cp"] * 1000 * schicht_oben["Temperatur [°C]"] + \
-					m_new * water_data_base["cp"] * 1000 * schicht_unten["Temperatur [°C]"]) /  \
-					(schicht_oben["Masse"] * water_data_new["cp"] * 1000 + m_new * water_data_base["cp"] * 1000)
-			
-			#print(f"Temperatur Schicht {i+1} {schicht_unten['Temperatur [°C]']} °C")
-			#print(f"Temperatur Schicht {i} {schicht_oben['Temperatur [°C]']} °C")
-			#print(f"Massenstrom zwischen Schicht {i} und Schicht {i+1} ist {m_new} kg/h")
-			#print(f"TNEU in Schicht {i+1} {t_neu} °C")
-			#Neue Temperatur zuweisen
-			self.li_schichten[i-1]["Temperatur [°C]"] = t_neu
 
 	def MixSchichten(self):
 		"""Diese Funktion mischt die Schichten zu jeder Stunde durch.
@@ -320,14 +323,15 @@ class Wärmespeicher():
 
 		for i in range(len(self.li_schichten)-1): #Es gibt immer um 1 weniger Anzahl an kontaktflächen als Anzahl schichten
 
-			water_data_unten = _Liquid(273 + self.li_schichten[i]["Temperatur [°C]"])
-			water_data_oben = _Liquid(273 + self.li_schichten[i+1]["Temperatur [°C]"])
+			water_data = _Liquid(273 + self.li_schichten[i]["Temperatur [°C]"])
+
 
 			schicht_unten = self.li_schichten[i]
-			schicht_unten["Masse"] = schicht_unten["Volumen [m³]"] * water_data_unten["rho"]
+			schicht_unten["Masse"] = schicht_unten["Volumen [m³]"] * water_data["rho"]
 			schicht_oben = self.li_schichten[i+1]
-			schicht_oben["Masse"] = schicht_oben["Volumen [m³]"] * water_data_oben["rho"]
+			schicht_oben["Masse"] = schicht_oben["Volumen [m³]"] * water_data["rho"]
 			m_Mischung = schicht_unten["Masse"] * 0.05
+
 			t_neu_oben = ((m_Mischung * schicht_unten["Temperatur [°C]"]) + (schicht_oben["Masse"] * schicht_oben["Temperatur [°C]"])) / \
 					(m_Mischung + schicht_oben["Masse"])
 
@@ -379,11 +383,13 @@ class Wärmespeicher():
 	def UpdateSpeicher(self):
 		"""Diese Funktion führt zu jeder Stunde die Verlustrechnung sowie die natürliche Konvektion durch"""
 		self.Transmission_total()
+		#self.Speicher_Laden(47,50)
 		self.Heat_Convection()
 		self.MixSchichten()
-#wärmespeicher = Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 35, RL = 30, schichten = 5, ladezone = 3, height = 2, diameter = 0.5)
+		#self.Speicher_Entladen(1000,27)
 
 
+#wärmespeicher = Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 35, RL = 30, schichten = 5, ladezone = 3, height = 1, diameter = 0.714)
 
 
 

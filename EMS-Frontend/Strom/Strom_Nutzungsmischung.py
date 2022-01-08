@@ -46,9 +46,6 @@ class WindowGesamtprofil_Strombedarf(QWidget):
         #connect Signal
         self.keyPressed.connect(self.on_key)
 
-        
-
-
         #Zwischenvariablen
         self.y_hour = []
         self.y_month = []
