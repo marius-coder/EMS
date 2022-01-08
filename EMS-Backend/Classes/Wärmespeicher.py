@@ -282,7 +282,10 @@ class Wärmespeicher():
 		for timestep in range(10):
 		#Diese Iterierung wird 10 mal gemacht um einerseits die Durchmischung als auch die Verdrängung der einzelnen Schichten zu simulieren.
 		#Neue Temperatur für Ladeschicht
-			m_new = Q_Entladen_step / (water_data["cp"] * 1000 * abs(self.li_schichten[-1]["Temperatur [°C]"]-RL)) * 3600
+			try:
+				m_new = Q_Entladen_step / (water_data["cp"] * 1000 * abs(self.li_schichten[-1]["Temperatur [°C]"]-RL)) * 3600
+			except:
+				pass
 			t_neu_schicht_entladen = ((m_new * RL) + (schicht_entladen["Masse"] * schicht_entladen["Temperatur [°C]"])) / \
 							(m_new + schicht_entladen["Masse"])	
 
@@ -390,7 +393,7 @@ class Wärmespeicher():
 
 
 #wärmespeicher = Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 35, RL = 30, schichten = 5, ladezone = 3, height = 1, diameter = 0.714)
-
+#print("s")
 
 
 

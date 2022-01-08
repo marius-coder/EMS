@@ -34,8 +34,8 @@ class Simulation():
 		 self.ta = np.genfromtxt("./EMS-Backend/data/climate.csv", delimiter=";", usecols = (1), skip_header = 1) #°C
 		 self.qsolar = np.genfromtxt("./EMS-Backend/data/Solar_gains.csv") #W/m² Solar gains
 		 self.import_data = Import.importGUI
-		 self.warmwater_data = self.import_data.input_Warmwater
-		 self.PV_Bat_data = self.import_data.input_PV_Batterie
+		 #self.warmwater_data = self.import_data.input_Warmwater
+		 #self.PV_Bat_data = self.import_data.input_PV_Batterie
 
 	def Setup_Simulation(self):
 		""" """
@@ -88,12 +88,12 @@ class Simulation():
 		self.t_cooling = 26
 		self.b_heating = True
 
-		self.Speicher_HZG = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 2, diameter = 1)
+		self.Speicher_HZG = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 3, diameter = 3)
 		self.WP_HZG = ImportWP.Wärmepumpe(10,4.5,self.Speicher_HZG,WP_VL_HZG = 35, geb_VL_HZG = 30, WP_VL_KLG = 6, geb_VL_KLG = 8)
 
 		self.Speicher_WW = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 2, diameter = 1)
 		self.WP_WW = ImportWP.Wärmepumpe(20,4,self.Speicher_WW,WP_VL_HZG = 65, geb_VL_HZG = 60, WP_VL_KLG = 0, geb_VL_KLG = 0)
-		self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
+		#self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
 		
 		self.building.insert_windows(1.2, 25)
 		stat_HL = self.Static_HL()
@@ -101,6 +101,12 @@ class Simulation():
 
 		self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]
 		self.cooling_months = [4, 5, 6, 7, 8, 9]
+
+		self.t_hzg_VL = 30
+		self.t_hzg_RL = 25
+		self.t_klg_VL = 8
+		self.t_klg_RL = 12
+
 		
 		print(f"Die statische Heizlast beträgt {round(stat_HL['Heizlast [W]'] / 1000,2)} kW")
 		print(f"Die statische Kühllast beträgt {round(stat_KL['Kühllast [W]'] / 1000,2)} kW")
@@ -249,21 +255,46 @@ class Simulation():
 			self.ti[hour] = self.ti_sim
 			#Heizen
 			if DetermineMonth(hour) in self.heating_months:
-				self.WP_HZG.Pel_Betrieb[hour] = self.q_gesamt / self.WP_HZG.COP
+
+				#Check_SpeicherHeizen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
+				#Wenn notwendig schaltet diese Funktion auch die WP ein
+				self.WP_HZG.Check_SpeicherHeizen()
+
+				if self.WP_HZG.is_on == True:
+					self.WP_HZG.Pel_Betrieb[hour] = self.WP_HZG.Pel
+				else:
+					self.WP_HZG.Pel_Betrieb[hour] = 0
+				#Benötigte Wärmeenergie um auf Solltemperatur zu kommen
 				self.q_soll = self.heating_power(self.t_soll[hour], self.ti_sim, self.building.heat_capacity, self.building.gfa)
+
+				#Energie aus dem Speicher entnehmen
+				self.WP_HZG.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = self.t_hzg_RL)
+				#Neue Innentemperatur berechnen
 				self.handle_losses(hour, q_toApply = self.q_soll)
 
 
 
 			elif DetermineMonth(hour) in self.cooling_months:
-				self.WP_HZG.Pel_Betrieb[hour] = self.q_gesamt / (self.WP_HZG.COP - 1)
+
+				#Check_SpeicherKühlen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
+				#Wenn notwendig schaltet diese Funktion auch die WP ein
+				self.WP_HZG.Check_SpeicherKühlen()
+
+				if self.WP_HZG.is_on == True:
+					self.WP_HZG.Pel_Betrieb[hour] = self.WP_HZG.Pel
+				else:
+					self.WP_HZG.Pel_Betrieb[hour] = 0
+				#Benötigte Wärmeenergie um auf Solltemperatur zu kommen
 				self.q_soll = self.heating_power(self.t_soll[hour], self.ti_sim, self.building.heat_capacity, self.building.gfa)
+
+				#Energie aus dem Speicher entnehmen
+				self.WP_HZG.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = self.t_hzg_RL)
+				#Neue Innentemperatur berechnen
 				self.handle_losses(hour, q_toApply = self.q_soll)
-			if self.ti[hour] < 19.99:
-				print("")
+
 			print("Temp nach Heizen: ",self.ti_sim)
 			print("---------------------------------------------------------------")
-
+			continue
 			#Warmwasser
 			self.warmwater_data
 			month = DetermineMonth(hour)
@@ -274,40 +305,7 @@ class Simulation():
 			self.q_warmwater[hour] = Q_warmwater
 			
 			
-			#if DetermineMonth(hour) in self.heating_months:
-			#	if self.b_heating == False:
-			#		pass
-			#		#ChangeOver
-			#		#Changeoverbetrieb für 24h
 
-			#	self.b_heating = True
-			#	#Check_SpeicherHeizen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
-			#	self.WP_HZG.Check_SpeicherHeizen()
-
-			#	if self.ti[hour] < self.t_heating:
-			#		self.q_soll = self.heating_power(self.t_soll[hour], self.ti[hour], self.building.heat_capacity, self.building.gfa)
-			#		self.Speicher_HZG.Speicher_Entladen(self.q_soll, 27)
-
-			#		self.handle_losses(hour, q_toApply = self.q_soll)
-			#		print("Temp nach Heizen: ",self.ti[hour])
-			#		print("---------------------------------------------------------------")
-
-			#elif DetermineMonth(hour) in self.cooling_months:
-			#	if self.b_heating == True:
-			#		pass
-			#		#ChangeOver
-			#		#Changeoverbetrieb für 24h
-			#	self.b_heating = False
-			#	#Check_SpeicherKühlen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
-			#	self.WP_HZG.Check_SpeicherKühlen()
-
-			#	if self.ti[hour] > self.t_cooling:
-			#		self.q_soll = self.heating_power(self.t_soll[hour], self.ti[hour], self.building.heat_capacity, self.building.gfa)
-			#		self.Speicher_HZG.Speicher_Entladen(self.q_soll, 27)
-
-			#		self.handle_losses(hour, q_toApply = self.q_soll)
-			#		print("Temp nach Heizen: ",self.ti[hour])
-			#		print("---------------------------------------------------------------")
 			
 			#Strom
 			self.Pel_gebäude[hour] = self.CalcStrombedarf(hour, month, hourofDay)
