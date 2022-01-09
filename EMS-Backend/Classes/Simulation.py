@@ -250,9 +250,12 @@ class Simulation():
 			self.q_gesamt = self.q_außen[hour] + self.q_innen[hour]
 			self.handle_losses(hour, q_toApply = self.q_gesamt) #Neue Innentemperatur rechnen
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
+			print("Stunde: ",hour)
 			print("Verluste: ",self.q_gesamt)
 			print("Temp vor Heizen: ",self.ti_sim)
 			self.ti[hour] = self.ti_sim
+			if hour == 2892:
+				print("")
 			#Heizen
 			if DetermineMonth(hour) in self.heating_months:
 
@@ -292,6 +295,7 @@ class Simulation():
 				#Neue Innentemperatur berechnen
 				self.handle_losses(hour, q_toApply = self.q_soll)
 
+
 			print("Temp nach Heizen: ",self.ti_sim)
 			print("---------------------------------------------------------------")
 			continue
@@ -311,6 +315,8 @@ class Simulation():
 			self.Pel_gebäude[hour] = self.CalcStrombedarf(hour, month, hourofDay)
 			reslast = self.Stromnetz.CalcResLast(hour,self.Pel_gebäude[hour])
 			self.Stromnetz.CheckResLast(hour,reslast)
+		print(f"MAXIMALE TEMPERATUR: {max(self.ti)}")
+		print(f"MINIMALE TEMPERATUR: {min(self.ti)}")
 
 
 			
@@ -365,9 +371,3 @@ def DetermineMonth(hour):
 #model.Setup_Simulation()
 #model.Simulate()
 
-#x = np.linspace(0,8760,8760)
-#y = model.ti
-#p = figure(title="Simple line example", x_axis_label='x', y_axis_label='y')
-
-#p.line(x, y, legend_label="Temp.", line_width=2)
-#show(p)

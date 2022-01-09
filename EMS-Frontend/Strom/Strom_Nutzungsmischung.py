@@ -30,6 +30,8 @@ class WindowGesamtprofil_Strombedarf(QWidget):
             indices = self.table.selectionModel().selectedRows() 
             for index in sorted(indices):
                 self.table.removeRow(index.row()) 
+                del self.y_hour[index.row()]
+                del self.y_month[index.row()]
             self.UpdatePlot()
 
 

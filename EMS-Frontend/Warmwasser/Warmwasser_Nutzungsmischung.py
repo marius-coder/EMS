@@ -30,6 +30,8 @@ class WindowGesamtprofil_Warmwasser(QWidget):
             indices = self.table.selectionModel().selectedRows() 
             for index in sorted(indices):
                 self.table.removeRow(index.row()) 
+                del self.y_hour[index.row()]
+                del self.y_month[index.row()]
             self.UpdatePlot()
 
 
@@ -156,7 +158,7 @@ class WindowGesamtprofil_Warmwasser(QWidget):
 
                 WW_temp = [a + b for a, b in zip(WW_temp, y_temp)]
             else:
-                return
+                return            
        
         WW_Gesamt["month [l]"] = [element * 365 for element in WW_temp]
         #Prozent berechnen
