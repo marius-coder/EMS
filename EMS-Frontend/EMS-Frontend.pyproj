@@ -49,8 +49,10 @@
   <ItemGroup>
     <Content Include="data\Erdwärme_Profile.csv" />
     <Content Include="data\PV_Bat_Profile.csv" />
+    <Content Include="data\Strombedarf_Nutzungsmischungen.csv" />
     <Content Include="data\Strom_Profile.csv" />
     <Content Include="data\Strom_Profile_Default.csv" />
+    <Content Include="data\Warmwasser_Nutzungsmischungen.csv" />
     <Content Include="data\Warmwasser_Profile.csv" />
     <Content Include="data\Warmwasser_Profile_Default.csv" />
   </ItemGroup>
