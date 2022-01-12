@@ -61,6 +61,11 @@ class WindowGesamtprofil_Warmwasser(QWidget):
         lay.addWidget(self.m_output)
         lay.addWidget(self.table)
 
+        #Wir müssen die Figur vorrendern damit der PLot immer dargestellt wird
+        p = figure(width=800, height=300)
+        html = embed.file_html(p, resources.CDN, "my plot")
+        self.m_output.setHtml(html)
+
         #Radiobuttons fürs umschalten zwischen Stunden und Monatsbetrachtung
         self.radioButton_hour = QtWidgets.QRadioButton(self)
         self.radioButton_hour.setGeometry(QtCore.QRect(20, 370, 82, 17))    
@@ -251,6 +256,7 @@ class WindowGesamtprofil_Warmwasser(QWidget):
 
         except Exception as e:
            if e.__class__.__name__ == "AttributeError":
+               print("ERROR")
                pass
            else:
                raise
@@ -259,6 +265,8 @@ class WindowGesamtprofil_Warmwasser(QWidget):
 
 
     def AddProfile(self, data):
+        self.table.itemChanged.disconnect()
+
 			#"Profilname" : data[0],
 			#"WW-Verbrauch_Stunde [%]" : data[1:25],
            # "WW-Verbrauch_Monat [%]" : data[27:],
@@ -284,6 +292,8 @@ class WindowGesamtprofil_Warmwasser(QWidget):
         item.setFlags(flags)
         self.table.setItem(rowPosition , 4, item)
         self.table.resizeColumnsToContents()
+
+        self.table.itemChanged.connect(self.UpdatePlot)
 
         self.UpdatePlot()
        

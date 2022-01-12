@@ -26,7 +26,12 @@ class Ui_Main(object):
         Form.setObjectName("Form")
         Form.resize(750, 230)
 
-        
+        self.Erdärme = Ui_Erdwärme()
+        self.Gebäude = Ui_Gebäude()
+        self.Strombedarf = Ui_Strombedarf()
+        self.Warmwasser = Ui_Warmwasser()
+        self.PV_Batterie = Ui_PV_Batterie()
+
         self.pushButton_Gebäude = QtWidgets.QPushButton(Form)
         self.pushButton_Gebäude.setGeometry(QtCore.QRect(20, 20, 75, 23))
         self.pushButton_Gebäude.setObjectName("pushButton_Gebäude")
@@ -172,24 +177,21 @@ class Ui_Main(object):
         self.pushButton_SaveProfile.clicked.connect(self.SaveProfile)
         self.pushButton_DeleteProfile.clicked.connect(self.DeleteProfile)
 
-    def OpenErdwarme(self):
-        self.Erdärme = Ui_Erdwärme()
+    def OpenErdwarme(self):        
         self.Erdärme.show()
 
     def OpenGebaude(self):
-        self.Gebäude = Ui_Gebäude()
         self.Gebäude.show()
 
     def OpenStrombedarf(self):
-        self.Strombedarf = Ui_Strombedarf()
         self.Strombedarf.show()
+        self.Strombedarf.graphWindow.show()
 
-    def OpenWarmwasser(self):
-        self.Warmwasser = Ui_Warmwasser()
+    def OpenWarmwasser(self):        
         self.Warmwasser.show()
+        self.Warmwasser.graphWindow.show()
 
     def OpenPV_Batterie(self):
-        self.PV_Batterie = Ui_PV_Batterie()
         self.PV_Batterie.show()
 
     def Simulate(self):
@@ -233,12 +235,17 @@ class Ui_Main(object):
         for row in range(self.Warmwasser.graphWindow.table.rowCount()):
             #Stündliches Profil
             for item in self.Warmwasser.graphWindow.y_hour[row]:
-                columnString += str(item) + "----"
+                columnString += str(item) + "----" #Custom Seperator zwischen einzelnen Items
+            columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
+        li_toSave_WW.append(columnString)
+
+        columnString = ""
+        for row in range(self.Warmwasser.graphWindow.table.rowCount()):
             #Monatliches Profil
             for item in self.Warmwasser.graphWindow.y_month[row]:
                 columnString += str(item) + "----"
-            columnString = columnString[:-4]
-            li_toSave_WW.append(columnString)
+            columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
+        li_toSave_WW.append(columnString)
 
         #Neues Profil hinzufügen
         with open("./EMS-Frontend/data/Warmwasser_Nutzungsmischungen.csv",'a', newline='', encoding="utf-8") as f:
@@ -257,15 +264,20 @@ class Ui_Main(object):
             li_toSave_Strom.append(columnString)
 
         columnString = ""
-        for row in range(self.Warmwasser.graphWindow.table.rowCount()):    
+        for row in range(self.Strombedarf.graphWindow.table.rowCount()):           
             #Stündliches Profil
             for item in self.Strombedarf.graphWindow.y_hour[row]:
                 columnString += str(item) + "----"
-            #Monatliches Profil
+            columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
+        li_toSave_Strom.append(columnString)
+
+        columnString = ""
+        for row in range(self.Strombedarf.graphWindow.table.rowCount()):
+            #Monatliches Profil            
             for item in self.Strombedarf.graphWindow.y_month[row]:
-                columnString += str(item) + "----"
-            columnString = columnString[:-4]
-            li_toSave_Strom.append(columnString)
+                columnString += str(item) + "----"      
+            columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
+        li_toSave_Strom.append(columnString)
 
         #Neues Profil hinzufügen
         with open("./EMS-Frontend/data/Strombedarf_Nutzungsmischungen.csv",'a', newline='', encoding="utf-8") as f:
@@ -317,25 +329,77 @@ class Ui_Main(object):
             widget.setText(values[i])
 
         #Nutzungsmischung Warmwasser laden
-        df = pd.read_csv("./EMS-Frontend/data/Warmwasser_Nutzungsmischungen.csv", delimiter = ",", encoding='utf-8')
-        name = self.comboBox_SelectProfile.currentText()
-        self.lineEdit_Profil.setText(name)
-        values = df[df.values == name].values.flatten().tolist()
-        #self.Warmwasser.graphWindow
+        def Load_Nutzungsmischung(df,mode):
+            name = self.comboBox_SelectProfile.currentText()
+            self.lineEdit_Profil.setText(name)
+            values = df[df.values == name].values.flatten().tolist()
+            values_test = df[df.values == name].values.flatten()
+            #print(df.info())
+            print(df["Name"])
+            print(df["Gesamtfläche"])
+            print("------------------------------")
+            
+            li_data = [values[2],values[-2],values[-1]]
+            #Create list empty Dictionarys
+            dicts = [{} for _ in range(len(values[2].split("----"))-1)]
+            for it_first,value in enumerate(li_data):
+                if it_first in [1,2]:
+                    value = [x.split('----') for x in value.split('____')]
+                    if len(value) > len(dicts):
+                        del value[-1] #Letzter Slot in der Liste ist immer leer durchs splitten
+                else:
+                    value = value.split("----")
+                    del value[-1] #Letzter Slot in der Liste ist immer leer durchs splitten
 
-        for i,value in enumerate(values[2:]):
-            value = value.split("----")
-            datapoints = ["Profilname","WW-Verbrauch_Stunde [%]","WW-Verbrauch_Monat [%]","Verbrauchsart"]
-            for datapoint in datapoints:
-                for i in range(len(value)):
-                    continue
-                    #data = {
-                    #    "Profilname" : data[0],
-                    #    }
-        #
-			#"WW-Verbrauch_Stunde [%]" : data[1:25],
-           # "WW-Verbrauch_Monat [%]" : data[27:],
-			#"Verbrauchsart" : data[25:27],
+                datapoints = ["Profilname","WW-Verbrauch_Stunde [%]","WW-Verbrauch_Monat [%]","Verbrauchsart"]
+                for it_second in range(len(value)):
+                    dicts[it_second][datapoints[it_first]] = value[it_second]
+        
+            value_0 = values[5].split("----")
+            del value_0[-1]
+            value_1 = values[6].split("----")
+            del value_1[-1]
+            if mode == "Strom":
+                value_0 = values[4].split("----")
+                del value_0[-1]
+                value_1 = values[5].split("----")
+                del value_1[-1]
+                value_2 = values[7].split("----")
+                del value_2[-1]
+            for it in range(len(value_0)):
+                dicts[it]["Verbrauchsart"] = [0,0]
+                try:
+                    dicts[it]["Verbrauchsart"][0] = float(value_0[it])
+                except:
+                    dicts[it]["Verbrauchsart"][0] = value_0[it]
+                try:
+                    dicts[it]["Verbrauchsart"][1] = float(value_1[it])
+                except:
+                    dicts[it]["Verbrauchsart"][1] = value_1[it]
+                if mode == "Strom":
+                    dicts[it]["Verbrauchsart"].append(0)
+                    try:
+                        dicts[it]["Verbrauchsart"][2] = float(value_1[it])
+                    except:
+                        dicts[it]["Verbrauchsart"][2] = value_2[it]
+                        #data = {
+                        #    "Profilname" : data[0],
+                        #    }
+            #
+			    #"WW-Verbrauch_Stunde [%]" : data[1:25],
+               # "WW-Verbrauch_Monat [%]" : data[27:],
+			    #"Verbrauchsart" : data[25:27],
+            for data in dicts:
+                data["WW-Verbrauch_Stunde [%]"] = [float(item) for item in data["WW-Verbrauch_Stunde [%]"]]
+                data["WW-Verbrauch_Monat [%]"] = [float(item) for item in data["WW-Verbrauch_Monat [%]"]]
+                if mode == "Warmwasser":
+                    self.Warmwasser.graphWindow.AddProfile(data)
+                elif mode == "Strom":
+                    self.Strombedarf.graphWindow.AddProfile(data)
+        df_WW = pd.read_csv("./EMS-Frontend/data/Warmwasser_Nutzungsmischungen.csv", sep = ",", encoding='utf-8')
+        Load_Nutzungsmischung(df_WW,"Warmwasser")
+        df_Strom = pd.read_csv("./EMS-Frontend/data/Strombedarf_Nutzungsmischungen.csv", sep = ",", encoding='utf-8')
+        Load_Nutzungsmischung(df_Strom,"Strom")
         
 
 

@@ -58,6 +58,11 @@ class WindowGesamtprofil_Strombedarf(QWidget):
         lay.addWidget(self.m_output)
         lay.addWidget(self.table)
 
+        #Wir müssen die Figur vorrendern damit der PLot immer dargestellt wird
+        p = figure(width=800, height=300)
+        html = embed.file_html(p, resources.CDN, "my plot")
+        self.m_output.setHtml(html)
+
         #Radiobuttons fürs umschalten zwischen Stunden und Monatsbetrachtung
         self.radioButton_hour = QtWidgets.QRadioButton(self)
         self.radioButton_hour.setGeometry(QtCore.QRect(20, 370, 82, 17))    
@@ -274,6 +279,8 @@ class WindowGesamtprofil_Strombedarf(QWidget):
 
 
     def AddProfile(self, data):
+        self.table.itemChanged.disconnect()
+
 			#"Profilname" : data[0],
 			#"WW-Verbrauch_Stunde [%]" : data[1:25],
            # "WW-Verbrauch_Monat [%]" : data[27:],
@@ -302,8 +309,8 @@ class WindowGesamtprofil_Strombedarf(QWidget):
         item.setFlags(flags)
         self.table.setItem(rowPosition , 5, item)
 
-
         self.table.resizeColumnsToContents()
+        self.table.itemChanged.connect(self.UpdatePlot)
 
         self.UpdatePlot()
        

@@ -24,6 +24,7 @@ class Ui_Warmwasser(QMainWindow):
         self.resize(1050, 550)
         self.setStyleSheet(Slider.GetFancySlider())
         self.graphWindow = WindowGesamtprofil_Warmwasser()
+        
 
         #Hier werden beide Fenster richtig positioniert
         #Die Fenstergröße wird hierbei dynamisch an die Bildschirmgröße angepasst
@@ -354,12 +355,12 @@ class Ui_Warmwasser(QMainWindow):
 			"Verbrauchsart" : data[25:27],
                 }
         self.graphWindow.AddProfile(data)
-        self.ShowGraph()
+        self.graphWindow.show()
         
        
 
-    def ShowGraph(self):
-        self.graphWindow.show()
+    
+        
 
 class MainWindow(QMainWindow):
     def __init__(self):
