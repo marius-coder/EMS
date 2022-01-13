@@ -16,6 +16,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_Warmwasser(QMainWindow):
 
+    #Event überschreiben damit sich childWindow automatisch mitschließt
+    def closeEvent(self, *args, **kwargs):
+        super(QMainWindow, self).closeEvent(*args, **kwargs)
+        #self.graphWindow.close()
     def __init__(self):
         super().__init__()
 
@@ -23,8 +27,8 @@ class Ui_Warmwasser(QMainWindow):
         self.setObjectName("self")
         self.resize(1050, 550)
         self.setStyleSheet(Slider.GetFancySlider())
-        self.graphWindow = WindowGesamtprofil_Warmwasser()
         
+        self.graphWindow = WindowGesamtprofil_Warmwasser()     
 
         #Hier werden beide Fenster richtig positioniert
         #Die Fenstergröße wird hierbei dynamisch an die Bildschirmgröße angepasst
@@ -354,8 +358,9 @@ class Ui_Warmwasser(QMainWindow):
             "WW-Verbrauch_Monat [%]" : data[27:],
 			"Verbrauchsart" : data[25:27],
                 }
+
         self.graphWindow.AddProfile(data)
-        self.graphWindow.show()
+
         
        
 

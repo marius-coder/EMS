@@ -214,76 +214,47 @@ class Ui_Main(object):
         if name == "":
             return
    
-        li_toSave = []
-        li_toSave.append(name)
+        li_toSaveProfileNames = []
+        li_toSaveProfileNames.append(name)
 
         for widget in self.li_inputWidgets:            
-                li_toSave.append(widget.text())
+                li_toSaveProfileNames.append(widget.text())
 
-        #Save Warmwasser Nutzungsmischung
-        li_toSave_WW = []
-        li_toSave_WW.append(name)
-        li_toSave_WW.append(self.Warmwasser.graphWindow.lineEdit_Fläche.text())
-        for column in range(self.Warmwasser.graphWindow.table.columnCount()): 
+        def SaveNutzungsmischung(type):
+            li_toSave = []
+            li_toSave.append(name)
+            obj = getattr(self,type)
+            li_toSave.append(obj.graphWindow.lineEdit_Fläche.text())
+            for column in range(obj.graphWindow.table.columnCount()): 
+                columnString = ""
+                #Items aus der Tabelle
+                for row in range(obj.graphWindow.table.rowCount()):
+                    columnString += obj.graphWindow.table.item(row, column).text() + "----"
+                li_toSave.append(columnString)
+
             columnString = ""
-            #Items aus der Tabelle
-            for row in range(self.Warmwasser.graphWindow.table.rowCount()):
-                columnString += self.Warmwasser.graphWindow.table.item(row, column).text() + "----"
-            li_toSave_WW.append(columnString)
+            for row in range(obj.graphWindow.table.rowCount()):
+                #Stündliches Profil
+                for item in obj.graphWindow.y_hour[row]:
+                    columnString += str(item) + "----" #Custom Seperator zwischen einzelnen Items
+                columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
+            li_toSave.append(columnString)
 
-        columnString = ""
-        for row in range(self.Warmwasser.graphWindow.table.rowCount()):
-            #Stündliches Profil
-            for item in self.Warmwasser.graphWindow.y_hour[row]:
-                columnString += str(item) + "----" #Custom Seperator zwischen einzelnen Items
-            columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
-        li_toSave_WW.append(columnString)
-
-        columnString = ""
-        for row in range(self.Warmwasser.graphWindow.table.rowCount()):
-            #Monatliches Profil
-            for item in self.Warmwasser.graphWindow.y_month[row]:
-                columnString += str(item) + "----"
-            columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
-        li_toSave_WW.append(columnString)
-
-        #Neues Profil hinzufügen
-        with open("./EMS-Frontend/data/Warmwasser_Nutzungsmischungen.csv",'a', newline='', encoding="utf-8") as f:
-            writer = csv.writer(f, lineterminator='\n')
-            writer.writerow(li_toSave_WW)
-
-        #Save Strombedarf Nutzungsmischung
-        li_toSave_Strom = []
-        li_toSave_Strom.append(name)
-        li_toSave_Strom.append(self.Strombedarf.graphWindow.lineEdit_Fläche.text())
-        for column in range(self.Strombedarf.graphWindow.table.columnCount()): 
             columnString = ""
-            #Items aus der Tabelle
-            for row in range(self.Strombedarf.graphWindow.table.rowCount()):
-                columnString += self.Strombedarf.graphWindow.table.item(row, column).text() + "----"
-            li_toSave_Strom.append(columnString)
+            for row in range(obj.graphWindow.table.rowCount()):
+                #Monatliches Profil
+                for item in obj.graphWindow.y_month[row]:
+                    columnString += str(item) + "----"
+                columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
+            li_toSave.append(columnString)
 
-        columnString = ""
-        for row in range(self.Strombedarf.graphWindow.table.rowCount()):           
-            #Stündliches Profil
-            for item in self.Strombedarf.graphWindow.y_hour[row]:
-                columnString += str(item) + "----"
-            columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
-        li_toSave_Strom.append(columnString)
+            #Neues Profil hinzufügen
+            with open("./EMS-Frontend/data/" + type + "_Nutzungsmischungen.csv",'a', newline='', encoding="utf-8") as f:
+                writer = csv.writer(f, lineterminator='\n')
+                writer.writerow(li_toSave)
 
-        columnString = ""
-        for row in range(self.Strombedarf.graphWindow.table.rowCount()):
-            #Monatliches Profil            
-            for item in self.Strombedarf.graphWindow.y_month[row]:
-                columnString += str(item) + "----"      
-            columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
-        li_toSave_Strom.append(columnString)
-
-        #Neues Profil hinzufügen
-        with open("./EMS-Frontend/data/Strombedarf_Nutzungsmischungen.csv",'a', newline='', encoding="utf-8") as f:
-            writer = csv.writer(f, lineterminator='\n')
-            writer.writerow(li_toSave_Strom)
-
+        SaveNutzungsmischung("Warmwasser")
+        SaveNutzungsmischung("Strombedarf")
 
         #Kontrolle ob ein Profil mit diesem Namen bereits existiert
         if name in names:
@@ -291,7 +262,7 @@ class Ui_Main(object):
         #Neues Profil hinzufügen
         with open("./EMS-Frontend/data/Simulation_Profile.csv",'a', newline='', encoding="utf-8") as f:
             writer = csv.writer(f, lineterminator='\n')
-            writer.writerow(li_toSave)
+            writer.writerow(li_toSaveProfileNames)
         self.UpdateProfiles()
    
     def DeleteProfile(self):
@@ -332,14 +303,9 @@ class Ui_Main(object):
         def Load_Nutzungsmischung(df,mode):
             name = self.comboBox_SelectProfile.currentText()
             self.lineEdit_Profil.setText(name)
-            values = df[df.values == name].values.flatten().tolist()
-            values_test = df[df.values == name].values.flatten()
-            #print(df.info())
-            print(df["Name"])
-            print(df["Gesamtfläche"])
-            print("------------------------------")
-            
+            values = df[df.values == name].values.flatten().tolist()            
             li_data = [values[2],values[-2],values[-1]]
+
             #Create list empty Dictionarys
             dicts = [{} for _ in range(len(values[2].split("----"))-1)]
             for it_first,value in enumerate(li_data):

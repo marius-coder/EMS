@@ -16,6 +16,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_Strombedarf(QMainWindow):
 
+    #Event überschreiben damit sich childWindow automatisch mitschließt
+    def closeEvent(self, *args, **kwargs):
+        super(QMainWindow, self).closeEvent(*args, **kwargs)
+        self.graphWindow.close()
+
     def __init__(self):
         super().__init__()
    

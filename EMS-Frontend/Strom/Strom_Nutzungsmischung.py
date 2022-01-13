@@ -29,9 +29,15 @@ class WindowGesamtprofil_Strombedarf(QWidget):
         if event.key() == QtCore.Qt.Key_Delete:
             indices = self.table.selectionModel().selectedRows() 
             for index in sorted(indices):
-                self.table.removeRow(index.row()) 
-                del self.y_hour[index.row()]
-                del self.y_month[index.row()]
+                #Falls alle indices gleichzeitig ausgewählt sind beim löschen, gibts nen Error -> deswegen "pass"
+                #damit das programm nicht abstürzt
+                try:
+                    self.table.removeRow(index.row()) 
+                    del self.y_hour[index.row()]
+                    del self.y_month[index.row()]
+                except Exception as e:
+                    if e.__class__.__name__ == "AttributeError":                    
+                        pass
             self.UpdatePlot()
 
 
@@ -55,9 +61,12 @@ class WindowGesamtprofil_Strombedarf(QWidget):
         #Layout
         self.m_output = QtWebEngineWidgets.QWebEngineView()
         lay = QtWidgets.QVBoxLayout(self)
-        lay.addWidget(self.m_output)
-        lay.addWidget(self.table)
-
+        self.setLayout(lay)
+        lay.addWidget(self.m_output,6)
+        
+        verticalSpacer = QtWidgets.QSpacerItem(10, 45, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        lay.addItem(verticalSpacer)
+        lay.addWidget(self.table,3)
         #Wir müssen die Figur vorrendern damit der PLot immer dargestellt wird
         p = figure(width=800, height=300)
         html = embed.file_html(p, resources.CDN, "my plot")
@@ -65,11 +74,11 @@ class WindowGesamtprofil_Strombedarf(QWidget):
 
         #Radiobuttons fürs umschalten zwischen Stunden und Monatsbetrachtung
         self.radioButton_hour = QtWidgets.QRadioButton(self)
-        self.radioButton_hour.setGeometry(QtCore.QRect(20, 370, 82, 17))    
+        self.radioButton_hour.setGeometry(QtCore.QRect(20, 330, 82, 17))    
         self.radioButton_hour.setText("Stunde")
         self.radioButton_hour.setChecked(True)
         self.radioButton_month = QtWidgets.QRadioButton(self)
-        self.radioButton_month.setGeometry(QtCore.QRect(20, 385, 82, 16))    
+        self.radioButton_month.setGeometry(QtCore.QRect(20, 345, 82, 16))    
         self.radioButton_month.setText("Monat")      
         self.buttonGroup_Time = QtWidgets.QButtonGroup(self)
         self.buttonGroup_Time.setObjectName("buttonGroup_Time")
@@ -82,11 +91,11 @@ class WindowGesamtprofil_Strombedarf(QWidget):
 
         #Radiobuttons fürs umschalten zwischen Prozentualer und Absoluter Verbrauchsdarstellung
         self.radioButton_Percent = QtWidgets.QRadioButton(self)
-        self.radioButton_Percent.setGeometry(QtCore.QRect(80, 370, 150, 17))        
+        self.radioButton_Percent.setGeometry(QtCore.QRect(80, 330, 150, 17))        
         self.radioButton_Percent.setText("Darstellung Prozent")
         self.radioButton_Percent.setChecked(True)
         self.radioButton_Absolute = QtWidgets.QRadioButton(self)
-        self.radioButton_Absolute.setGeometry(QtCore.QRect(80, 385, 150, 16))        
+        self.radioButton_Absolute.setGeometry(QtCore.QRect(80, 345, 150, 16))        
         self.radioButton_Absolute.setText("Darstellung Absolut")     
         self.buttonGroup_Type = QtWidgets.QButtonGroup(self)
         self.buttonGroup_Type.setObjectName("buttonGroup_Type")
@@ -99,18 +108,18 @@ class WindowGesamtprofil_Strombedarf(QWidget):
 
         #Eingabe Gesamtfläche
         self.label_Hourly = QtWidgets.QLabel(self)
-        self.label_Hourly.setGeometry(QtCore.QRect(200, 364, 200, 30))
+        self.label_Hourly.setGeometry(QtCore.QRect(200, 324, 200, 30))
         self.label_Hourly.setText("Gesamtfläche [m²]")
         self.lineEdit_Fläche = QtWidgets.QLineEdit(self)
-        self.lineEdit_Fläche.setGeometry(QtCore.QRect(290, 370, 50, 20))
+        self.lineEdit_Fläche.setGeometry(QtCore.QRect(290, 330, 50, 20))
         self.lineEdit_Fläche.setText("0")
         self.lineEdit_Fläche.textChanged.connect(self.UpdatePlot)
         #lineEdit in der die Summen angegeben sind zur Kontrolle
         self.label_Hourly = QtWidgets.QLabel(self)
-        self.label_Hourly.setGeometry(QtCore.QRect(200, 384, 200, 30))
+        self.label_Hourly.setGeometry(QtCore.QRect(200, 344, 200, 30))
         self.label_Hourly.setText("Nutzung [%]")
         self.lineEdit_SumNutzung = QtWidgets.QLineEdit(self)
-        self.lineEdit_SumNutzung.setGeometry(QtCore.QRect(290, 390, 50, 20))
+        self.lineEdit_SumNutzung.setGeometry(QtCore.QRect(290, 350, 50, 20))
         self.lineEdit_SumNutzung.setReadOnly(True)
         self.lineEdit_SumNutzung.setStyleSheet("QLineEdit"
                                     "{"
@@ -118,7 +127,7 @@ class WindowGesamtprofil_Strombedarf(QWidget):
                                     "}")
         #Nutzungsmischung verwenden
         self.pushButton_UseNutzungsmischung = QtWidgets.QPushButton(self)
-        self.pushButton_UseNutzungsmischung.setGeometry(QtCore.QRect(350, 385, 180, 25))
+        self.pushButton_UseNutzungsmischung.setGeometry(QtCore.QRect(350, 345, 180, 25))
         self.pushButton_UseNutzungsmischung.setObjectName("pushButton_UseNutzungsmischung")
         self.pushButton_UseNutzungsmischung.setText("Nutzungsmischung verwenden")
         self.pushButton_UseNutzungsmischung.clicked.connect(self.UseNutzungsmischung)
