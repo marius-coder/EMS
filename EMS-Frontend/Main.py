@@ -65,24 +65,24 @@ class Ui_Main(object):
         self.lineEdit_Erdwärme.setObjectName("lineEdit_Erdwärme")
 
 
-        self.pushButton_openWärmepumpe = QtWidgets.QPushButton(Form)
-        self.pushButton_openWärmepumpe.setGeometry(QtCore.QRect(20, 140, 75, 23))
-        self.pushButton_openWärmepumpe.setObjectName("pushButton_openWärmepumpe")
-        self.pushButton_openWärmepumpe.setText("Wärmepumpe")
-        self.lineEdit_Wärmepumpe = QtWidgets.QLineEdit(Form)
-        self.lineEdit_Wärmepumpe.setGeometry(QtCore.QRect(110, 140, 130, 20))
-        self.lineEdit_Wärmepumpe.setReadOnly(True)
-        self.lineEdit_Wärmepumpe.setObjectName("lineEdit_Wärmepumpe")
+        self.pushButton_openWärmepumpe_HZG = QtWidgets.QPushButton(Form)
+        self.pushButton_openWärmepumpe_HZG.setGeometry(QtCore.QRect(20, 140, 75, 23))
+        self.pushButton_openWärmepumpe_HZG.setObjectName("pushButton_openWärmepumpe_HZG")
+        self.pushButton_openWärmepumpe_HZG.setText("Wärmepumpe Heizen/Kühlen")
+        self.lineEdit_Wärmepumpe_HZG = QtWidgets.QLineEdit(Form)
+        self.lineEdit_Wärmepumpe_HZG.setGeometry(QtCore.QRect(110, 140, 130, 20))
+        self.lineEdit_Wärmepumpe_HZG.setReadOnly(True)
+        self.lineEdit_Wärmepumpe_HZG.setObjectName("lineEdit_Wärmepumpe_HZG")
 
 
-        self.pushButton_openSpeicher = QtWidgets.QPushButton(Form)
-        self.pushButton_openSpeicher.setGeometry(QtCore.QRect(20, 180, 75, 23))
-        self.pushButton_openSpeicher.setObjectName("pushButton_openSpeicher")
-        self.pushButton_openSpeicher.setText("Speicher")
-        self.lineEdit_Speicher = QtWidgets.QLineEdit(Form)
-        self.lineEdit_Speicher.setGeometry(QtCore.QRect(110, 180, 130, 20))
-        self.lineEdit_Speicher.setReadOnly(True)
-        self.lineEdit_Speicher.setObjectName("lineEdit_Speicher")
+        self.pushButton_openWärmepumpe_WW = QtWidgets.QPushButton(Form)
+        self.pushButton_openWärmepumpe_WW.setGeometry(QtCore.QRect(20, 180, 75, 23))
+        self.pushButton_openWärmepumpe_WW.setObjectName("pushButton_openWärmepumpe_WW")
+        self.pushButton_openWärmepumpe_WW.setText("Wärmepumpe Warmwasser")
+        self.lineEdit_Wärmepumpe_WW = QtWidgets.QLineEdit(Form)
+        self.lineEdit_Wärmepumpe_WW.setGeometry(QtCore.QRect(110, 180, 130, 20))
+        self.lineEdit_Wärmepumpe_WW.setReadOnly(True)
+        self.lineEdit_Wärmepumpe_WW.setObjectName("lineEdit_Wärmepumpe_WW")
 
         self.pushButton_openStrombedarf = QtWidgets.QPushButton(Form)
         self.pushButton_openStrombedarf.setGeometry(QtCore.QRect(270, 20, 75, 23))
@@ -168,7 +168,7 @@ class Ui_Main(object):
         self.label_ProfilAuswahl.setText("Auswahl Profil")
 
         self.li_inputWidgets = [self.lineEdit_Gebäude,self.lineEdit_Warmwasser,self.lineEdit_Erdwärme,
-                           self.lineEdit_Wärmepumpe,self.lineEdit_Speicher,self.lineEdit_Strombedarf,self.lineEdit_PVBatterie]
+                           self.lineEdit_Wärmepumpe_HZG,self.lineEdit_Wärmepumpe_WW,self.lineEdit_Strombedarf,self.lineEdit_PVBatterie]
 
         #Combobox befüllen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Simulation_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -365,7 +365,9 @@ class Ui_Main(object):
                # "WW-Verbrauch_Monat [%]" : data[27:],
 			    #"Verbrauchsart" : data[25:27],
             for data in dicts:
+                data["WW-Verbrauch_Stunde [%]"][:] = [x for x in data["WW-Verbrauch_Stunde [%]"] if x]
                 data["WW-Verbrauch_Stunde [%]"] = [float(item) for item in data["WW-Verbrauch_Stunde [%]"]]
+                data["WW-Verbrauch_Monat [%]"][:] = [x for x in data["WW-Verbrauch_Monat [%]"] if x]
                 data["WW-Verbrauch_Monat [%]"] = [float(item) for item in data["WW-Verbrauch_Monat [%]"]]
                 if mode == "Warmwasser":                    
                     self.Warmwasser.graphWindow.AddProfile(data)

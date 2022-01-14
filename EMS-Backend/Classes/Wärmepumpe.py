@@ -65,14 +65,15 @@ class Wärmepumpe():
         self.speicher.UpdateSpeicher()
 
         schichttoCheck = int(self.speicher.anz_schichten / 2) #Wenn der Speicher halb durchgeladen ist wird abgedreht
+        schichtEinschalten = int(self.speicher.anz_schichten * 4/5)
         print("Entnahmeschicht: ", self.speicher.li_schichten[-1]["Temperatur [°C]"], " °C")
-        print("Kontrollschicht Einschalten: ", self.speicher.li_schichten[-2]["Temperatur [°C]"], " °C")
+        print("Kontrollschicht Einschalten: ", self.speicher.li_schichten[schichtEinschalten]["Temperatur [°C]"], " °C")
         print("Kontrollschicht Aussschalten: ", self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"], " °C")
                 
         if self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"] > self.geb_VL_HZG:
             print("TurnOff1")
             self.WP_TurnOff()
-        elif self.speicher.li_schichten[-2]["Temperatur [°C]"] < self.geb_VL_HZG + 2: #+2°C damit die WP schon ein bisschen früher anfängt als dass Sie eigentlich gebraucht wird
+        elif self.speicher.li_schichten[schichtEinschalten]["Temperatur [°C]"] < self.geb_VL_HZG + 2: #+2°C damit die WP schon ein bisschen früher anfängt als dass Sie eigentlich gebraucht wird
             print("TurnOn")
             self.WP_TurnOn(self.WP_VL_HZG, self.COP)
         else:
@@ -87,15 +88,16 @@ class Wärmepumpe():
         self.speicher.UpdateSpeicher()
 
         schichttoCheck = int(self.speicher.anz_schichten / 2) #Wenn der Speicher halb durchgeladen ist wird abgedreht
+        schichtEinschalten = int(self.speicher.anz_schichten * 4/5)
         print("Entnahmeschicht: ", self.speicher.li_schichten[-1]["Temperatur [°C]"], " °C")
-        print("Kontrollschicht Einschalten: ", self.speicher.li_schichten[-2]["Temperatur [°C]"], " °C")
+        print("Kontrollschicht Einschalten: ", self.speicher.li_schichten[schichtEinschalten]["Temperatur [°C]"], " °C")
         print("Kontrollschicht Aussschalten: ", self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"], " °C")
                 
         if self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"] < self.geb_VL_KLG:
             print("TurnOff1")
             self.is_on = False
             self.WP_TurnOff()
-        elif self.speicher.li_schichten[-2]["Temperatur [°C]"] > self.geb_VL_KLG-1:
+        elif self.speicher.li_schichten[schichtEinschalten]["Temperatur [°C]"] > self.geb_VL_KLG-1:
             print("TurnOn")
             self.is_on = True
             self.WP_TurnOn(self.WP_VL_KLG, self.COP-1)

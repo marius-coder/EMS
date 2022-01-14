@@ -23,7 +23,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="data\Stylesheets.py" />
-    <Compile Include="EMS_Frontend.py" />
     <Compile Include="Erdwärme\Erdwärme.py" />
     <Compile Include="Erdwärme\Erdwärme_Karte.py" />
     <Compile Include="Gebäude\Gebäude.py" />
@@ -31,30 +30,36 @@
     <Compile Include="PV_Batterie\PV_Batterie.py" />
     <Compile Include="Strom\Strom.py" />
     <Compile Include="Strom\Strom_Nutzungsmischung.py" />
-    <Compile Include="Warmwasser\Warmwasser.py" />
-    <Compile Include="NeueWärmePumpe.py" />
     <Compile Include="Translator.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Warmwasser\Warmwasser.py" />
     <Compile Include="Warmwasser\Warmwasser_Nutzungsmischung.py" />
+    <Compile Include="Wärmepumpe_Speicher\Wärmespeicher.py" />
+    <Compile Include="Wärmepumpe_Speicher\Wärmepumpe.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data\" />
     <Folder Include="Gebäude\" />
     <Folder Include="Erdwärme\" />
+    <Folder Include="Warmwasser\" />
+    <Folder Include="Wärmepumpe_Speicher\" />
     <Folder Include="PV_Batterie\" />
     <Folder Include="Strom\" />
-    <Folder Include="Warmwasser\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="data\Erdwärme_Profile.csv" />
+    <Content Include="data\Gebäude_Profile.csv" />
     <Content Include="data\PV_Bat_Profile.csv" />
+    <Content Include="data\Simulation_Profile.csv" />
     <Content Include="data\Strombedarf_Nutzungsmischungen.csv" />
     <Content Include="data\Strom_Profile.csv" />
     <Content Include="data\Strom_Profile_Default.csv" />
     <Content Include="data\Warmwasser_Nutzungsmischungen.csv" />
     <Content Include="data\Warmwasser_Profile.csv" />
     <Content Include="data\Warmwasser_Profile_Default.csv" />
+    <Content Include="data\Wärmepumpe_Profile.csv" />
+    <Content Include="data\Wärmespeicher_Profile.csv" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

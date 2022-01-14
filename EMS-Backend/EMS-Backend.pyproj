@@ -69,6 +69,7 @@
     <Content Include="data\building_oib_16linie.xlsx" />
     <Content Include="data\building_ph.xlsx" />
     <Content Include="data\climate.csv" />
+    <Content Include="data\COP.csv" />
     <Content Include="data\pv_1kWp.csv" />
     <Content Include="data\Solar_gains.csv" />
     <Content Include="data\usage_profiles.csv" />

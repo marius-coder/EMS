@@ -84,7 +84,6 @@ class Wärmespeicher():
 
 	def Heat_Transmission_BodenDeckel(self, schicht):
 		q_HT_BdDk = (self.lambda_dämmung/self.dicke_dämmung) * schicht["Fläche [m²]"] * (schicht["Temperatur [°C]"] - self.t_umg) #Watt
-		q_HT_BdDk = q_HT_BdDk
 		return q_HT_BdDk
 
 	def Heat_Transmission(self, schicht):

@@ -34,8 +34,8 @@ class Simulation():
 		 self.ta = np.genfromtxt("./EMS-Backend/data/climate.csv", delimiter=";", usecols = (1), skip_header = 1) #°C
 		 self.qsolar = np.genfromtxt("./EMS-Backend/data/Solar_gains.csv") #W/m² Solar gains
 		 self.import_data = Import.importGUI
-		 #self.warmwater_data = self.import_data.input_Warmwater
-		 #self.PV_Bat_data = self.import_data.input_PV_Batterie
+		 self.warmwater_data = self.import_data.input_Warmwater
+		 self.PV_Bat_data = self.import_data.input_PV_Batterie
 
 	def Setup_Simulation(self):
 		""" """
@@ -93,7 +93,7 @@ class Simulation():
 
 		self.Speicher_WW = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 2, diameter = 1)
 		self.WP_WW = ImportWP.Wärmepumpe(20,4,self.Speicher_WW,WP_VL_HZG = 65, geb_VL_HZG = 60, WP_VL_KLG = 0, geb_VL_KLG = 0)
-		#self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
+		self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
 		
 		self.building.insert_windows(1.2, 25)
 		stat_HL = self.Static_HL()
@@ -298,7 +298,7 @@ class Simulation():
 
 			print("Temp nach Heizen: ",self.ti_sim)
 			print("---------------------------------------------------------------")
-			continue
+			
 			#Warmwasser
 			self.warmwater_data
 			month = DetermineMonth(hour)
