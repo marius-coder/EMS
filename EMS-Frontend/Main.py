@@ -216,10 +216,11 @@ class Ui_Main(object):
    
         li_toSaveProfileNames = []
         li_toSaveProfileNames.append(name)
+        dic_Save = {}
 
         for widget in self.li_inputWidgets:            
                 li_toSaveProfileNames.append(widget.text())
-
+        dic_Save["Simulation_Profile"] = li_toSaveProfileNames
         def SaveNutzungsmischung(type):
             li_toSave = []
             li_toSave.append(name)
@@ -237,7 +238,7 @@ class Ui_Main(object):
                 #Stündliches Profil
                 for item in obj.graphWindow.y_hour[row]:
                     columnString += str(item) + "----" #Custom Seperator zwischen einzelnen Items
-                columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
+                columnString +=  "____" #Custom Seperator zwischen den listen an einzelnen Items
             li_toSave.append(columnString)
 
             columnString = ""
@@ -245,38 +246,43 @@ class Ui_Main(object):
                 #Monatliches Profil
                 for item in obj.graphWindow.y_month[row]:
                     columnString += str(item) + "----"
-                columnString += str(item) + "____" #Custom Seperator zwischen den listen an einzelnen Items
+                columnString +=  "____" #Custom Seperator zwischen den listen an einzelnen Items
             li_toSave.append(columnString)
 
+            return li_toSave
             #Neues Profil hinzufügen
             with open("./EMS-Frontend/data/" + type + "_Nutzungsmischungen.csv",'a', newline='', encoding="utf-8") as f:
                 writer = csv.writer(f, lineterminator='\n')
                 writer.writerow(li_toSave)
 
-        SaveNutzungsmischung("Warmwasser")
-        SaveNutzungsmischung("Strombedarf")
+        dic_Save["Warmwasser_Nutzungsmischungen"] = SaveNutzungsmischung("Warmwasser")
+        dic_Save["Strombedarf_Nutzungsmischungen"] = SaveNutzungsmischung("Strombedarf")
 
         #Kontrolle ob ein Profil mit diesem Namen bereits existiert
         if name in names:
             self.DeleteProfile()
-        #Neues Profil hinzufügen
-        with open("./EMS-Frontend/data/Simulation_Profile.csv",'a', newline='', encoding="utf-8") as f:
-            writer = csv.writer(f, lineterminator='\n')
-            writer.writerow(li_toSaveProfileNames)
+        #Neue Profile hinzufügen
+        to_save = ["Simulation_Profile","Warmwasser_Nutzungsmischungen","Strombedarf_Nutzungsmischungen"]
+        for _file in dic_Save.keys():
+            with open("./EMS-Frontend/data/" + _file + ".csv",'a', newline='', encoding="utf-8") as f:
+                writer = csv.writer(f, lineterminator='\n')
+                writer.writerow(dic_Save[_file])
         self.UpdateProfiles()
    
     def DeleteProfile(self):
         name = self.comboBox_SelectProfile.currentText()
-        def del_Profile(names):
-            for name in names:
-                with open(f"./EMS-Frontend/data/{name}.csv", 'r', encoding="utf-8") as inp:
+        if name == "":
+            return
+        def del_Profile(files):
+            for f in files:
+                with open(f"./EMS-Frontend/data/{f}.csv", 'r', encoding="utf-8") as inp:
                     lines = inp.readlines()
-                with open(f"./EMS-Frontend/data/{name}.csv",'w', newline='', encoding="utf-8") as f:
+                with open(f"./EMS-Frontend/data/{f}.csv",'w', newline='', encoding="utf-8") as f:
                     for line in lines:
                         if line.split(",")[0] != name:
                             f.write(line)
         to_delete = ["Simulation_Profile","Warmwasser_Nutzungsmischungen","Strombedarf_Nutzungsmischungen"]
-        del_Profile()
+        del_Profile(to_delete)
         self.UpdateProfiles()
         
 
@@ -301,6 +307,9 @@ class Ui_Main(object):
 
         #Nutzungsmischung Warmwasser laden
         def Load_Nutzungsmischung(df,mode):
+
+            obj = getattr(self,mode)
+            obj.graphWindow.table.setRowCount(0) #Tabelle zurücksetzen
             name = self.comboBox_SelectProfile.currentText()
             self.lineEdit_Profil.setText(name)
             values = df[df.values == name].values.flatten().tolist()            
@@ -325,7 +334,7 @@ class Ui_Main(object):
             del value_0[-1]
             value_1 = values[6].split("----")
             del value_1[-1]
-            if mode == "Strom":
+            if mode == "Strombedarf":
                 value_0 = values[4].split("----")
                 del value_0[-1]
                 value_1 = values[5].split("----")
@@ -342,7 +351,7 @@ class Ui_Main(object):
                     dicts[it]["Verbrauchsart"][1] = float(value_1[it])
                 except:
                     dicts[it]["Verbrauchsart"][1] = value_1[it]
-                if mode == "Strom":
+                if mode == "Strombedarf":
                     dicts[it]["Verbrauchsart"].append(0)
                     try:
                         dicts[it]["Verbrauchsart"][2] = float(value_1[it])
@@ -358,14 +367,14 @@ class Ui_Main(object):
             for data in dicts:
                 data["WW-Verbrauch_Stunde [%]"] = [float(item) for item in data["WW-Verbrauch_Stunde [%]"]]
                 data["WW-Verbrauch_Monat [%]"] = [float(item) for item in data["WW-Verbrauch_Monat [%]"]]
-                if mode == "Warmwasser":
+                if mode == "Warmwasser":                    
                     self.Warmwasser.graphWindow.AddProfile(data)
-                elif mode == "Strom":
+                elif mode == "Strombedarf":
                     self.Strombedarf.graphWindow.AddProfile(data)
         df_WW = pd.read_csv("./EMS-Frontend/data/Warmwasser_Nutzungsmischungen.csv", sep = ",", encoding='utf-8')
         Load_Nutzungsmischung(df_WW,"Warmwasser")
         df_Strom = pd.read_csv("./EMS-Frontend/data/Strombedarf_Nutzungsmischungen.csv", sep = ",", encoding='utf-8')
-        Load_Nutzungsmischung(df_Strom,"Strom")
+        Load_Nutzungsmischung(df_Strom,"Strombedarf")
         
 
 

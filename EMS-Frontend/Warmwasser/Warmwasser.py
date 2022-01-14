@@ -19,7 +19,7 @@ class Ui_Warmwasser(QMainWindow):
     #Event überschreiben damit sich childWindow automatisch mitschließt
     def closeEvent(self, *args, **kwargs):
         super(QMainWindow, self).closeEvent(*args, **kwargs)
-        #self.graphWindow.close()
+        self.graphWindow.close()
     def __init__(self):
         super().__init__()
 

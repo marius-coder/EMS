@@ -164,6 +164,8 @@ class WindowGesamtprofil_Strombedarf(QWidget):
 
     
     def UseNutzungsmischung(self):
+        if self.table.rowCount() == 0:
+            return
         Strom_Gesamt = {}
         Strom_temp = [0 for i in range(24)]
         self.y_choose = self.y_month
@@ -204,6 +206,11 @@ class WindowGesamtprofil_Strombedarf(QWidget):
                 li_temp.append(percent/100 * strom_daily)
             Strom_Gesamt["hour [kWh/h]"].append(li_temp)
         Import.importGUI.Import_Strombedarf(Strom_Gesamt)
+        dlg = QMessageBox()
+        dlg.setWindowTitle("Information")
+        dlg.setText(u"Profil wird Verwendet")
+        QtCore.QTimer.singleShot(1500, dlg.close)
+        dlg.exec()
 
 
 

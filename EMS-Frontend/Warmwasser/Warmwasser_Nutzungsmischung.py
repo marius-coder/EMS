@@ -160,8 +160,11 @@ class WindowGesamtprofil_Warmwasser(QWidget):
         """Diese Funktion summiert die derzeitinge Nutzungsmischung und schickt macht diese für die Simulation verfügbar"""
         #if int(self.lineEdit_SumNutzung.text().split("%")[0]) != 100:
         #    return
+        if self.table.rowCount() == 0:
+            return
         WW_Gesamt = {}
         WW_temp = [0 for i in range(24)]
+
         self.y_choose = self.y_month
         for row in range(self.table.rowCount()): 
             if is_number_tryexcept(self.lineEdit_Fläche.text()) and is_number_tryexcept(self.table.item(row, 1).text()) and is_number_tryexcept(self.table.item(row, 3).text()):
@@ -194,6 +197,13 @@ class WindowGesamtprofil_Warmwasser(QWidget):
                 li_temp.append(percent/100 * ww_daily)
             WW_Gesamt["hour [l/h]"].append(li_temp)
         Import.importGUI.Import_WarmWater(WW_Gesamt)
+        dlg = QMessageBox()
+        dlg.setWindowTitle("Information")
+        dlg.setText(u"Profil wird Verwendet")
+        QtCore.QTimer.singleShot(1500, dlg.close)
+        dlg.exec()
+         
+        
 
 
 
