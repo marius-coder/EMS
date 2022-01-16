@@ -158,7 +158,6 @@ class Ui_Gebäude(QMainWindow):
         self.li_inputWidgets = [self.doubleSpinBox_BGF,self.doubleSpinBox_GF,self.doubleSpinBox_cp_Gebaeude,
                                 self.doubleSpinBox_Geschosshoehe]
 
-
     def SaveProfile(self):
         names = list(pd.read_csv("./EMS-Frontend/data/Gebäude_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
         

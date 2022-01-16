@@ -5,6 +5,8 @@ import pandas as pd
 import csv
 import importlib
 Import = importlib.import_module("EMS-Backend.Classes.Import")
+#Speicher = importlib.import_module("EMS-Frontend.Wärmepumpe_Speicher.Wärmespeicher")
+from Wärmepumpe_Speicher.Wärmespeicher import Ui_Speicher
 
 from PyQt5 import *
 from PyQt5 import QtGui
@@ -15,11 +17,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_WP(QWidget):
 
 
-    def __init__(self):
+    def __init__(self,typ):
         super().__init__()
 
         self.setWindowTitle("Auswahl Wärmepumpe")
-        self.resize(553, 322)
+        self.resize(553, 322)    
+        self.typ = typ
 
         #Ansicht WP Auswahl
         self.label_ArtWP = QtWidgets.QLabel(self)
@@ -30,10 +33,17 @@ class Ui_WP(QWidget):
         self.radioButton_Heizen.setGeometry(QtCore.QRect(20, 70, 91, 17))
         self.radioButton_Heizen.setObjectName("radioButton_Heizen")
         self.radioButton_Heizen.setText("Heizen/Kühlen")
+        self.radioButton_Heizen.setEnabled(False)
         self.radioButton_WW = QtWidgets.QRadioButton(self)
         self.radioButton_WW.setGeometry(QtCore.QRect(120, 70, 91, 17))
         self.radioButton_WW.setObjectName("radioButton_WW")
         self.radioButton_WW.setText("Warmwasser")
+        self.radioButton_WW.setEnabled(False)
+
+        if typ == "Heizen":
+            self.radioButton_Heizen.setChecked(True)
+        elif typ == "Warmwasser":
+            self.radioButton_WW.setChecked(True)
 
         self.label_Eingabe = QtWidgets.QLabel(self)
         self.label_Eingabe.setGeometry(QtCore.QRect(20, 10, 91, 31))
@@ -84,6 +94,8 @@ class Ui_WP(QWidget):
         self.doubleSpinBox_VL_KLG = QtWidgets.QDoubleSpinBox(self)
         self.doubleSpinBox_VL_KLG.setGeometry(QtCore.QRect(90, 220, 61, 22))
         self.doubleSpinBox_VL_KLG.setObjectName("doubleSpinBox_VL_KLG")
+
+        
 
         self.line = QtWidgets.QFrame(self)
         self.line.setGeometry(QtCore.QRect(210, 0, 16, 451))
@@ -138,9 +150,15 @@ class Ui_WP(QWidget):
         self.pushButton_SaveProfile.clicked.connect(self.SaveProfile)
         self.pushButton_DeleteProfile.clicked.connect(self.DeleteProfile)
         self.pushButton_UseProfile.clicked.connect(self.UseProfile)
+        self.pushButton_Speicherauswahl.clicked.connect(self.OpenSpeicher)
         
         self.li_inputWidgets = [self.doubleSpinBox_Stromverbrauch, self.doubleSpinBox_COP, self.doubleSpinBox_VL_HZG,
                                 self.doubleSpinBox_VL_KLG]
+
+
+    def OpenSpeicher(self):
+        self.speicherWindow = Ui_Speicher(float(self.doubleSpinBox_VL_HZG.value()),self.typ)
+        self.speicherWindow.show()
         
     def SaveProfile(self):
         names = list(pd.read_csv("./EMS-Frontend/data/Wärmepumpe_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -194,9 +212,14 @@ class Ui_WP(QWidget):
 
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()
-        df = df[df.values == name]
 
-        
+        if values[1] == "Heizen":
+            self.radioButton_Heizen.setChecked(True)
+        elif values[1] == "Warmwasser":
+            self.radioButton_WW.setChecked(True)
+
+        for i,widget in enumerate(self.li_inputWidgets,2):
+            widget.setValue(float(values[i]))
 
     def UseProfile(self):
 
@@ -215,8 +238,8 @@ class Ui_WP(QWidget):
 
 
 
-app = QApplication(sys.argv)
-main = QWidget()
-w = Ui_WP()
-w.show()
-app.exec()
+#app = QApplication(sys.argv)
+#main = QWidget()
+#w = Ui_WP()
+#w.show()
+#app.exec()

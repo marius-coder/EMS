@@ -19,6 +19,7 @@ from Strom.Strom import Ui_Strombedarf
 from Warmwasser.Warmwasser import Ui_Warmwasser
 from PV_Batterie.PV_Batterie import Ui_PV_Batterie
 from Erdwärme.Erdwärme import Ui_Erdwärme
+from Wärmepumpe_Speicher.Wärmepumpe import Ui_WP
 
 
 class Ui_Main(object):
@@ -31,6 +32,8 @@ class Ui_Main(object):
         self.Strombedarf = Ui_Strombedarf()
         self.Warmwasser = Ui_Warmwasser()
         self.PV_Batterie = Ui_PV_Batterie()
+        self.WP_Heizen = Ui_WP("Heizen")
+        self.WP_WW = Ui_WP("Warmwasser")
 
         self.pushButton_Gebäude = QtWidgets.QPushButton(Form)
         self.pushButton_Gebäude.setGeometry(QtCore.QRect(20, 20, 75, 23))
@@ -69,6 +72,7 @@ class Ui_Main(object):
         self.pushButton_openWärmepumpe_HZG.setGeometry(QtCore.QRect(20, 140, 75, 23))
         self.pushButton_openWärmepumpe_HZG.setObjectName("pushButton_openWärmepumpe_HZG")
         self.pushButton_openWärmepumpe_HZG.setText("Wärmepumpe Heizen/Kühlen")
+        self.pushButton_openWärmepumpe_HZG.clicked.connect(self.OpenWP_Heizen)
         self.lineEdit_Wärmepumpe_HZG = QtWidgets.QLineEdit(Form)
         self.lineEdit_Wärmepumpe_HZG.setGeometry(QtCore.QRect(110, 140, 130, 20))
         self.lineEdit_Wärmepumpe_HZG.setReadOnly(True)
@@ -79,6 +83,7 @@ class Ui_Main(object):
         self.pushButton_openWärmepumpe_WW.setGeometry(QtCore.QRect(20, 180, 75, 23))
         self.pushButton_openWärmepumpe_WW.setObjectName("pushButton_openWärmepumpe_WW")
         self.pushButton_openWärmepumpe_WW.setText("Wärmepumpe Warmwasser")
+        self.pushButton_openWärmepumpe_WW.clicked.connect(self.OpenWP_WW)
         self.lineEdit_Wärmepumpe_WW = QtWidgets.QLineEdit(Form)
         self.lineEdit_Wärmepumpe_WW.setGeometry(QtCore.QRect(110, 180, 130, 20))
         self.lineEdit_Wärmepumpe_WW.setReadOnly(True)
@@ -167,8 +172,9 @@ class Ui_Main(object):
         self.label_ProfilAuswahl.setObjectName("label_ProfilAuswahl")
         self.label_ProfilAuswahl.setText("Auswahl Profil")
 
-        self.li_inputWidgets = [self.lineEdit_Gebäude,self.lineEdit_Warmwasser,self.lineEdit_Erdwärme,
-                           self.lineEdit_Wärmepumpe_HZG,self.lineEdit_Wärmepumpe_WW,self.lineEdit_Strombedarf,self.lineEdit_PVBatterie]
+        self.li_inputWidgets = [self.Gebäude.lineEdit_Profil,self.lineEdit_Profil,self.Erdärme.lineEdit_Profil,
+                                self.WP_Heizen.lineEdit_Profil,self.WP_WW.lineEdit_Profil
+                                ,self.lineEdit_Profil,self.PV_Batterie.lineEdit_Profil]
 
         #Combobox befüllen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Simulation_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -194,6 +200,12 @@ class Ui_Main(object):
     def OpenPV_Batterie(self):
         self.PV_Batterie.show()
 
+    def OpenWP_Heizen(self):
+        self.WP_Heizen.show()
+
+    def OpenWP_WW(self):
+        self.WP_WW.show()
+
     def Simulate(self):
         model = Sim.Simulation(b_geothermal = False)
         model.Setup_Simulation()
@@ -204,7 +216,9 @@ class Ui_Main(object):
 
         p.line(x, y, legend_label="Temp.", line_width=2)
         show(p)
-            
+       
+
+
 
     def SaveProfile(self):
         names = list(pd.read_csv("./EMS-Frontend/data/Simulation_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -250,10 +264,7 @@ class Ui_Main(object):
             li_toSave.append(columnString)
 
             return li_toSave
-            #Neues Profil hinzufügen
-            with open("./EMS-Frontend/data/" + type + "_Nutzungsmischungen.csv",'a', newline='', encoding="utf-8") as f:
-                writer = csv.writer(f, lineterminator='\n')
-                writer.writerow(li_toSave)
+
 
         dic_Save["Warmwasser_Nutzungsmischungen"] = SaveNutzungsmischung("Warmwasser")
         dic_Save["Strombedarf_Nutzungsmischungen"] = SaveNutzungsmischung("Strombedarf")
@@ -267,6 +278,7 @@ class Ui_Main(object):
             with open("./EMS-Frontend/data/" + _file + ".csv",'a', newline='', encoding="utf-8") as f:
                 writer = csv.writer(f, lineterminator='\n')
                 writer.writerow(dic_Save[_file])
+
         self.UpdateProfiles()
    
     def DeleteProfile(self):
@@ -301,9 +313,9 @@ class Ui_Main(object):
         values = df[df.values == name].values.flatten().tolist()
 
         #Profilnamen laden
-        for i,widget in enumerate(self.li_inputWidgets,1):
-            continue
-            widget.setText(values[i])
+        for i,widget in enumerate(self.li_inputWidgets,1): 
+            if values[i] != "":
+                widget.setText(values[i])
 
         #Nutzungsmischung Warmwasser laden
         def Load_Nutzungsmischung(df,mode):
@@ -365,8 +377,10 @@ class Ui_Main(object):
                # "WW-Verbrauch_Monat [%]" : data[27:],
 			    #"Verbrauchsart" : data[25:27],
             for data in dicts:
+                #Kontrolle auf leere Strings
                 data["WW-Verbrauch_Stunde [%]"][:] = [x for x in data["WW-Verbrauch_Stunde [%]"] if x]
                 data["WW-Verbrauch_Stunde [%]"] = [float(item) for item in data["WW-Verbrauch_Stunde [%]"]]
+                #Kontrolle auf leere Strings
                 data["WW-Verbrauch_Monat [%]"][:] = [x for x in data["WW-Verbrauch_Monat [%]"] if x]
                 data["WW-Verbrauch_Monat [%]"] = [float(item) for item in data["WW-Verbrauch_Monat [%]"]]
                 if mode == "Warmwasser":                    

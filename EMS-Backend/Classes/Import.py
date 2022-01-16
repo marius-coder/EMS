@@ -24,6 +24,19 @@ class Import():
 
 	def Import_PV_Batterie(self, data):
 		self.input_PV_Batterie = data
+
+	def Import_Speicher(self, data):
+		if data["Art"] == "Heizen":
+			self.input_Speicher_HZG = data
+		else:
+			self.input_Speicher_WW = data
+
+
+	def Import_WP_Heizen(self, data):
+		self.input_WP_Heizen = data
+
+	def Import_WP_WW(self, data):
+		self.input_WP_WW = data
 		
 
 
