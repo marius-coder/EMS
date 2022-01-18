@@ -204,7 +204,7 @@ class Ui_Gebäude(QWidget):
         self.UpdateProfiles()
    
     def DeleteProfile(self):
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
         with open("./EMS-Frontend/data/Gebäude_Profile.csv", 'r', encoding="utf-8") as inp:
             lines = inp.readlines()
         with open("./EMS-Frontend/data/Gebäude_Profile.csv",'w', newline='', encoding="utf-8") as f:

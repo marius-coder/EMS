@@ -32,10 +32,14 @@ global li_test
 
 class Wärmespeicher():
 
-	def __init__(self, dicke_dämmung, lambda_dämmung, VL, RL, schichten, height, ladezone, radius = None, diameter = None):
-		#Schichten muss mindesten 1 sein
-		#Radius oder Durchmesser müssen definiert sein
-
+	def __init__(self, data_Speicher, VL, RL):
+		dicke_dämmung = data_Speicher["Dämmdicke"]
+		lambda_dämmung = data_Speicher["Lambda_Dämmung"]
+		schichten = data_Speicher["anz_Schichten"]
+		height = data_Speicher["Höhe"]
+		ladezone = data_Speicher["Ladeschicht"]
+		radius = data_Speicher["Radius"]
+		diameter = data_Speicher["Radius"] * 2
 
 		if radius == None and diameter == None:
 			raise ValueError("Bitte einen Radius bzw. einen Durchmesser angeben")

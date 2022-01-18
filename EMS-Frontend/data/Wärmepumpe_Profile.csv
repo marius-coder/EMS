@@ -1,4 +1,4 @@
 Name,Art,Stromverbrauch,COP,VL_HZG,VL_KLG,speichername
-sadbcv,Heizen,3.0,1.0,35.0,9.0,lk
-sad,Warmwasser,5.0,0.0,32.0,6.0,lk
-dsyf,Heizen,3.0,4.0,25.0,10.0,lk
+WP3_HZG,Heizen,3.0,3.5,35.0,7.0,Speicher3
+WP1_HZG,Heizen,3.0,3.5,35.0,7.0,Speicher1
+WP2_WW,Warmwasser,3.0,3.5,35.0,7.0,Speicher2

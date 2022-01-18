@@ -258,7 +258,7 @@ class Ui_Strombedarf(QMainWindow):
         self.UpdateProfiles()
    
     def DeleteProfile(self):
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
         with open("./EMS-Frontend/data/Strom_Profile.csv", 'r', encoding="utf-8") as inp:
             lines = inp.readlines()
         with open("./EMS-Frontend/data/Strom_Profile.csv",'w', newline='', encoding="utf-8") as f:

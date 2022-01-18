@@ -150,7 +150,7 @@ class Ui_Erdwärme(QWidget):
         self.pushButton_UseProfile.setStyleSheet(
                              "QPushButton::pressed"
                              "{"
-                             "background-color : red;"
+                             "background-color : red,"
                              "}")  
         self.pushButton_Back = QtWidgets.QPushButton(self)
         self.pushButton_Back.setGeometry(QtCore.QRect(300, 220, 91, 31))
@@ -167,11 +167,15 @@ class Ui_Erdwärme(QWidget):
         #Combobox befüllen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Erdwärme_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
         self.comboBox_SelectProfile.addItems(names)
+        self.comboBox_SelectProfile.activated.connect(self.SetText)
         self.comboBox_SelectProfile.activated.connect(self.LoadProfile)
         self.pushButton_SaveProfile.clicked.connect(self.SaveProfile)
         self.pushButton_DeleteProfile.clicked.connect(self.DeleteProfile)
         self.pushButton_UseProfile.clicked.connect(self.UseProfile)
         self.pushButton_LookMap.clicked.connect(self.OpenMap)
+
+    def SetText(self):
+        self.lineEdit_Profil.setText(self.comboBox_SelectProfile.currentText())
 
     def SaveProfile(self):
         names = list(pd.read_csv("./EMS-Frontend/data/Erdwärme_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -201,7 +205,7 @@ class Ui_Erdwärme(QWidget):
         self.UpdateProfiles()
    
     def DeleteProfile(self):
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
         with open("./EMS-Frontend/data/Erdwärme_Profile.csv", 'r', encoding="utf-8") as inp:
             lines = inp.readlines()
         with open("./EMS-Frontend/data/Erdwärme_Profile.csv",'w', newline='', encoding="utf-8") as f:

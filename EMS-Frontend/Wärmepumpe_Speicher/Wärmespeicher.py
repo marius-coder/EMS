@@ -335,7 +335,7 @@ class Ui_Speicher(QWidget):
         self.UpdateProfiles()
    
     def DeleteProfile(self):
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
         with open("./EMS-Frontend/data/Wärmespeicher_Profile.csv", 'r', encoding="utf-8") as inp:
             lines = inp.readlines()
         with open("./EMS-Frontend/data/Wärmespeicher_Profile.csv",'w', newline='', encoding="utf-8") as f:
@@ -384,7 +384,7 @@ class Ui_Speicher(QWidget):
             "anz_Schichten" : data[5],
             "Ladeschicht" : data[6],
             "Dämmdicke" : data[7],
-            "Lamda_Dämmung" : data[8],
+            "Lambda_Dämmung" : data[8],
             }
         Import.importGUI.Import_Speicher(Wärmespeicher)
         #Import.importGUI.Import_Wärmespeicherterie()

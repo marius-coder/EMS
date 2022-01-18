@@ -1,2 +1,3 @@
 Name,Name_Gebäude,Name_Warmwasser,Name_Erdwärme,Name_WärmepumpeHeizen,Name_WärmepumpeWW,Name_Strombedarf,Name_PV_Batterie
-TEST,Building,TEST,aedfg,sadbcv,sad,TEST,mlöä
+Sim1,Building,Sim1,Erdw.3,WP1_HZG,WP2_WW,Sim1,PV_Bat1
+Sim2,Building3,Sim2,Erdw.2,WP3_HZG,WP2_WW,Sim2,PV_Bat3

@@ -213,7 +213,7 @@ class Ui_PV_Batterie(QWidget):
         self.UpdateProfiles()
    
     def DeleteProfile(self):
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
         with open("./EMS-Frontend/data/PV_Bat_Profile.csv", 'r', encoding="utf-8") as inp:
             lines = inp.readlines()
         with open("./EMS-Frontend/data/PV_Bat_Profile.csv",'w', newline='', encoding="utf-8") as f:
@@ -264,15 +264,9 @@ class Ui_PV_Batterie(QWidget):
     def UseProfile(self):
 
         self.SaveProfile()
-
-
         df = pd.read_csv("./EMS-Frontend/data/PV_Bat_Profile.csv", delimiter = ",", encoding='utf-8')
         name = self.lineEdit_Profil.text()
-
-
-
         data = df[df.values == name].values.flatten().tolist()
-
 
         PV_Batterie = {
             "PV_kWp" : data[1],

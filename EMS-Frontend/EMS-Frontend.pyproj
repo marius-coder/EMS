@@ -27,6 +27,7 @@
     <Compile Include="Erdwärme\Erdwärme_Karte.py" />
     <Compile Include="Gebäude\Gebäude.py" />
     <Compile Include="Main.py" />
+    <Compile Include="Plotting\Plot.py" />
     <Compile Include="PV_Batterie\PV_Batterie.py" />
     <Compile Include="Strom\Strom.py" />
     <Compile Include="Strom\Strom_Nutzungsmischung.py" />
@@ -42,6 +43,7 @@
     <Folder Include="data\" />
     <Folder Include="Gebäude\" />
     <Folder Include="Erdwärme\" />
+    <Folder Include="Plotting\" />
     <Folder Include="Warmwasser\" />
     <Folder Include="Wärmepumpe_Speicher\" />
     <Folder Include="PV_Batterie\" />

@@ -10,13 +10,13 @@ ImportSpeicher = importlib.import_module("EMS-Backend.Classes.Wärmespeicher")
 
 class Wärmepumpe():
 
-    def __init__(self, Pel, COP, speicher, WP_VL_HZG, geb_VL_HZG, WP_VL_KLG, geb_VL_KLG):
-        self.Pel = Pel
-        self.COP = COP
+    def __init__(self, speicher, data_WP, geb_VL_HZG, geb_VL_KLG):
+        self.Pel = data_WP["Stromverbrauch"]
+        self.COP = data_WP["COP"]
         self.speicher = speicher
-        self.WP_VL_HZG = WP_VL_HZG
+        self.WP_VL_HZG = data_WP["VL_HZG"]
         self.geb_VL_HZG = geb_VL_HZG
-        self.WP_VL_KLG = WP_VL_KLG
+        self.WP_VL_KLG = data_WP["VL_KLG"]
         self.geb_VL_KLG = geb_VL_KLG
         self.Pel_Betrieb = np.zeros(8760)
         self.is_on = False

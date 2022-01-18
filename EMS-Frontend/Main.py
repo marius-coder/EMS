@@ -20,7 +20,7 @@ from Warmwasser.Warmwasser import Ui_Warmwasser
 from PV_Batterie.PV_Batterie import Ui_PV_Batterie
 from Erdwärme.Erdwärme import Ui_Erdwärme
 from Wärmepumpe_Speicher.Wärmepumpe import Ui_WP
-
+from Plotting.Plot import Ui_Plotting
 
 class Ui_Main(QMainWindow):
     def __init__(self):
@@ -36,6 +36,7 @@ class Ui_Main(QMainWindow):
         self.PV_Batterie = Ui_PV_Batterie(parent=self)
         self.WP_Heizen = Ui_WP("Heizen",parent=self)
         self.WP_WW = Ui_WP("Warmwasser",parent=self)
+        self.Ergebnisse = Ui_Plotting(parent=self)
 
         self.pushButton_Gebäude = QtWidgets.QPushButton(Form)
         self.pushButton_Gebäude.setGeometry(QtCore.QRect(20, 20, 75, 23))
@@ -131,6 +132,12 @@ class Ui_Main(QMainWindow):
         self.pushButton_Simulate.setText("Simulate!")        
         self.pushButton_Simulate.clicked.connect(self.Simulate)
 
+        self.pushButton_Ergebnisse = QtWidgets.QPushButton(Form)
+        self.pushButton_Ergebnisse.setGeometry(QtCore.QRect(350, 180, 75, 23))
+        self.pushButton_Ergebnisse.setObjectName("pushButton_Ergebnisse")
+        self.pushButton_Ergebnisse.setText("Ergebnisse")        
+        self.pushButton_Ergebnisse.clicked.connect(self.Open_Ergebnisse)
+
 
         #Vertikale Linie
         self.line = QtWidgets.QFrame(Form)
@@ -212,6 +219,9 @@ class Ui_Main(QMainWindow):
 
     def OpenWP_WW(self):
         self.WP_WW.show()
+
+    def Open_Ergebnisse(self):
+        self.Ergebnisse.showMaximized()
 
     def Simulate(self):
         model = Sim.Simulation(b_geothermal = False)
@@ -404,6 +414,7 @@ class Ui_Main(QMainWindow):
         #Andere Optionen laden
         for widget in self.li_loadWidgets:
             widget.LoadProfile()
+            widget.UseProfile()
         
         
 

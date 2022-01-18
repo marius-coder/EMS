@@ -1,3 +1,4 @@
 Name,Art,Radius,Durchmesser,Höhe,Volumen,anz_Schichten,Ladeschicht,Dämmdicke,Lambda_Dämmung
-lk,1.0,54.0,3.0,5.0,20,0,42.0,45.0
-dfsg,1.0,0.0,0.0,0.5,10,5,1.0,0.04
+Speicher3,0.5,1.0,1963.5,2.5,10,5,0.2,0.04
+Speicher1,0.5,1.0,1963.5,2.5,10,5,0.2,0.04
+Speicher2,0.5,1.0,1963.5,2.5,10,5,0.2,0.04
