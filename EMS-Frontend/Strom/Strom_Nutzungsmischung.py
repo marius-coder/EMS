@@ -41,9 +41,10 @@ class WindowGesamtprofil_Strombedarf(QWidget):
             self.UpdatePlot()
 
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super(WindowGesamtprofil_Strombedarf, self).__init__()
 
+        self.parent = parent
         self.keyPressed.connect(self.on_key)
         self.setWindowTitle("Strom_Nutzungsmischung")
         self.table = QtWidgets.QTableWidget()
@@ -131,6 +132,11 @@ class WindowGesamtprofil_Strombedarf(QWidget):
         self.pushButton_UseNutzungsmischung.setObjectName("pushButton_UseNutzungsmischung")
         self.pushButton_UseNutzungsmischung.setText("Nutzungsmischung verwenden")
         self.pushButton_UseNutzungsmischung.clicked.connect(self.UseNutzungsmischung)
+        self.pushButton_UseNutzungsmischung.setStyleSheet(
+                             "QPushButton::pressed"
+                             "{"
+                             "background-color : red;"
+                             "}") 
 
 
        
@@ -206,11 +212,11 @@ class WindowGesamtprofil_Strombedarf(QWidget):
                 li_temp.append(percent/100 * strom_daily)
             Strom_Gesamt["hour [kWh/h]"].append(li_temp)
         Import.importGUI.Import_Strombedarf(Strom_Gesamt)
-        dlg = QMessageBox()
-        dlg.setWindowTitle("Information")
-        dlg.setText(u"Profil wird Verwendet")
-        QtCore.QTimer.singleShot(1500, dlg.close)
-        dlg.exec()
+        self.pushButton_UseNutzungsmischung.setStyleSheet("QPushButton"
+                             "{"
+                             "background-color : lightgreen;"
+                             "}")
+        self.parent.lineEdit_Strombedarf.setText("Nutzungsmischung Fertig")
 
 
 

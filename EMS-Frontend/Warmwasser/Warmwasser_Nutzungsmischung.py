@@ -46,8 +46,10 @@ class WindowGesamtprofil_Warmwasser(QWidget):
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super(WindowGesamtprofil_Warmwasser, self).__init__()
+
+        self.parent = parent
         self.keyPressed.connect(self.on_key)
         self.setWindowTitle("Warmwasser_Nutzungsmischung")
         self.table = QtWidgets.QTableWidget()
@@ -136,6 +138,11 @@ class WindowGesamtprofil_Warmwasser(QWidget):
         self.pushButton_UseNutzungsmischung.setObjectName("pushButton_UseNutzungsmischung")
         self.pushButton_UseNutzungsmischung.setText("Nutzungsmischung verwenden")
         self.pushButton_UseNutzungsmischung.clicked.connect(self.UseNutzungsmischung)
+        self.pushButton_UseNutzungsmischung.setStyleSheet(
+                             "QPushButton::pressed"
+                             "{"
+                             "background-color : red;"
+                             "}") 
 
 
     def CalcWW_LiterproPerson(self,row):
@@ -197,12 +204,11 @@ class WindowGesamtprofil_Warmwasser(QWidget):
                 li_temp.append(percent/100 * ww_daily)
             WW_Gesamt["hour [l/h]"].append(li_temp)
         Import.importGUI.Import_WarmWater(WW_Gesamt)
-        dlg = QMessageBox()
-        dlg.setWindowTitle("Information")
-        dlg.setText(u"Profil wird Verwendet")
-        QtCore.QTimer.singleShot(1500, dlg.close)
-        dlg.exec()
-         
+        self.pushButton_UseNutzungsmischung.setStyleSheet("QPushButton"
+                             "{"
+                             "background-color : lightgreen;"
+                             "}")
+        self.parent.lineEdit_Warmwasser.setText("Nutzungsmischung Fertig")
         
 
 

@@ -22,18 +22,20 @@ from Erdwärme.Erdwärme import Ui_Erdwärme
 from Wärmepumpe_Speicher.Wärmepumpe import Ui_WP
 
 
-class Ui_Main(object):
+class Ui_Main(QMainWindow):
+    def __init__(self):
+        super(Ui_Main, self).__init__(None)
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(750, 230)
 
-        self.Erdärme = Ui_Erdwärme()
-        self.Gebäude = Ui_Gebäude()
-        self.Strombedarf = Ui_Strombedarf()
-        self.Warmwasser = Ui_Warmwasser()
-        self.PV_Batterie = Ui_PV_Batterie()
-        self.WP_Heizen = Ui_WP("Heizen")
-        self.WP_WW = Ui_WP("Warmwasser")
+        self.Erdärme = Ui_Erdwärme(parent=self)
+        self.Gebäude = Ui_Gebäude(parent=self)
+        self.Strombedarf = Ui_Strombedarf(parent=self)
+        self.Warmwasser = Ui_Warmwasser(parent=self)
+        self.PV_Batterie = Ui_PV_Batterie(parent=self)
+        self.WP_Heizen = Ui_WP("Heizen",parent=self)
+        self.WP_WW = Ui_WP("Warmwasser",parent=self)
 
         self.pushButton_Gebäude = QtWidgets.QPushButton(Form)
         self.pushButton_Gebäude.setGeometry(QtCore.QRect(20, 20, 75, 23))
@@ -175,6 +177,11 @@ class Ui_Main(object):
         self.li_inputWidgets = [self.Gebäude.lineEdit_Profil,self.lineEdit_Profil,self.Erdärme.lineEdit_Profil,
                                 self.WP_Heizen.lineEdit_Profil,self.WP_WW.lineEdit_Profil
                                 ,self.lineEdit_Profil,self.PV_Batterie.lineEdit_Profil]
+        self.li_profileNameWidgets = [self.lineEdit_Gebäude,self.lineEdit_Warmwasser,self.lineEdit_Erdwärme,
+                                      self.lineEdit_Wärmepumpe_HZG,self.lineEdit_Wärmepumpe_WW,
+                                      self.lineEdit_Strombedarf,self.lineEdit_PVBatterie]
+        self.li_loadWidgets = [self.Gebäude,self.Erdärme,self.WP_Heizen,self.WP_WW,self.PV_Batterie]
+
 
         #Combobox befüllen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Simulation_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -313,9 +320,17 @@ class Ui_Main(object):
         values = df[df.values == name].values.flatten().tolist()
 
         #Profilnamen laden
+        self.Gebäude.lineEdit_Profil.setText("TEST")
         for i,widget in enumerate(self.li_inputWidgets,1): 
             if values[i] != "":
                 widget.setText(values[i])
+
+        for i,widget in enumerate(self.li_profileNameWidgets,1): 
+            if values[i] != "":
+                if values[i] == self.lineEdit_Profil.text():
+                     widget.setText("Nutzungsmischung Fertig")
+                else:                   
+                    widget.setText(values[i])            
 
         #Nutzungsmischung Warmwasser laden
         def Load_Nutzungsmischung(df,mode):
@@ -369,13 +384,7 @@ class Ui_Main(object):
                         dicts[it]["Verbrauchsart"][2] = float(value_1[it])
                     except:
                         dicts[it]["Verbrauchsart"][2] = value_2[it]
-                        #data = {
-                        #    "Profilname" : data[0],
-                        #    }
-            #
-			    #"WW-Verbrauch_Stunde [%]" : data[1:25],
-               # "WW-Verbrauch_Monat [%]" : data[27:],
-			    #"Verbrauchsart" : data[25:27],
+
             for data in dicts:
                 #Kontrolle auf leere Strings
                 data["WW-Verbrauch_Stunde [%]"][:] = [x for x in data["WW-Verbrauch_Stunde [%]"] if x]
@@ -391,6 +400,11 @@ class Ui_Main(object):
         Load_Nutzungsmischung(df_WW,"Warmwasser")
         df_Strom = pd.read_csv("./EMS-Frontend/data/Strombedarf_Nutzungsmischungen.csv", sep = ",", encoding='utf-8')
         Load_Nutzungsmischung(df_Strom,"Strombedarf")
+
+        #Andere Optionen laden
+        for widget in self.li_loadWidgets:
+            widget.LoadProfile()
+        
         
 
 

@@ -32,11 +32,12 @@ class Import():
 			self.input_Speicher_WW = data
 
 
-	def Import_WP_Heizen(self, data):
-		self.input_WP_Heizen = data
-
-	def Import_WP_WW(self, data):
-		self.input_WP_WW = data
+	def Import_WP(self, data):
+		if data["Art"] == "Heizen":
+			self.input_WP_Heizen = data
+		else:
+			self.input_WP_WW = data
+		
 		
 
 

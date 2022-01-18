@@ -242,7 +242,12 @@ class Ui_Speicher(QWidget):
         self.pushButton_UseProfile = QtWidgets.QPushButton(self)
         self.pushButton_UseProfile.setGeometry(QtCore.QRect(540, 245, 150, 30))
         self.pushButton_UseProfile.setObjectName("pushButton_UseProfile")
-        self.pushButton_UseProfile.setText("Speicher Nutzen")         
+        self.pushButton_UseProfile.setText("Speicher Nutzen")  
+        self.pushButton_UseProfile.setStyleSheet(
+                             "QPushButton::pressed"
+                             "{"
+                             "background-color : red;"
+                             "}") 
         
         #Combobox befüllen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Wärmespeicher_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -347,12 +352,11 @@ class Ui_Speicher(QWidget):
         self.comboBox_SelectProfile.setCurrentText(self.lineEdit_Profil.text())
                    
 
-    def LoadProfile(self):
-     
+    def LoadProfile(self, name = None):
+        if name == None or type(name) == int:            
+            name = self.comboBox_SelectProfile.currentText()
+
         df = pd.read_csv("./EMS-Frontend/data/Wärmespeicher_Profile.csv", delimiter = ",", encoding='utf-8')
-
-        name = self.comboBox_SelectProfile.currentText()
-
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()
         
@@ -384,5 +388,10 @@ class Ui_Speicher(QWidget):
             }
         Import.importGUI.Import_Speicher(Wärmespeicher)
         #Import.importGUI.Import_Wärmespeicherterie()
+
+        self.pushButton_UseProfile.setStyleSheet("QPushButton"
+                             "{"
+                             "background-color : lightgreen;"
+                             "}")
 
     

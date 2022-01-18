@@ -20,15 +20,14 @@ class Ui_Warmwasser(QMainWindow):
     def closeEvent(self, *args, **kwargs):
         super(QMainWindow, self).closeEvent(*args, **kwargs)
         self.graphWindow.close()
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super(Ui_Warmwasser, self).__init__()
 
         self.setWindowTitle("Warmwasser_Profile")
         self.setObjectName("self")
         self.resize(1050, 550)
-        self.setStyleSheet(Slider.GetFancySlider())
-        
-        self.graphWindow = WindowGesamtprofil_Warmwasser()     
+        self.setStyleSheet(Slider.GetFancySlider())        
+        self.graphWindow = WindowGesamtprofil_Warmwasser(parent)     
 
         #Hier werden beide Fenster richtig positioniert
         #Die Fenstergröße wird hierbei dynamisch an die Bildschirmgröße angepasst

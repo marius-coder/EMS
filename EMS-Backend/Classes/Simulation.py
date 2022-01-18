@@ -36,6 +36,10 @@ class Simulation():
 		 self.import_data = Import.importGUI
 		 self.warmwater_data = self.import_data.input_Warmwater
 		 self.PV_Bat_data = self.import_data.input_PV_Batterie
+		 self.WP_Heizen = self.import_data.input_WP_Heizen
+		 self.speicher_HZG = self.import_data.input_Speicher_HZG
+		 self.WP_WW = self.import_data.input_WP_WW
+		 self.speicher_WW = self.import_data.input_Speicher_WW
 
 	def Setup_Simulation(self):
 		""" """
@@ -87,12 +91,22 @@ class Simulation():
 		self.t_heating = 20
 		self.t_cooling = 26
 		self.b_heating = True
+		
+		self.t_hzg_VL = 30
+		self.t_hzg_RL = 25
+		self.t_klg_VL = 8
+		self.t_klg_RL = 12
 
-		self.Speicher_HZG = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 3, diameter = 3)
-		self.WP_HZG = ImportWP.Wärmepumpe(10,4.5,self.Speicher_HZG,WP_VL_HZG = 35, geb_VL_HZG = 30, WP_VL_KLG = 6, geb_VL_KLG = 8)
+		#self.Speicher_HZG = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 3, diameter = 3)
+		#self.WP_HZG = ImportWP.Wärmepumpe(10,4.5,self.Speicher_HZG,WP_VL_HZG = 35, geb_VL_HZG = 30, WP_VL_KLG = 6, geb_VL_KLG = 8)
+		self.Speicher_HZG = ImportSpeicher.Wärmespeicher(self.speicher_HZG, self.t_hzg_VL, self.t_hzg_RL)
+		self.WP_HZG = ImportWP.Wärmepumpe(speicher = self.Speicher_HZG,data_WP = self.WP_Heizen, geb_VL_HZG = self.t_hzg_VL, geb_VL_KLG = self.t_klg_VL)
 
-		self.Speicher_WW = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 2, diameter = 1)
-		self.WP_WW = ImportWP.Wärmepumpe(20,4,self.Speicher_WW,WP_VL_HZG = 65, geb_VL_HZG = 60, WP_VL_KLG = 0, geb_VL_KLG = 0)
+
+		self.Speicher_WW = ImportSpeicher.Wärmespeicher(self.speicher_WW, self.t_hzg_VL, self.t_hzg_RL)
+		self.WP_WW = ImportWP.Wärmepumpe(speicher = self.Speicher_WW,data_WP = self.WP_WW, geb_VL_HZG = self.t_hzg_VL, geb_VL_KLG = self.t_klg_VL)
+		#self.Speicher_WW = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 2, diameter = 1)
+		#self.WP_WW = ImportWP.Wärmepumpe(20,4,self.Speicher_WW,WP_VL_HZG = 65, geb_VL_HZG = 60, WP_VL_KLG = 0, geb_VL_KLG = 0)
 		self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
 		
 		self.building.insert_windows(1.2, 25)
@@ -102,10 +116,6 @@ class Simulation():
 		self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]
 		self.cooling_months = [4, 5, 6, 7, 8, 9]
 
-		self.t_hzg_VL = 30
-		self.t_hzg_RL = 25
-		self.t_klg_VL = 8
-		self.t_klg_RL = 12
 
 		
 		print(f"Die statische Heizlast beträgt {round(stat_HL['Heizlast [W]'] / 1000,2)} kW")

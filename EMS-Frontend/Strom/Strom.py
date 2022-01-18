@@ -21,14 +21,14 @@ class Ui_Strombedarf(QMainWindow):
         super(QMainWindow, self).closeEvent(*args, **kwargs)
         self.graphWindow.close()
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super(Ui_Strombedarf, self).__init__()
    
         self.setWindowTitle("Strom_Profile")
         self.setObjectName("self")
         self.resize(1050, 550)
         self.setStyleSheet(Slider.GetFancySlider())
-        self.graphWindow = WindowGesamtprofil_Strombedarf()
+        self.graphWindow = WindowGesamtprofil_Strombedarf(parent)
         
 
         #Hier werden beide Fenster richtig positioniert

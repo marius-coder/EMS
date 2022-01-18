@@ -14,11 +14,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_PV_Batterie(QMainWindow):
+class Ui_PV_Batterie(QWidget):
 
-    def __init__(self):
-        super().__init__()
-   
+    def __init__(self, parent):
+        super(Ui_PV_Batterie, self).__init__()
+        
+        self.parent = parent
         self.setObjectName("self")
         self.resize(601, 254)
         self.setWindowTitle("PV-Batterie")
@@ -158,6 +159,11 @@ class Ui_PV_Batterie(QMainWindow):
         self.pushButton_UseProfile.setGeometry(QtCore.QRect(400, 200, 91, 31))
         self.pushButton_UseProfile.setObjectName("pushButton_UseProfile")
         self.pushButton_UseProfile.setText("Profil benutzen")
+        self.pushButton_UseProfile.setStyleSheet(
+                             "QPushButton::pressed"
+                             "{"
+                             "background-color : red;"
+                             "}") 
         self.pushButton_Back = QtWidgets.QPushButton(self)
         self.pushButton_Back.setGeometry(QtCore.QRect(500, 200, 91, 31))
         self.pushButton_Back.setObjectName("pushButton_Back")
@@ -261,7 +267,7 @@ class Ui_PV_Batterie(QMainWindow):
 
 
         df = pd.read_csv("./EMS-Frontend/data/PV_Bat_Profile.csv", delimiter = ",", encoding='utf-8')
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
 
 
 
@@ -278,6 +284,11 @@ class Ui_PV_Batterie(QMainWindow):
             "Leistung [%]" : data[7],
             }
         Import.importGUI.Import_PV_Batterie(PV_Batterie)
+        self.pushButton_UseProfile.setStyleSheet("QPushButton"
+                             "{"
+                             "background-color : lightgreen;"
+                             "}")
+        self.parent.lineEdit_PVBatterie.setText(self.lineEdit_Profil.text())
 
 
 

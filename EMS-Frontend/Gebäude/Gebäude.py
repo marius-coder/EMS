@@ -14,11 +14,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_Gebäude(QMainWindow):
+class Ui_Gebäude(QWidget):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super(Ui_Gebäude, self).__init__()
 
+        self.parent = parent
         #self.setObjectName("self")
         self.resize(770, 261)
         self.setWindowTitle("Gebäude")
@@ -142,6 +143,11 @@ class Ui_Gebäude(QMainWindow):
         self.pushButton_UseProfile.setGeometry(QtCore.QRect(540, 210, 91, 31))
         self.pushButton_UseProfile.setObjectName("pushButton_UseProfile")
         self.pushButton_UseProfile.setText("Profil benutzen")
+        self.pushButton_UseProfile.setStyleSheet(
+                             "QPushButton::pressed"
+                             "{"
+                             "background-color : red;"
+                             "}")                             
         self.pushButton_Back = QtWidgets.QPushButton(self)
         self.pushButton_Back.setGeometry(QtCore.QRect(670, 210, 81, 31))
         self.pushButton_Back.setObjectName("pushButton_Back")
@@ -253,7 +259,7 @@ class Ui_Gebäude(QMainWindow):
         self.SaveProfile()
 
         df = pd.read_csv("./EMS-Frontend/data/Gebäude_Profile.csv", delimiter = ",", encoding='utf-8')
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
         data = df[df.values == name].values.flatten().tolist()
 
         from openpyxl import load_workbook
@@ -270,6 +276,12 @@ class Ui_Gebäude(QMainWindow):
                 ws_hull.cell(row=row,column=column).value = data[it]
                 it += 1
         wb.save("./EMS-Backend/data/building.xlsx")
+        self.pushButton_UseProfile.setStyleSheet("QPushButton"
+                             "{"
+                             "background-color : lightgreen;"
+                             "}")
+        self.parent.lineEdit_Gebäude.setText(self.lineEdit_Profil.text())
+
 
 
 def is_number_tryexcept(s):

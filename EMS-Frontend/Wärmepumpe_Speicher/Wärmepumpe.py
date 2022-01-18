@@ -17,9 +17,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_WP(QWidget):
 
 
-    def __init__(self,typ):
-        super().__init__()
+    def __init__(self,typ, parent):
+        super(Ui_WP, self).__init__()
 
+        self.parent = parent
         self.setWindowTitle("Auswahl Wärmepumpe")
         self.resize(553, 322)    
         self.typ = typ
@@ -141,7 +142,12 @@ class Ui_WP(QWidget):
         self.pushButton_UseProfile = QtWidgets.QPushButton(self)
         self.pushButton_UseProfile.setGeometry(QtCore.QRect(230, 245, 200, 30))
         self.pushButton_UseProfile.setObjectName("pushButton_UseProfile")
-        self.pushButton_UseProfile.setText("Profil zur Nutzungsmischung hinzufügen")         
+        self.pushButton_UseProfile.setText("Profil zur Nutzungsmischung hinzufügen") 
+        self.pushButton_UseProfile.setStyleSheet(
+                             "QPushButton::pressed"
+                             "{"
+                             "background-color : red;"
+                             "}") 
         
         #Combobox befüllen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Wärmepumpe_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -157,7 +163,8 @@ class Ui_WP(QWidget):
 
 
     def OpenSpeicher(self):
-        self.speicherWindow = Ui_Speicher(float(self.doubleSpinBox_VL_HZG.value()),self.typ)
+        if hasattr(self, 'speicherWindow') == False:
+            self.speicherWindow = Ui_Speicher(float(self.doubleSpinBox_VL_HZG.value()),self.typ)
         self.speicherWindow.show()
         
     def SaveProfile(self):
@@ -165,7 +172,9 @@ class Ui_WP(QWidget):
         
         name = self.lineEdit_Profil.text()
         #Wenn nichts im Lineedit steht oder kein Radiobutton ausgewählt ist wird das Profil nicht gespeichert
-        
+        if self.lineEdit_Profil == "" or hasattr(self, 'speicherWindow') == False:
+            return
+
         li_toSave = []
         li_toSave.append(name)
 
@@ -177,6 +186,8 @@ class Ui_WP(QWidget):
         for widget in self.li_inputWidgets:                
             li_toSave.append(widget.value())
             
+        li_toSave.append(self.speicherWindow.lineEdit_Profil.text())
+
         #Kontrolle ob ein Profil mit diesem Namen bereits existiert
         if name in names:
             self.DeleteProfile()
@@ -208,7 +219,7 @@ class Ui_WP(QWidget):
      
         df = pd.read_csv("./EMS-Frontend/data/Wärmepumpe_Profile.csv", delimiter = ",", encoding='utf-8')
 
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
 
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()
@@ -221,7 +232,14 @@ class Ui_WP(QWidget):
         for i,widget in enumerate(self.li_inputWidgets,2):
             widget.setValue(float(values[i]))
 
+        #if hasattr(self, 'speicherWindow') == False:
+        self.speicherWindow = Ui_Speicher(float(self.doubleSpinBox_VL_HZG.value()),self.typ)
+        self.speicherWindow.LoadProfile(values[-1])
+
     def UseProfile(self):
+
+        if self.lineEdit_Profil.text() == "":
+            return
 
         self.SaveProfile()
 
@@ -229,9 +247,24 @@ class Ui_WP(QWidget):
         name = self.comboBox_SelectProfile.currentText()
 
         data = df[df.values == name].values.flatten().tolist()
-
+        Wärmepumpe = {
+            "Art" : self.typ,
+            "Stromverbrauch" : data[1],
+            "COP": data[2],
+            "VL_HZG" : data[3],
+            "VL_KLG" : data[4],
+            "speichername" : data[5],
+            }
+        Import.importGUI.Import_WP(Wärmepumpe)
+        self.pushButton_UseProfile.setStyleSheet("QPushButton"
+                             "{"
+                             "background-color : lightgreen;"
+                             "}")
+        if self.typ == "Heizen":
+            self.parent.lineEdit_Wärmepumpe_HZG.setText(self.lineEdit_Profil.text())
+        else:
+            self.parent.lineEdit_Wärmepumpe_WW.setText(self.lineEdit_Profil.text())
       
-        #Import.importGUI.Import_Wärmepumpeterie()
 
     
         

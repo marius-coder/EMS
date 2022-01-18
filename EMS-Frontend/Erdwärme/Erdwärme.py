@@ -17,11 +17,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_Erdwärme(QMainWindow):
+class Ui_Erdwärme(QWidget):
     
-    def __init__(self):
-        super().__init__()
-   
+    def __init__(self, parent):
+        super(Ui_Erdwärme, self).__init__()
+
+        self.parent = parent
         self.setObjectName("self")
         self.resize(400, 270)
         self.setWindowTitle("Erdwärme")
@@ -146,6 +147,11 @@ class Ui_Erdwärme(QMainWindow):
         self.pushButton_UseProfile.setGeometry(QtCore.QRect(200, 220, 91, 31))
         self.pushButton_UseProfile.setObjectName("pushButton_UseProfile")
         self.pushButton_UseProfile.setText("Profil benutzen")
+        self.pushButton_UseProfile.setStyleSheet(
+                             "QPushButton::pressed"
+                             "{"
+                             "background-color : red;"
+                             "}")  
         self.pushButton_Back = QtWidgets.QPushButton(self)
         self.pushButton_Back.setGeometry(QtCore.QRect(300, 220, 91, 31))
         self.pushButton_Back.setObjectName("pushButton_Back")
@@ -216,7 +222,7 @@ class Ui_Erdwärme(QMainWindow):
      
         df = pd.read_csv("./EMS-Frontend/data/Erdwärme_Profile.csv", delimiter = ",", encoding='utf-8')
 
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
 
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()
@@ -237,6 +243,13 @@ class Ui_Erdwärme(QMainWindow):
         name = self.comboBox_SelectProfile.currentText()
 
         data = df[df.values == name].values.flatten().tolist()
+
+        self.pushButton_UseProfile.setStyleSheet("QPushButton"
+                             "{"
+                             "background-color : lightgreen;"
+                             "}")
+        
+        self.parent.lineEdit_Erdwärme.setText(self.lineEdit_Profil.text())
 
 
     def OpenMap(self):
