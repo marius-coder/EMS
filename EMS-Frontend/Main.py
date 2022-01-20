@@ -227,15 +227,6 @@ class Ui_Main(QMainWindow):
         model = Sim.Simulation(b_geothermal = False)
         model.Setup_Simulation()
         model.Simulate()
-        x = np.linspace(0,8760,8760)
-        y = model.ti
-        p = figure(title="Simple line example", x_axis_label='x', y_axis_label='y')
-
-        p.line(x, y, legend_label="Temp.", line_width=2)
-        show(p)
-       
-
-
 
     def SaveProfile(self):
         names = list(pd.read_csv("./EMS-Frontend/data/Simulation_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
