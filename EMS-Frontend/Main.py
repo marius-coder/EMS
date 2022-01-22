@@ -406,6 +406,9 @@ class Ui_Main(QMainWindow):
         for widget in self.li_loadWidgets:
             widget.LoadProfile()
             widget.UseProfile()
+
+        self.Strombedarf.graphWindow.UseNutzungsmischung()
+        self.Warmwasser.graphWindow.UseNutzungsmischung()
         
         
 

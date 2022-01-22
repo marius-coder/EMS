@@ -85,9 +85,7 @@ class WindowGesamtprofil_Strombedarf(QWidget):
         self.buttonGroup_Time.setObjectName("buttonGroup_Time")
         self.buttonGroup_Time.addButton(self.radioButton_hour)
         self.buttonGroup_Time.addButton(self.radioButton_month)
-        #self.radioButton_hour.toggled['bool'].connect(self.radioButton_month.repaint)
         self.radioButton_hour.toggled['bool'].connect(self.UpdatePlot)
-        #self.radioButton_month.toggled['bool'].connect(self.radioButton_hour.repaint)
         self.radioButton_month.toggled['bool'].connect(self.UpdatePlot)
 
         #Radiobuttons fürs umschalten zwischen Prozentualer und Absoluter Verbrauchsdarstellung
@@ -102,9 +100,7 @@ class WindowGesamtprofil_Strombedarf(QWidget):
         self.buttonGroup_Type.setObjectName("buttonGroup_Type")
         self.buttonGroup_Type.addButton(self.radioButton_Percent)
         self.buttonGroup_Type.addButton(self.radioButton_Absolute)
-        #self.radioButton_Percent.toggled['bool'].connect(self.radioButton_Absolute.repaint)
         self.radioButton_Percent.toggled['bool'].connect(self.UpdatePlot)
-        #self.radioButton_Absolute.toggled['bool'].connect(self.radioButton_Percent.repaint)
         self.radioButton_Absolute.toggled['bool'].connect(self.UpdatePlot)
 
         #Eingabe Gesamtfläche

@@ -1,4 +1,4 @@
 Name,BGF,GF,cp_Gebäude,Geschosshöhe,Wand,Wand_A,Wand_U,Wand_f,Dach,Dach_A,Dach_U,Dach_f,Boden,Boden_A,Boden_U,Boden_f,Fenster,Fenster_A,Fenster_U,Fenster_f
-Building2,2000.0,1000.0,200.0,2.8,Wand,1400.0,0.3,1,Boden,800,0.15,1,Dach,800,0.4,1,Fenster,0,0,1
 Building,1440.0,1000.0,200.0,2.8,Wand,1075.2,0.3,1,Boden,360,0.15,1,Dach,360,0.4,1,Fenster,0,0,1
 Building3,2000.0,1000.0,60.0,2.8,Wand,1400.0,0.6,1,Boden,800,0.3,1,Dach,800,0.6,1,Fenster,0,0,1
+Building2,2000.0,1000.0,200.0,2.8,Wand,1400.0,0.3,1,Boden,800,0.15,1,Dach,800,0.4,1,Fenster,0,0,1
