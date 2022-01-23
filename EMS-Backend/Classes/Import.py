@@ -38,7 +38,8 @@ class Import():
 		else:
 			self.input_WP_WW = data
 		
-		
+	def Import_Model(self,data):
+		self.model = data
 
 
 

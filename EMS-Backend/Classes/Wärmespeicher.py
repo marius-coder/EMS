@@ -1,5 +1,5 @@
 
-
+import numpy as np
 import math
 import matplotlib.pyplot as plt
 #Library die die physikalischen Werte von Wasser berechen kann
@@ -40,6 +40,7 @@ class Wärmespeicher():
 		ladezone = data_Speicher["Ladeschicht"]
 		radius = data_Speicher["Radius"]
 		diameter = data_Speicher["Radius"] * 2
+		
 
 		if radius == None and diameter == None:
 			raise ValueError("Bitte einen Radius bzw. einen Durchmesser angeben")
@@ -59,6 +60,8 @@ class Wärmespeicher():
 			"Mantelfläche [m²]" : 2 * math.pi * radius * height,
 			"Oberfläche [m²]" : 2 * math.pi * radius * (radius + height)
 			}
+		self.ladezustand = np.zeros(8760)
+		self.t_mean = np.zeros(8760)
 		self.lambda_dämmung = lambda_dämmung
 		self.dicke_dämmung = dicke_dämmung
 		self.t_VL = VL
@@ -385,16 +388,21 @@ class Wärmespeicher():
 				self.li_schichten[i]["Temperatur [°C]"] = t_neu_unten
 				self.li_schichten[i+1]["Temperatur [°C]"] = t_neu_oben
 
+	def CalcLadezustand(self, hour, VL):
 
+		var_temp = 0
+		for schicht in self.li_schichten:
+			var_temp += schicht["Temperatur [°C]"]
 
+		self.t_mean[hour] = var_temp / self.anz_schichten
+		self.ladezustand[hour] = VL / self.t_mean[hour] * 100
 
-	def UpdateSpeicher(self):
+	def UpdateSpeicher(self, hour, VL):
 		"""Diese Funktion führt zu jeder Stunde die Verlustrechnung sowie die natürliche Konvektion durch"""
+		self.CalcLadezustand(hour, VL)
 		self.Transmission_total()
-		#self.Speicher_Laden(47,50)
 		self.Heat_Convection()
 		self.MixSchichten()
-		#self.Speicher_Entladen(1000,27)
 
 
 #wärmespeicher = Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 35, RL = 30, schichten = 5, ladezone = 3, height = 1, diameter = 0.714)

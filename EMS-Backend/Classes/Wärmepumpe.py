@@ -13,13 +13,14 @@ class Wärmepumpe():
     def __init__(self, speicher, data_WP, geb_VL_HZG, geb_VL_KLG):
         self.Pel = data_WP["Stromverbrauch"]
         self.COP = data_WP["COP"]
+        self.COP_betrieb = np.ones(8760) * data_WP["COP"]
         self.speicher = speicher
         self.WP_VL_HZG = data_WP["VL_HZG"]
         self.geb_VL_HZG = geb_VL_HZG
         self.WP_VL_KLG = data_WP["VL_KLG"]
         self.geb_VL_KLG = geb_VL_KLG
         self.Pel_Betrieb = np.zeros(8760)
-        self.is_on = False
+        self.is_on = np.zeros(8760, dtype = bool)
 
     #--------------------------------------------------------------------------------------------------------------------------------------
 
@@ -57,12 +58,12 @@ class Wärmepumpe():
     def calc_COP_GUI(self, path:str, t_Q: int, t_VL:int):
         pass
 
-    def Check_SpeicherHeizen(self):
+    def Check_SpeicherHeizen(self, hour):
         """Diese Funktion kontrolliert zu jeder Stunde den dazugehörigen Speicher auf Temperatur
            Wenn die Temperatur außerhalb des Sollwertes liegt wird WP_TurnOn aufgerufen"""
 
         #Verlust und Ausgleichsvorgänge
-        self.speicher.UpdateSpeicher()
+        self.speicher.UpdateSpeicher(hour, self.WP_VL_HZG)
 
         schichttoCheck = int(self.speicher.anz_schichten / 2) #Wenn der Speicher halb durchgeladen ist wird abgedreht
         schichtEinschalten = int(self.speicher.anz_schichten * 4/5)
@@ -72,20 +73,23 @@ class Wärmepumpe():
                 
         if self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"] > self.geb_VL_HZG:
             print("TurnOff1")
+            self.is_on[hour] = False
             self.WP_TurnOff()
         elif self.speicher.li_schichten[schichtEinschalten]["Temperatur [°C]"] < self.geb_VL_HZG + 2: #+2°C damit die WP schon ein bisschen früher anfängt als dass Sie eigentlich gebraucht wird
             print("TurnOn")
+            self.is_on[hour] = True
             self.WP_TurnOn(self.WP_VL_HZG, self.COP)
         else:
             print("TurnOff2")
+            self.is_on[hour] = False
             self.WP_TurnOff()
 
-    def Check_SpeicherKühlen(self):
+    def Check_SpeicherKühlen(self, hour):
         """Diese Funktion kontrolliert zu jeder Stunde den dazugehörigen Speicher auf Temperatur
            Wenn die Temperatur außerhalb des Sollwertes liegt wird WP_TurnOn aufgerufen"""
 
         #Verlust und Ausgleichsvorgänge
-        self.speicher.UpdateSpeicher()
+        self.speicher.UpdateSpeicher(hour, self.WP_VL_KLG)
 
         schichttoCheck = int(self.speicher.anz_schichten / 2) #Wenn der Speicher halb durchgeladen ist wird abgedreht
         schichtEinschalten = int(self.speicher.anz_schichten * 4/5)
@@ -95,15 +99,15 @@ class Wärmepumpe():
                 
         if self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"] < self.geb_VL_KLG:
             print("TurnOff1")
-            self.is_on = False
+            self.is_on[hour] = False
             self.WP_TurnOff()
         elif self.speicher.li_schichten[schichtEinschalten]["Temperatur [°C]"] > self.geb_VL_KLG-1:
             print("TurnOn")
-            self.is_on = True
+            self.is_on[hour] = True
             self.WP_TurnOn(self.WP_VL_KLG, self.COP-1)
         else:
             print("TurnOff2")
-            self.is_on = False
+            self.is_on[hour] = False
             self.WP_TurnOff()
         
     def WP_TurnOn(self, t_VL, COP):

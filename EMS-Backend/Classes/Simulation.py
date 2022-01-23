@@ -264,21 +264,22 @@ class Simulation():
 			print("Verluste: ",self.q_gesamt)
 			print("Temp vor Heizen: ",self.ti_sim)
 			self.ti[hour] = self.ti_sim
-			if hour == 2892:
-				print("")
+
+			self.WP_HZG.COP_betrieb[hour] = self.WP_HZG.COP
 			#Heizen
 			if DetermineMonth(hour) in self.heating_months:
 
 				#Check_SpeicherHeizen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
 				#Wenn notwendig schaltet diese Funktion auch die WP ein
-				self.WP_HZG.Check_SpeicherHeizen()
+				self.WP_HZG.Check_SpeicherHeizen(hour)
 
-				if self.WP_HZG.is_on == True:
+				if self.WP_HZG.is_on[hour] == True:
 					self.WP_HZG.Pel_Betrieb[hour] = self.WP_HZG.Pel
 				else:
 					self.WP_HZG.Pel_Betrieb[hour] = 0
 				#Benötigte Wärmeenergie um auf Solltemperatur zu kommen
 				self.q_soll = self.heating_power(self.t_soll[hour], self.ti_sim, self.building.heat_capacity, self.building.gfa)
+				self.qh[hour] = self.q_soll
 
 				#Energie aus dem Speicher entnehmen
 				self.WP_HZG.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = self.t_hzg_RL)
@@ -291,14 +292,15 @@ class Simulation():
 
 				#Check_SpeicherKühlen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
 				#Wenn notwendig schaltet diese Funktion auch die WP ein
-				self.WP_HZG.Check_SpeicherKühlen()
+				self.WP_HZG.Check_SpeicherKühlen(hour)
 
-				if self.WP_HZG.is_on == True:
+				if self.WP_HZG.is_on[hour] == True:
 					self.WP_HZG.Pel_Betrieb[hour] = self.WP_HZG.Pel
 				else:
 					self.WP_HZG.Pel_Betrieb[hour] = 0
 				#Benötigte Wärmeenergie um auf Solltemperatur zu kommen
 				self.q_soll = self.heating_power(self.t_soll[hour], self.ti_sim, self.building.heat_capacity, self.building.gfa)
+				self.qc[hour] = self.q_soll
 
 				#Energie aus dem Speicher entnehmen
 				self.WP_HZG.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = self.t_hzg_RL)

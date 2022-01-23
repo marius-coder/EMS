@@ -1,12 +1,16 @@
 # -*- coding: latin-1 -*-
 import os
 import sys
+from bokeh.models.widgets.tables import SelectEditor
 import pandas as pd
+import numpy as np
 import csv
 from bokeh import plotting, embed, resources
 from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource
 import importlib
 Import = importlib.import_module("EMS-Backend.Classes.Import")
+
 import warnings
 warnings.filterwarnings("error")
 
@@ -27,6 +31,9 @@ class Ui_Plotting(QWidget):
         self.setWindowTitle("Ergebnisse")
 
         self.dlgWindow = DialogWindow(self)
+        self.dlgColorWindow = ColorPickWindow(self)
+        self.move = True
+        self.model = None
         
         self.lay_base = QtWidgets.QHBoxLayout(self)
         self.lay_Vertical = QtWidgets.QVBoxLayout(self)
@@ -54,23 +61,38 @@ class Ui_Plotting(QWidget):
         self.ListWidget_DataPoints = QListWidget()
         self.ListWidget_DataPoints.setSelectionMode(QAbstractItemView.MultiSelection)
         self.lay_Vertical.addWidget(self.ListWidget_DataPoints)
-        self.DataPoints_Gebäude = {"Innentemperatur" : 0,
-                              "Außentemperatur" : 1,
-                              "Solltemperatur" : 2,
-                              }
-        self.DataPoints_Warmwasser = {"Bedarf [liter]" : 0,
-                                 "Bedarf [kW]" : 1,                                 
-                                 "Speicherstand [kW]" : 2,
-                                 "WP_Status" : 3,
-                                 "WP Stromverbrauch" : 4
-            }
-        self.DataPoints_Heizen_Kühlen = {"Bedarf [kW]" : 0,
-                                   "Speicherstand [kW]" : 1,
-                                   "WP_Status" : 2,
-                                   "WP Stromverbrauch" : 3}
-        self.DataPoints_Strom = {}
+        self.selectionList = []
+        self.selectionGroup = []
+        self.DataPoints_Gebäude = {"Innentemperatur [°C]" : None,
+                              "Außentemperatur [°C]" : None,
+                              "Solltemperatur [°C]" : None,
+                              "Strombedarf [kW]" : None,
+                              "Bedarf Heizen [kW]" : None,
+                              "Bedarf Kühlen [kW]" : None,
+                              "Bedarf Warmwasser [kW]" : None}
+        self.DataPoints_Warmwasser = {"WP_Wärmeleistung [kW]" : None,
+                                   "Speicherstand [%]" : None,
+                                   "WP_Status" : None,
+                                   "WP_Stromverbrauch" : None,
+                                   "Mittlere Speichertemperatur [°C]" : None,
+                                   "COP" : None}
+        self.DataPoints_Heizen_Kühlen = {"WP_Wärmeleistung [kW]" : None,
+                                   "Speicherstand [%]" : None,
+                                   "WP_Status" : None,
+                                   "WP_Stromverbrauch" : None,
+                                   "Mittlere Speichertemperatur [°C]" : None,
+                                   "COP" : None}
+        self.DataPoints_Strom = { 
+            "PV-Ertrag [kW]" : None,
+            "Batteriekapazität [%]" : None,
+            "Batteriekapazität [kWh]" : None,            
+            "Batterieeinspeisung [kW]" : None,
+            "Batterieentladung [kW]" : None,
+            "Netzeinspeisung [kW]" : None,
+            "Netzbezug [kW]" : None,}
         self.DataPoints_Erdwärme = {}
         self.DataPoints_Energiedaten = {}
+
 
         self.lay_GridRadiobuttons = QtWidgets.QGridLayout(self)
         self.radioButton_Stunde = QtWidgets.QRadioButton(self)
@@ -103,6 +125,41 @@ class Ui_Plotting(QWidget):
         for i in range(len(self.li_coords)):
             self.AddFigure(i)
 
+    def SetupModel(self):
+        if self.model == None:
+            return
+
+        #Heizen + Warmwasser
+        li_WP = [self.DataPoints_Heizen_Kühlen,self.DataPoints_Warmwasser]
+        li_var = ["HZG","WW"]
+        for i,WP in enumerate(li_WP):            
+            WP["WP_Status"] = getattr(self.model, "WP_" + li_var[i]).is_on 
+            WP["WP_Stromverbrauch"] = getattr(self.model, "WP_" + li_var[i]).Pel_Betrieb
+            WP["WP_Wärmeleistung [kW]"] = getattr(self.model, "WP_" + li_var[i]).Pel_Betrieb * getattr(self.model, "WP_" + li_var[i]).COP_betrieb
+            WP["Speicherstand [%]"] = getattr(self.model, "WP_" + li_var[i]).speicher.ladezustand
+            WP["Mittlere Speichertemperatur [°C]"] = getattr(self.model, "WP_" + li_var[i]).speicher.t_mean
+            WP["COP"] = getattr(self.model, "WP_" + li_var[i]).COP_betrieb
+
+        #Gebäude
+        self.DataPoints_Gebäude["Innentemperatur [°C]"] = self.model.ti
+        self.DataPoints_Gebäude["Außentemperatur [°C]"] = self.model.ta
+        self.DataPoints_Gebäude["Solltemperatur [°C]"] = self.model.t_soll
+        self.DataPoints_Gebäude["Strombedarf [kW]"] = self.model.Pel_gebäude
+        self.DataPoints_Gebäude["Bedarf Heizen [kW]"] = self.model.qh
+        self.DataPoints_Gebäude["Bedarf Kühlen [kW]"] = self.model.qc
+        self.DataPoints_Gebäude["Bedarf Warmwasser [kW]"] = self.model.q_warmwater
+
+        #Strom
+        self.DataPoints_Strom["PV-Ertrag [kW]"] = self.model.Stromnetz.PV_Anlage.PV_EK
+        li_temp = np.ones(8760) *  self.model.Stromnetz.Batterie.Kapazität_MAX
+        self.DataPoints_Strom["Batteriekapazität [%]"] = (self.model.Stromnetz.Batterieladung / li_temp) * 100 
+        self.DataPoints_Strom["Batteriekapazität [kWh]"] = self.model.Stromnetz.Batterieladung
+        self.DataPoints_Strom["Batterieeinspeisung [kW]"] = self.model.Stromnetz.Batterieeinspeisung
+        self.DataPoints_Strom["Batterieentladung [kW]"] = self.model.Stromnetz.Batterieentladung
+        self.DataPoints_Strom["Netzeinspeisung [kW]"] = self.model.Stromnetz.Netzeinspeisung
+        self.DataPoints_Strom["Netzbezug [kW]"] = self.model.Stromnetz.Netzbezug
+
+
     def OpenDialog(self): 
         if self.sender().objectName() == "pushButton_ResetPlots":
             self.dlgWindow.sender = "Reset"
@@ -112,7 +169,22 @@ class Ui_Plotting(QWidget):
         for button in self.dlgWindow.btn_grp.buttons():
             button.setStyleSheet('background-color: red')
             button.setChecked(False)
+
+        selection = self.ListWidget_DataPoints.selectedItems()
+        for item in selection:
+            self.selectionList.append(item.text())
+            self.selectionGroup.append(self.comboBox_SelectDatagroup.currentText())
+
+        self.dlgColorWindow.SetupSelection(self.selectionList)
+        self.dlgColorWindow.show()
         self.dlgWindow.show()
+        if self.move == True:
+            self.move = False
+            x = self.dlgColorWindow.pos().x() + self.dlgWindow.frameGeometry().width()
+            y = self.dlgColorWindow.pos().y()
+            self.dlgColorWindow.move(x+30,y)
+
+
         
 
     def AddFigure(self,i): 
@@ -136,25 +208,138 @@ class Ui_Plotting(QWidget):
             self.AddFigure(item)
             print("Reset id: ", item)
 
-    def DrawPlot(self):
+    #def UpdateSelection(self):
+    #    selection = self.ListWidget_DataPoints.selectedItems()
+
+    def SetTimeframe(self):
+        if self.radioButton_Stunde.isChecked() == True:
+            self.x_timeframe = "h"
+        elif self.radioButton_Tag.isChecked() == True:
+            self.x_timeframe = "d"
+        elif self.radioButton_Monat.isChecked() == True:
+            self.x_timeframe = "m"
+        elif self.radioButton_Jahr.isChecked() == True:
+            self.x_timeframe = "y"
+
+    def DrawPlot(self):        
+
+        time = np.arange('2022-01-01', '2023-01-01', dtype='datetime64[h]')
+
+        df = pd.DataFrame(index = time)            
+        
+        for i,item in enumerate(self.selectionList):
+            df[item] = getattr(self,"DataPoints_" + self.selectionGroup[i])[item]
+            
+        source = ColumnDataSource(df)
+        mypalette = self.dlgColorWindow.li_Colors
         
         if len(self.dlgWindow.idList) != 1:
             return
         ID = self.dlgWindow.idList[0]
-        print("Drawing in Slot: ", ID)
         p = figure(width=800, height=450)
-        p.rect(x=1, y=2, width= 5, height=50, fill_color= "red")
+        p.line(source=source, line_width=2)
+
+        numlines=len(df.columns)
+        p.multi_line(xs=[df.index.values]*numlines,
+                ys=[df[name].values for name in df],
+                line_color=mypalette,
+                line_width=5)
+
         html = embed.file_html(p, resources.CDN, "my plot")
         self.li_plots[ID]["Widget"].setHtml(html)
+        self.selectionList = []
         
 
     def LoadDatagroup(self):
+        selection = self.ListWidget_DataPoints.selectedItems()
+        for item in selection:
+            self.selectionList.append(item.text())
+            self.selectionGroup.append(self.comboBox_SelectDatagroup.currentText())
         name = self.comboBox_SelectDatagroup.currentText()
         Datapoints = getattr(self,"DataPoints_" + name)
         self.ListWidget_DataPoints.clear()
         self.ListWidget_DataPoints.addItems(Datapoints.keys())
 
+        
+class ColorPickWindow(QWidget):
+    def __init__(self, parent):
+        super(ColorPickWindow, self).__init__()
 
+        self.height = 50
+        self.resize(450,self.height)        
+        self.setWindowTitle("Farben auswählen für Plot")
+        self.sender = ""
+        self.parent = parent                
+        self.lay_Vertical = QtWidgets.QVBoxLayout(self)
+        self.li_Widgets = []
+        self.btn_grp = QButtonGroup()
+        self.btn_grp.buttonClicked.connect(self.SetColor)
+        self.btn_grp.setExclusive(False)
+        
+
+    def deleteItemsOfLayout(self,layout):
+         if layout is not None:
+             while layout.count():
+                 item = layout.takeAt(0)
+                 widget = item.widget()
+                 if widget is not None:
+                     widget.setParent(None)
+                 else:
+                     self.deleteItemsOfLayout(item.layout())
+
+
+    def SetupSelection(self, selection):
+        self.height = 50
+        self.deleteItemsOfLayout(self.lay_Vertical)
+        self.btn_grp = QButtonGroup()
+        self.btn_grp.buttonClicked.connect(self.SetColor)
+        self.btn_grp.setExclusive(False)
+        self.li_Widgets = []
+        self.li_Colors = []
+
+
+        for i,item in enumerate(selection):
+            lay_horizontal = QtWidgets.QHBoxLayout(self)
+
+            lineEdit_Selection = QtWidgets.QLineEdit(self)
+            lineEdit_Selection.setReadOnly(True)
+            lineEdit_Selection.setText(item)
+            lay_horizontal.addWidget(lineEdit_Selection,5)
+
+            lineEdit_Color = QtWidgets.QLineEdit(self)
+            lineEdit_Color.setReadOnly(True)
+            lay_horizontal.addWidget(lineEdit_Color,3)
+
+            pushButton_PickColor = QtWidgets.QPushButton(self)
+            pushButton_PickColor.setText("Color")
+            pushButton_PickColor.setCheckable(True)
+            lay_horizontal.addWidget(pushButton_PickColor,2)
+            dic_temp = {
+                "Selection" : lineEdit_Selection,
+                "Color" : lineEdit_Color,
+                "Pick_Color" : pushButton_PickColor,
+                    }
+            self.li_Widgets.append(dic_temp)
+
+            self.height += 40
+            self.resize(450,self.height)  
+
+            self.lay_Vertical.addLayout(lay_horizontal)
+            self.btn_grp.addButton(self.li_Widgets[i]["Pick_Color"],i)
+            self.li_Colors.append("#ffffff")
+        
+    def SetColor(self, btn):
+        for i,button in enumerate(self.btn_grp.buttons()):
+            if button.isChecked():
+                ID = int(i)
+
+        color = QColorDialog.getColor().name()
+        self.li_Widgets[ID]["Color"].setStyleSheet('background-color:'+color) 
+        self.li_Colors[ID] = color
+        btn.setCheckable(False)
+        btn.setCheckable(True)
+
+        
 
             
 class DialogWindow(QWidget):
@@ -195,7 +380,7 @@ class DialogWindow(QWidget):
         else:
             self.parent.DrawPlot()
         self.close()
-
+        self.parent.dlgColorWindow.close()
 
     def colorChange(self, btn):  
         color = btn.palette().color(QtGui.QPalette.Background).name()
@@ -206,10 +391,6 @@ class DialogWindow(QWidget):
             btn.setStyleSheet('background-color: red')
 
         self.idList = []
-        for id,button in enumerate(self.btn_grp.buttons()):
+        for i,button in enumerate(self.btn_grp.buttons()):
             if button.isChecked():
-                self.idList.append(id)
-
-        #print("Clicked Buttons: ", self.idList)
-            
-            
+                self.idList.append(i)

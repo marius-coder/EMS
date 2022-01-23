@@ -13,6 +13,7 @@ from PyQt5.QtCore import *
 
 import importlib
 Sim = importlib.import_module("EMS-Backend.Classes.Simulation")
+Import = importlib.import_module("EMS-Backend.Classes.Import")
 
 from Gebäude.Gebäude import Ui_Gebäude
 from Strom.Strom import Ui_Strombedarf
@@ -221,12 +222,19 @@ class Ui_Main(QMainWindow):
         self.WP_WW.show()
 
     def Open_Ergebnisse(self):
+        try:
+            self.Ergebnisse.SetupModel()
+        except:
+            raise
+            print("Konnte die Simulationsergebnisse nicht laden")
+            
         self.Ergebnisse.showMaximized()
 
     def Simulate(self):
-        model = Sim.Simulation(b_geothermal = False)
-        model.Setup_Simulation()
-        model.Simulate()
+        self.model = Sim.Simulation(b_geothermal = False)
+        self.model.Setup_Simulation()
+        self.model.Simulate()
+        self.Ergebnisse.model = self.model
 
     def SaveProfile(self):
         names = list(pd.read_csv("./EMS-Frontend/data/Simulation_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
