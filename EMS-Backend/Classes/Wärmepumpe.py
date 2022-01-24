@@ -12,8 +12,7 @@ class Wärmepumpe():
 
     def __init__(self, speicher, data_WP, geb_VL_HZG, geb_VL_KLG):
         self.Pel = data_WP["Stromverbrauch"]
-        self.COP = 1
-        self.COP_betrieb = np.ones(8760) * self.COP
+        self.COP_betrieb = np.ones(8760) 
         self.speicher = speicher
         self.WP_VL_HZG = data_WP["VL_HZG"]
         self.geb_VL_HZG = geb_VL_HZG
@@ -25,30 +24,35 @@ class Wärmepumpe():
 
     def SetupCOP(self,dataString):
         dataString = dataString.split("----")[:-1]
-        data_x = dataString[ : len(dataString)//2]
-        data_y = dataString[len(dataString)//2 : ]
 
-        data_x = [data_x[i:i + 2] for i in range(0, len(data_x), 2)] 
-        data_y = [data_y[i:i + 2] for i in range(0, len(data_y), 2)] 
-        
+        data_x = []
+        data_y = []
+
+        dataString = [dataString[i:i + 2] for i in range(0, len(dataString), 2)] 
+
+        for i in range(0,len(dataString)//2+2,2):
+            data_x.append(dataString[i])
+            data_y.append(dataString[i+1])
+
         self.li_range_X = []
         self.li_k = []
         self.li_d = []
 
 
         for i in range(len(data_x)):
-            k = (data_y[1]- data_y[0]) / (data_x[1]- data_x[0])
-            d = data_y[0] - data_x[0] * k
+            k = (float(data_y[i][1])- float(data_y[i][0])) / (float(data_x[i][1])- float(data_x[i][0]))
+            d = float(data_y[i][0]) - float(data_x[i][0]) * k
 
             self.li_k.append(k)
             self.li_d.append(d)
-            self.li_range_X.append(data_x[0],data_x[1])
+            self.li_range_X.append([float(data_x[i][0]),float(data_x[i][1])])
 
-    GetCOP(self,t_a):
+    def GetCOP(self,t_a):
         COP = 0
         for i in range(len(self.li_range_X)):
-            if t_a >= self.li_range_X[i][0] and t_a =< self.li_range_X[i][1]:
+            if self.li_range_X[i][0] <= t_a <= self.li_range_X[i][1]:
                 COP = t_a * self.li_k[i] + self.li_d[i]
+                break
 
         #Falls die Außentemperatur vom Bereich abweicht wird der nächstbeste Wert genommen
         if COP == 0 and t_a>0:
@@ -112,7 +116,7 @@ class Wärmepumpe():
         elif self.speicher.li_schichten[schichtEinschalten]["Temperatur [°C]"] < self.geb_VL_HZG + 2: #+2°C damit die WP schon ein bisschen früher anfängt als dass Sie eigentlich gebraucht wird
             print("TurnOn")
             self.is_on[hour] = True
-            self.WP_TurnOn(self.WP_VL_HZG, self.COP)
+            self.WP_TurnOn(self.WP_VL_HZG, self.COP_betrieb[hour])
         else:
             print("TurnOff2")
             self.is_on[hour] = False
@@ -138,15 +142,13 @@ class Wärmepumpe():
         elif self.speicher.li_schichten[schichtEinschalten]["Temperatur [°C]"] > self.geb_VL_KLG-1:
             print("TurnOn")
             self.is_on[hour] = True
-            self.WP_TurnOn(self.WP_VL_KLG, self.COP-1)
+            self.WP_TurnOn(self.WP_VL_KLG, self.COP_betrieb[hour]-1)
         else:
             print("TurnOff2")
             self.is_on[hour] = False
             self.WP_TurnOff()
         
     def WP_TurnOn(self, t_VL, COP):
-        #TODO: Logik um COP und Pel dynamisch zu berechnen
-        #Get Tl temp
         temp_RL = self.speicher.li_schichten[0]["Temperatur [°C]"]
         Q_toLoad = self.Pel * COP * 1000
         m_toLoad = Q_toLoad / (4180 * abs(t_VL - temp_RL)) * 3600               

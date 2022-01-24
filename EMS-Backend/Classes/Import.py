@@ -9,10 +9,8 @@ class Import():
 		#self.Import_Geothermal()
 
 
-	def Import_Geothermal(self):
-		self.input_GeoData = {"Adresse" : "Höchstädtplatz 6, 1200 Wien, Österreich",
-								"Bohrtiefe" : 150,
-								"Anzahl_Sonden" : 5}
+	def Import_Geothermal(self, data):
+		self.input_GeoData = data
 
 
 

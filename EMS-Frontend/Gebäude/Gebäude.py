@@ -279,8 +279,8 @@ class Ui_Gebäude(QWidget):
             ws_params.cell(row=row+1,column=2).value = data[row]
 
         it = 6
-        for row in range(2, 7): 
-            for column in range(1,4):
+        for row in range(2, 6): 
+            for column in range(1,5):
                 ws_hull.cell(row=row,column=column).value = data[it]
                 it += 1
         wb.save("./EMS-Backend/data/building.xlsx")
@@ -289,8 +289,6 @@ class Ui_Gebäude(QWidget):
                              "background-color : lightgreen;"
                              "}")
         self.parent.lineEdit_Gebäude.setText(self.lineEdit_Profil.text())
-
-
 
 def is_number_tryexcept(s):
     """ Returns True if string is a number. """

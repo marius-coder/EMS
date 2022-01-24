@@ -168,3 +168,16 @@ def Get_GeothermalData(input_GeoData : dict)-> dict:
                   }
 
     return dic_export
+
+class Sondenfeld():
+    def __init__(self, data) -> None:
+        self.bohrtiefe = data["Bohrtiefe"]
+        self.anz_Sonden = data["Anzahl_Sonden"]
+        self.abs_Sonden = data["Abstand_Sonden"]
+        self.WM_spez = data["WM_spez"]
+
+
+        
+
+    def DumpEnergy(self, q_toDump):
+        pass

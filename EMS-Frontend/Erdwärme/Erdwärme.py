@@ -85,6 +85,17 @@ class Ui_Erdwärme(QWidget):
         self.doubleSpinBox_Bohrtiefe.setRange(0,300)
 
 
+        #Eingabe Sondenabstand
+        self.label_SonAbstand = QtWidgets.QLabel(self)
+        self.label_SonAbstand.setGeometry(QtCore.QRect(10, 180, 71, 16))
+        self.label_SonAbstand.setObjectName("label_SonAbstand")
+        self.label_SonAbstand.setText("Sondenabstand [m]")
+        self.doubleSpinBox_SonAbstand = QtWidgets.QDoubleSpinBox(self)
+        self.doubleSpinBox_SonAbstand.setGeometry(QtCore.QRect(10, 200, 62, 22))
+        self.doubleSpinBox_SonAbstand.setObjectName("doubleSpinBox_SonAbstand")
+        self.doubleSpinBox_SonAbstand.setRange(0,300)
+
+
         #Ausgabe Wärmeleitfähigkeit/Leistung 
         self.label_WM_spez = QtWidgets.QLabel(self)
         self.label_WM_spez.setGeometry(QtCore.QRect(190, 145, 100, 32))
@@ -162,7 +173,8 @@ class Ui_Erdwärme(QWidget):
         self.pushButton_LookMap.setObjectName("pushButton_LookMap")
         self.pushButton_LookMap.setText("Karte")
 
-        self.li_inputWidgets = [self.lineEdit_InputAdresse,self.spinBox_AnzSonden,self.doubleSpinBox_Bohrtiefe]
+        self.li_inputWidgets = [self.lineEdit_InputAdresse,self.spinBox_AnzSonden,self.doubleSpinBox_Bohrtiefe,
+                                self.doubleSpinBox_SonAbstand]
 
         #Combobox befüllen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Erdwärme_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -242,6 +254,17 @@ class Ui_Erdwärme(QWidget):
         
 
     def UseProfile(self):
+        if self.lineEdit_InputAdresse.text() == "" or self.doubleSpinBox_Bohrtiefe.value() == 0:
+            return
+        
+        input_GeoData = {"Adresse" : self.lineEdit_InputAdresse.text(),
+								"Bohrtiefe" : self.doubleSpinBox_Bohrtiefe.value(),
+								"Anzahl_Sonden" : self.spinBox_AnzSonden.value()}
+        Output_GeoData = BackErdwärme.Get_GeothermalData(input_GeoData)
+        self.lineEdit_WM_spez.setText(str(round(Output_GeoData["MW_WL"],3)))
+        self.lineEdit_Leistung.setText(str(round(float(self.lineEdit_WM_spez.text()) * float(self.spinBox_AnzSonden.value()) * float(self.doubleSpinBox_Bohrtiefe.value()) * 5/1000,3)))
+
+
         self.SaveProfile()
         df = pd.read_csv("./EMS-Frontend/data/Erdwärme_Profile.csv", delimiter = ",", encoding='utf-8')
         name = self.comboBox_SelectProfile.currentText()
@@ -252,7 +275,14 @@ class Ui_Erdwärme(QWidget):
                              "{"
                              "background-color : lightgreen;"
                              "}")
-        
+        Erdwärme = {
+            "Adresse" : data[1],
+            "Bohrtiefe": data[2],
+            "Anzahl_Sonden" : data[3],
+            "Abstand_Sonden" : data[4],
+            "WM_spez" : self.lineEdit_WM_spez.text(),
+            "Leistung" : self.lineEdit_Leistung.text()}
+        Import.importGUI.Import_Geothermal(Erdwärme)
         self.parent.lineEdit_Erdwärme.setText(self.lineEdit_Profil.text())
 
 

@@ -237,7 +237,7 @@ class Ui_Plotting(QWidget):
             return
         ID = self.dlgWindow.idList[0]
         p = figure(width=800, height=450)
-        p.line(source=source, line_width=2)
+        #p.line(source=source, line_width=2)
 
         numlines=len(df.columns)
         p.multi_line(xs=[df.index.values]*numlines,

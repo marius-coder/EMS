@@ -17,7 +17,6 @@ Import = importlib.import_module("EMS-Backend.Classes.Import")
 
 from bokeh.plotting import figure, show
 
-#TODO: Alle Konstanten zusammenlegen
 
 class Simulation():
 
@@ -43,17 +42,6 @@ class Simulation():
 
 	def Setup_Simulation(self):
 		""" """
-		#TODO: Die Erdwärme in eine eigene Klasse schieben
-		if self.b_geothermal == True:
-			self.geo_temp = 13 #°C Bodentemperatur Quelle: https://www.wien.gv.at/stadtentwicklung/energie/themenstadtplan/erdwaerme/erlaeuterungen.html
-			#self.dt_geo = 5 #Temperaturdiff Quellenseite WP
-			#self.anz_Sonden = self.import_data.input_GeoData["Anzahl_Sonden"] #Anzahl an Sonden
-			#self.dic_geoData_out = Get_GeothermalData(self.import_data.input_GeoData)
-			#self.Q_quelleBoden = self.dic_geoData_out["Bohrtiefe"] * self.dic_geoData_out["MW_WL"] * self.anz_Sonden * self.dt_geo # W
-
-		
-
-
 		self.qi_winter = self.df_usage["Qi Winter W/m²"].to_numpy()
 		self.qi_sommer = self.df_usage["Qi Sommer W/m²"].to_numpy()
 		self.qi = self.qi_winter                                 #Interne Gewinne als Kombination von Sommer und Winter, f�rs erste = QI_winter
@@ -78,9 +66,8 @@ class Simulation():
 		self.CONST_Q_PERSONEN_SPEZ = 80 #W/Person
 		self.cp_air = 0.34  # spez. Wärme kapazität * rho von Luft (Wh/m3K)
 
-		self.t_Zul = np.ones(8760) * 20 #Zulufttemperatur TODO:Wärmerückgewinnung hinzufügen
-		self.t_Zul = self.ta
-		self.t_Abl = np.ones(8760) * 20 #Ablufttemperatur
+		self.t_Zul = np.ones(8760) #Zulufttemperatur
+		self.t_Abl = np.ones(8760) #Ablufttemperatur
 		self.t_soll = np.ones(8760) * 20   #Soll Rauminnentemperatur
 		self.qs = np.zeros(8760) #Solar gains array in Watt
 		self.q_außen = np.zeros(8760)
@@ -109,7 +96,6 @@ class Simulation():
 		#self.WP_WW = ImportWP.Wärmepumpe(20,4,self.Speicher_WW,WP_VL_HZG = 65, geb_VL_HZG = 60, WP_VL_KLG = 0, geb_VL_KLG = 0)
 		self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
 		
-		self.building.insert_windows(1.2, 25)
 		stat_HL = self.Static_HL()
 		stat_KL = self.Static_KL()
 
@@ -123,8 +109,11 @@ class Simulation():
 
 
 	   
-
-
+	def calc_t_Zul(self, hour):
+		WRG = self.building.WRG
+		self.t_Abl[hour] = self.ti[hour]
+		self.t_Zul[hour] = self.t_Abl[hour] * WRG + self.t_Abl[hour] * (1 - WRG)
+		print(f"Zulufttemperatur: {self.t_Zul[hour]} °C")
 
 	def calc_QV(self, ach_v, ach_i, t_Zul, ta, ti ):
 		"""Ventilation heat losses [W/m²BGF] at timestep t"""
@@ -149,10 +138,10 @@ class Simulation():
 		q_fenster = self.building.window["LT"] * dTa
 		q_dach = self.building.dach["LT"] * dTa
 		#Transmissionsverlust von beheizten Raum zu unbeheizten Räumen
-		#TODO: Transmission zu unbeheizten Räumen einführen
+		#N.V.
 
 		#Transmissionsverlust von beheizten Räumen an das Erdreich
-		dT_boden = 6 - ti #TODO: Annahme das der Boden konstant 6°C hat. Später durch genaueres ersetzen.
+		dT_boden = 6 - ti #Annahme das der Boden konstant 6°C hat.
 		q_fußboden = self.building.fußboden["LT"] * dT_boden
 
 		#Gesamttransmissionswärmeverlust in Watt
@@ -182,7 +171,6 @@ class Simulation():
 		max_achi = max(self.ach_i)
 		max_achv = max(self.ach_v)
 		t_Zul = min_ta
-		#t_Zul = ti #TODO: Genauer machen mit WRG
 
 		qt = self.calc_QT(min_ta, ti)
 		qv = self.calc_QV(max_achv, max_achi, t_Zul, min_ta, ti )
@@ -195,15 +183,12 @@ class Simulation():
 
 
 	def Q_Personen(self, hour) -> float:
-		#TODO: Variable Personenanzahl je nach Stunde
 		return self.anz_personen[hour] * self.building.gfa * self.CONST_Q_PERSONEN_SPEZ #W
 
 	def Q_Beleuchtung(self, hour) -> float:
-		#TODO: Variable Beleuchtung je nach Stunde
 		return self.building.gfa * self.q_beleuchtung[hour]
 	
 	def Q_Maschinen(self, hour) -> float:
-		#TODO: Variable Maschinenlast je nach Stunde
 		return self.building.gfa * self.q_maschinen[hour]
 
 	def Q_Solar(self, hour) -> float:
@@ -238,10 +223,8 @@ class Simulation():
 	def Simulate(self):
 		for hour in range(8760):		
 			
-			day_1 = math.ceil((hour + 1) / 24)
-
-			mean_temp = sum(self.ta[day_1 * 24 : day_1 * 24 + 24]) / 24
-
+			#Zulufttemperatur rechnen
+			self.calc_t_Zul(hour-1)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------    
 			#Heiz / Kühllast berechnen
 			#Äußere Wärmeströme
@@ -265,7 +248,9 @@ class Simulation():
 			print("Temp vor Heizen: ",self.ti_sim)
 			self.ti[hour] = self.ti_sim
 
-			self.WP_HZG.COP_betrieb[hour] = self.WP_HZG.COP
+			self.WP_HZG.COP_betrieb[hour] = self.WP_HZG.GetCOP(self.ta[hour])
+			print(f"COP Heizen bei {self.ta[hour]} °C Außentemperatur: {self.WP_HZG.COP_betrieb[hour]}")
+
 			#Heizen
 			if DetermineMonth(hour) in self.heating_months:
 
@@ -309,24 +294,34 @@ class Simulation():
 
 
 			print("Temp nach Heizen: ",self.ti_sim)
-			print("---------------------------------------------------------------")
+			
 			
 			#Warmwasser
-			self.warmwater_data
 			month = DetermineMonth(hour)
 			hourofDay = DetermineHourofDay(hour)
 
+			self.WP_WW.COP_betrieb[hour] = self.WP_WW.GetCOP(self.ta[hour])
+			print(f"COP Warmwasser bei {self.ta[hour]} °C Außentemperatur: {self.WP_HZG.COP_betrieb[hour]}")
 			Q_warmwater = self.CalcWarmwaterEnergy(month, hourofDay)
-			self.WP_WW.Pel_Betrieb[hour] = Q_warmwater / self.WP_WW.COP
 			self.q_warmwater[hour] = Q_warmwater
-			
-			
+			print(f"Benötigte Warmwasserleistung: {Q_warmwater/1000} kW")
+			#Check_SpeicherHeizen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
+			#Wenn notwendig schaltet diese Funktion auch die WP ein
+			self.WP_WW.Check_SpeicherHeizen(hour)
 
+			if self.WP_WW.is_on[hour] == True:
+				self.WP_WW.Pel_Betrieb[hour] = self.WP_WW.Pel
+			else:
+				self.WP_WW.Pel_Betrieb[hour] = 0
+			#Energie aus dem Speicher entnehmen
+			self.WP_WW.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = 15)
 			
 			#Strom
 			self.Pel_gebäude[hour] = self.CalcStrombedarf(hour, month, hourofDay)
 			reslast = self.Stromnetz.CalcResLast(hour,self.Pel_gebäude[hour])
 			self.Stromnetz.CheckResLast(hour,reslast)
+
+			print("---------------------------------------------------------------")
 		print(f"MAXIMALE TEMPERATUR: {max(self.ti)}")
 		print(f"MINIMALE TEMPERATUR: {min(self.ti)}")
 

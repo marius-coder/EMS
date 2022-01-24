@@ -1,4 +1,4 @@
-Name,Adresse,Sondenanzahl,Bohrtiefe
-Erdw.1,"Stephansplatz, Wien, Österreich",12,50.0
-Erdw.2,"Stephansplatz, Wien, Österreich",1,10.0
-Erdw.3,"Stephansplatz, Wien, Österreich",3,199.0
+Name,Adresse,Sondenanzahl,Bohrtiefe,Sondenabstand
+Erdw.1,"Stephansplatz, Wien, Österreich",12,50.0,10
+Erdw.2,"Stephansplatz, Wien, Österreich",1,10.0,10
+Erdw.3,"Stephansplatz, Wien, Österreich",3,199.0,10
