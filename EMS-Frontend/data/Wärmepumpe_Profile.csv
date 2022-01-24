@@ -1,4 +1,5 @@
-Name,Art,Stromverbrauch,COP,VL_HZG,VL_KLG,speichername
-WP3_HZG,Heizen,3.0,3.5,35.0,7.0,Speicher3
-WP1_HZG,Heizen,20.0,5.0,35.0,7.0,Speicher1
-WP2_WW,Warmwasser,3.0,3.5,35.0,7.0,Speicher2
+Name,Art,Stromverbrauch,VL_HZG,VL_KLG,table,speichername
+fgdt,Heizen,5.0,35.0,5.0,0----1----2----3----4----5----6----7----8----9----10----11----,Speicher1
+WP3_HZG,Heizen,3.0,35.0,7.0,0----1----2----3----4----5----6----7----8----9----10----11----,Speicher3
+WP1_HZG,Heizen,20.0,35.0,7.0,0----1----2----3----4----5----6----7----8----9----10----11----,Speicher1
+WP2_WW,Warmwasser,3.0,35.0,7.0,0----1----2----3----4----5----6----7----8----9----10----11----,Speicher2

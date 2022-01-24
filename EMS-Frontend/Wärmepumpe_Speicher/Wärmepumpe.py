@@ -3,6 +3,8 @@ import os
 import sys
 import pandas as pd
 import csv
+from bokeh import plotting, embed, resources
+from bokeh.plotting import figure
 import importlib
 Import = importlib.import_module("EMS-Backend.Classes.Import")
 #Speicher = importlib.import_module("EMS-Frontend.Wärmepumpe_Speicher.Wärmespeicher")
@@ -15,139 +17,242 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_WP(QWidget):
+    #Eigenes Signal definieren
+    keyPressed = QtCore.pyqtSignal(QtCore.QEvent)
 
+    #Dieses Signal erkennt ob ein Tastaturkey gedrückt worden ist 
+    def keyPressEvent(self, event):
+        super(Ui_WP, self).keyPressEvent(event)
+        self.keyPressed.emit(event) 
+
+    #on_key kontrolliert welche Taste gedrückt worden ist und löscht den gewählten eintrag in der Tabelle
+    def on_key(self, event):
+        if event.key() == QtCore.Qt.Key_Delete:
+            indices = self.table.selectionModel().selectedRows() 
+            for index in sorted(indices):
+                #Falls alle indices gleichzeitig ausgewählt sind beim löschen, gibts nen Error -> deswegen "pass"
+                #damit das programm nicht abstürzt
+                try:
+                    self.table.removeRow(index.row()) 
+                    #del self.y_hour[index.row()]
+                    #del self.y_month[index.row()]
+                except Exception as e:
+                    if e.__class__.__name__ == "AttributeError":                    
+                        pass
+            self.UpdatePlot()
 
     def __init__(self,typ, parent):
         super(Ui_WP, self).__init__()
 
         self.parent = parent
         self.setWindowTitle("Auswahl Wärmepumpe")
-        self.resize(553, 322)    
+        self.resize(1200, 322)    
         self.typ = typ
 
-        #Ansicht WP Auswahl
-        self.label_ArtWP = QtWidgets.QLabel(self)
-        self.label_ArtWP.setGeometry(QtCore.QRect(20, 50, 47, 13))
-        self.label_ArtWP.setObjectName("label_ArtWP")
-        self.label_ArtWP.setText("Art")
-        self.radioButton_Heizen = QtWidgets.QRadioButton(self)
-        self.radioButton_Heizen.setGeometry(QtCore.QRect(20, 70, 91, 17))
-        self.radioButton_Heizen.setObjectName("radioButton_Heizen")
-        self.radioButton_Heizen.setText("Heizen/Kühlen")
-        #self.radioButton_Heizen.setEnabled(False)
-        self.radioButton_WW = QtWidgets.QRadioButton(self)
-        self.radioButton_WW.setGeometry(QtCore.QRect(120, 70, 91, 17))
-        self.radioButton_WW.setObjectName("radioButton_WW")
-        self.radioButton_WW.setText("Warmwasser")
-        #self.radioButton_WW.setEnabled(False)
+        self.lay = QtWidgets.QVBoxLayout(self)
 
-        if typ == "Heizen":
-            self.radioButton_Heizen.setChecked(True)
-        elif typ == "Warmwasser":
-            self.radioButton_WW.setChecked(True)
-
+        #Überschriften
+        self.lay_Überschrift = QtWidgets.QHBoxLayout(self)
         self.label_Eingabe = QtWidgets.QLabel(self)
-        self.label_Eingabe.setGeometry(QtCore.QRect(20, 10, 91, 31))
         font = QtGui.QFont()
         font.setPointSize(18)
         self.label_Eingabe.setFont(font)
         self.label_Eingabe.setObjectName("label_Eingabe")
         self.label_Eingabe.setText("Eingabe")
+        self.lay_Überschrift.addWidget(self.label_Eingabe,2)
 
-        self.label_Profil = QtWidgets.QLabel(self)
-        self.label_Profil.setGeometry(QtCore.QRect(240, 10, 91, 31))
+        self.label_Vis = QtWidgets.QLabel(self)
         font = QtGui.QFont()
         font.setPointSize(18)
-        self.label_Profil.setFont(font)
-        self.label_Profil.setObjectName("label_Profil")
-        self.label_Profil.setText("Profil")
+        self.label_Vis.setFont(font)
+        self.label_Vis.setObjectName("label__Vis")
+        self.label_Vis.setText("Visualisierung")
+        self.lay_Überschrift.addWidget(self.label_Vis,4)
+
+        self.label_COP = QtWidgets.QLabel(self)
+        font = QtGui.QFont()
+        font.setPointSize(18)
+        self.label_COP.setFont(font)
+        self.label_COP.setObjectName("label_COP")
+        self.label_COP.setText("Eingabe COP-Kennlinie")
+        self.lay_Überschrift.addWidget(self.label_COP,2)
+
+        self.label_ProfilBig = QtWidgets.QLabel(self)
+        font = QtGui.QFont()
+        font.setPointSize(18)
+        self.label_ProfilBig.setFont(font)
+        self.label_ProfilBig.setObjectName("label_Profil")
+        self.label_ProfilBig.setText("Profil")
+        self.lay_Überschrift.addWidget(self.label_ProfilBig,2)
+
+        self.lay.addLayout(self.lay_Überschrift)
+
+        
+
+        
+        self.lay_base = QtWidgets.QHBoxLayout(self)
+        self.lay.addLayout(self.lay_base)
+        self.lay_vertical_Eingabe = QtWidgets.QVBoxLayout(self)
+        self.lay_base.addLayout(self.lay_vertical_Eingabe,2)
+
+        #Ansicht WP Auswahl
+        self.radioButton_Heizen = QtWidgets.QRadioButton(self)
+        self.radioButton_Heizen.setObjectName("radioButton_Heizen")
+        self.radioButton_Heizen.setText("Heizen/Kühlen")
+        self.radioButton_Heizen.setEnabled(False)
+        self.radioButton_WW = QtWidgets.QRadioButton(self)
+        self.radioButton_WW.setObjectName("radioButton_WW")
+        self.radioButton_WW.setText("Warmwasser")
+        self.radioButton_WW.setEnabled(False)
+        self.lay_hori_rbn = QtWidgets.QHBoxLayout(self)
+        self.lay_hori_rbn.addWidget(self.radioButton_Heizen)
+        self.lay_hori_rbn.addWidget(self.radioButton_WW)
+        self.lay_vertical_Eingabe.addLayout(self.lay_hori_rbn)
+
+        
+        if typ == "Heizen":
+            self.radioButton_Heizen.setChecked(True)
+        elif typ == "Warmwasser":
+            self.radioButton_WW.setChecked(True)
 
         #Eingabe Stromverbrauch
         self.doubleSpinBox_Stromverbrauch = QtWidgets.QDoubleSpinBox(self)
-        self.doubleSpinBox_Stromverbrauch.setGeometry(QtCore.QRect(20, 120, 71, 22))
         self.doubleSpinBox_Stromverbrauch.setObjectName("doubleSpinBox_Stromverbrauch")
         self.label_Stromverbrauch = QtWidgets.QLabel(self)
-        self.label_Stromverbrauch.setGeometry(QtCore.QRect(20, 100, 111, 16))
         self.label_Stromverbrauch.setObjectName("label_Stromverbrauch")
         self.label_Stromverbrauch.setText("Stromverbrauch [kW]")
-
-        #Eingabe COP
-        self.doubleSpinBox_COP = QtWidgets.QDoubleSpinBox(self)
-        self.doubleSpinBox_COP.setGeometry(QtCore.QRect(20, 170, 71, 22))
-        self.doubleSpinBox_COP.setObjectName("doubleSpinBox_COP")
-        self.label_COP = QtWidgets.QLabel(self)
-        self.label_COP.setGeometry(QtCore.QRect(20, 150, 111, 16))
-        self.label_COP.setObjectName("label_COP")
-        self.label_COP.setText("COP")
+        self.lay_vert_strom = QtWidgets.QVBoxLayout(self)
+        self.lay_vert_strom.addWidget(self.label_Stromverbrauch)
+        self.lay_vert_strom.addWidget(self.doubleSpinBox_Stromverbrauch)
+        self.lay_vertical_Eingabe.addLayout(self.lay_vert_strom)
 
         #Eingabe VL Temperaturen WP
         self.label_VL_HZG = QtWidgets.QLabel(self)
-        self.label_VL_HZG.setGeometry(QtCore.QRect(20, 200, 61, 16))
         self.label_VL_HZG.setObjectName("label_VL_HZG")
         self.label_VL_HZG.setText("VL HZG [°C]")
         self.doubleSpinBox_VL_HZG = QtWidgets.QDoubleSpinBox(self)
-        self.doubleSpinBox_VL_HZG.setGeometry(QtCore.QRect(20, 220, 61, 22))
         self.doubleSpinBox_VL_HZG.setObjectName("doubleSpinBox_VL_HZG")
         self.label_VL_KLG = QtWidgets.QLabel(self)
-        self.label_VL_KLG.setGeometry(QtCore.QRect(90, 200, 71, 16))
         self.label_VL_KLG.setObjectName("label_VL_KLG")
         self.label_VL_KLG.setText("VL KLG [°C]")
         self.doubleSpinBox_VL_KLG = QtWidgets.QDoubleSpinBox(self)
-        self.doubleSpinBox_VL_KLG.setGeometry(QtCore.QRect(90, 220, 61, 22))
-        self.doubleSpinBox_VL_KLG.setObjectName("doubleSpinBox_VL_KLG")
-
+        self.doubleSpinBox_VL_KLG.setObjectName("doubleSpinBox_VL_KLG")   
         
-
-        self.line = QtWidgets.QFrame(self)
-        self.line.setGeometry(QtCore.QRect(210, 0, 16, 451))
-        self.line.setFrameShape(QtWidgets.QFrame.VLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line.setObjectName("line")
+        self.lay_Grid = QtWidgets.QGridLayout(self)
+        self.lay_Grid.addWidget(self.label_VL_HZG,0, 0)
+        self.lay_Grid.addWidget(self.label_VL_KLG,0, 1)
+        self.lay_Grid.addWidget(self.doubleSpinBox_VL_HZG,1, 0)
+        self.lay_Grid.addWidget(self.doubleSpinBox_VL_KLG,1, 1)
+        self.lay_vertical_Eingabe.addLayout(self.lay_Grid)        
 
         #Button um zur Speicherauswahl zu gelangen
         self.pushButton_Speicherauswahl = QtWidgets.QPushButton(self)
-        self.pushButton_Speicherauswahl.setGeometry(QtCore.QRect(20, 260, 101, 31))
         self.pushButton_Speicherauswahl.setObjectName("pushButton_Speicherauswahl")
         self.pushButton_Speicherauswahl.setText("Speicherauswahl")
+        self.lay_vertical_Eingabe.addWidget(self.pushButton_Speicherauswahl) 
 
+        verticalSpacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.lay_vertical_Eingabe.addItem(verticalSpacer)
+
+        #Visualisierung
+        self.lay_vertical_Vis = QtWidgets.QVBoxLayout(self)        
+        self.lay_base.addLayout(self.lay_vertical_Vis,4)
+
+
+
+        self.WebEngine = QtWebEngineWidgets.QWebEngineView(self)
+        p = figure(width=400, height=200)        
+        html = embed.file_html(p, resources.CDN, "my plot")
+        self.WebEngine.setHtml(html)
+        self.lay_vertical_Vis.addWidget(self.WebEngine,9)
+
+        #Eingabe COP
+        self.lay_vertical_COP = QtWidgets.QVBoxLayout(self)        
+        self.lay_hori_COP_Eingabe = QtWidgets.QHBoxLayout(self)       
+        self.lay_base.addLayout(self.lay_vertical_COP,2)
+
+        
+        self.pushButton_AddRow = QtWidgets.QPushButton(self)
+        self.pushButton_AddRow.setGeometry(QtCore.QRect(800, 20, 101, 31))
+        self.pushButton_AddRow.setObjectName("pushButton_AddRow")
+        self.pushButton_AddRow.setText("Add Row")
+        self.pushButton_AddRow.clicked.connect(self.AddRow)
+        self.lay_hori_COP_Eingabe.addWidget(self.pushButton_AddRow,3)
+        self.lay_vertical_COP.addLayout(self.lay_hori_COP_Eingabe,1)
+
+        self.table = QtWidgets.QTableWidget()
+        self.table.setObjectName("table")
+        self.lay_vertical_COP.addWidget(self.table,9)
+        self.table.itemChanged.connect(self.UpdatePlot)
+        self.table.setColumnCount(4)  # We install six columns
+        # Set table headers
+        self.table.setHorizontalHeaderLabels(["Temp_1","Temp_2","COP_1","COP_2"])
+        #connect Signal
+        self.keyPressed.connect(self.on_key)
+        self.table.resizeColumnsToContents()
+
+        #Profil        
+        self.lay_vertical_Profil = QtWidgets.QVBoxLayout(self)
         #Auswahl Profilname
+        self.lay_hori_speichern = QtWidgets.QHBoxLayout(self)  
+        self.lay_vertical_label1 = QtWidgets.QVBoxLayout(self)  
         self.label_Profil = QtWidgets.QLabel(self)
-        self.label_Profil.setGeometry(QtCore.QRect(230, 50, 200, 30))
         self.label_Profil.setText("Eingabe Profilname")
         self.lineEdit_Profil = QtWidgets.QLineEdit(self)
-        self.lineEdit_Profil.setGeometry(QtCore.QRect(230, 75, 100, 20))
         self.lineEdit_Profil.setObjectName("lineEdit_Profil")
-
-        #Combobox für Benutzerprofile
-        self.label_AuswahlProfil = QtWidgets.QLabel(self)
-        self.label_AuswahlProfil.setGeometry(QtCore.QRect(230, 100, 200, 30))
-        self.label_AuswahlProfil.setText("Auswahl Profil")
-        self.comboBox_SelectProfile = QtWidgets.QComboBox(self)
-        self.comboBox_SelectProfile.setGeometry(QtCore.QRect(230, 125, 100, 22))
-        self.comboBox_SelectProfile.setObjectName("comboBox_SelectProfile")
+        self.lay_vertical_label1.addWidget(self.label_Profil)
+        self.lay_vertical_label1.addWidget(self.lineEdit_Profil)
+        self.lay_hori_speichern.addLayout(self.lay_vertical_label1)
 
         #Profil speichern
+        self.lay_vertical_invis1 = QtWidgets.QVBoxLayout(self)  
+        self.label_Profil_invisible = QtWidgets.QLabel(self)
         self.pushButton_SaveProfile = QtWidgets.QPushButton(self)
-        self.pushButton_SaveProfile.setGeometry(QtCore.QRect(340, 73, 75, 23))
         self.pushButton_SaveProfile.setObjectName("pushButton_SaveProfile")
         self.pushButton_SaveProfile.setText("Save Profile")
+        self.lay_vertical_invis1.addWidget(self.label_Profil_invisible)
+        self.lay_vertical_invis1.addWidget(self.pushButton_SaveProfile)
+        self.lay_hori_speichern.addLayout(self.lay_vertical_invis1)
+        self.lay_vertical_Profil.addLayout(self.lay_hori_speichern)
+
+        #Combobox für Benutzerprofile
+        self.lay_hori_Auswahl = QtWidgets.QHBoxLayout(self)  
+        self.lay_vertical_label2 = QtWidgets.QVBoxLayout(self)  
+        self.label_AuswahlProfil = QtWidgets.QLabel(self)
+        self.label_AuswahlProfil.setText("Auswahl Profil")
+        self.comboBox_SelectProfile = QtWidgets.QComboBox(self)
+        self.comboBox_SelectProfile.setObjectName("comboBox_SelectProfile")
+        self.lay_vertical_label2.addWidget(self.label_AuswahlProfil)
+        self.lay_vertical_label2.addWidget(self.comboBox_SelectProfile)
+        self.lay_hori_Auswahl.addLayout(self.lay_vertical_label2)
 
         #Profil löschen
+        self.lay_vertical_invis2 = QtWidgets.QVBoxLayout(self)  
+        self.label_Profil_invisible2 = QtWidgets.QLabel(self)
+
         self.pushButton_DeleteProfile = QtWidgets.QPushButton(self)
-        self.pushButton_DeleteProfile.setGeometry(QtCore.QRect(340, 125, 75, 23))
         self.pushButton_DeleteProfile.setObjectName("pushButton_DeleteProfile")
-        self.pushButton_DeleteProfile.setText("Delete Profile")       
+        self.pushButton_DeleteProfile.setText("Delete Profile")  
+        
+        self.lay_vertical_invis2.addWidget(self.label_Profil_invisible2)
+        self.lay_vertical_invis2.addWidget(self.pushButton_DeleteProfile)
+        self.lay_hori_Auswahl.addLayout(self.lay_vertical_invis2)
+        self.lay_vertical_Profil.addLayout(self.lay_hori_Auswahl)
         
         #Fertig mit Eingabe
         self.pushButton_UseProfile = QtWidgets.QPushButton(self)
-        self.pushButton_UseProfile.setGeometry(QtCore.QRect(230, 245, 200, 30))
         self.pushButton_UseProfile.setObjectName("pushButton_UseProfile")
-        self.pushButton_UseProfile.setText("Profil zur Nutzungsmischung hinzufügen") 
+        self.pushButton_UseProfile.setText("Profil benutzen") 
         self.pushButton_UseProfile.setStyleSheet(
                              "QPushButton::pressed"
                              "{"
                              "background-color : red;"
                              "}") 
+        self.lay_vertical_Profil.addWidget(self.pushButton_UseProfile)
+        self.lay_base.addLayout(self.lay_vertical_Profil,2)
+
+        verticalSpacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.lay_vertical_Profil.addItem(verticalSpacer)
         
         #Combobox befüllen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Wärmepumpe_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -159,8 +264,43 @@ class Ui_WP(QWidget):
         self.pushButton_UseProfile.clicked.connect(self.UseProfile)
         self.pushButton_Speicherauswahl.clicked.connect(self.OpenSpeicher)
         
-        self.li_inputWidgets = [self.doubleSpinBox_Stromverbrauch, self.doubleSpinBox_COP, self.doubleSpinBox_VL_HZG,
-                                self.doubleSpinBox_VL_KLG]
+        self.li_inputWidgets = [self.doubleSpinBox_Stromverbrauch, self.doubleSpinBox_VL_HZG,
+                                self.doubleSpinBox_VL_KLG,self.table]
+
+    def AddRow(self):
+        rowPosition = self.table.rowCount()
+        self.table.insertRow(rowPosition)
+        for column in range(4):
+            self.table.setItem(rowPosition , column, QtWidgets.QTableWidgetItem("0"))
+
+    def UpdatePlot(self):
+        try:
+            
+            self.x = []
+            self.y = []
+            for row in range(self.table.rowCount()):
+                if is_number_tryexcept(self.table.item(row, 0).text()) and is_number_tryexcept(self.table.item(row, 1).text()) and is_number_tryexcept(self.table.item(row, 2).text()) and is_number_tryexcept(self.table.item(row, 3).text()):
+
+                    temp1 = float(self.table.item(row, 0).text())
+                    temp2 = float(self.table.item(row, 1).text())
+                    COP1 = float(self.table.item(row, 2).text())
+                    COP2 = float(self.table.item(row, 3).text())
+                    self.x.append(temp1)
+                    self.x.append(temp2)
+                    self.y.append(COP1)
+                    self.y.append(COP2)
+
+            p = figure(width=440, height=240,
+                       title="COP-Kennlinie", x_axis_label= "Außentemperatur [°C]", y_axis_label = "COP")  
+            p.line(x=self.x, y=self.y, line_width=3, color="black")
+                  
+            html = embed.file_html(p, resources.CDN, "my plot")
+            self.WebEngine.setHtml(html)
+        except Exception as e:
+           if e.__class__.__name__ == "AttributeError":
+               pass
+           else:
+               raise
 
     def SetText(self):
         self.lineEdit_Profil.setText(self.comboBox_SelectProfile.currentText())
@@ -186,8 +326,15 @@ class Ui_WP(QWidget):
         elif self.radioButton_WW.isChecked():
             li_toSave.append("Warmwasser")      
 
-        for widget in self.li_inputWidgets:                
-            li_toSave.append(widget.value())
+        for widget in self.li_inputWidgets: 
+            if widget.objectName() != "table":
+                li_toSave.append(widget.value())
+            else:
+                columnString = ""
+                for row in range(self.table.rowCount()):
+                    for column in range(4):
+                        columnString += self.table.item(row, column).text() + "----"
+                li_toSave.append(columnString)
             
         li_toSave.append(self.speicherWindow.lineEdit_Profil.text())
 
@@ -232,13 +379,24 @@ class Ui_WP(QWidget):
             self.radioButton_WW.setChecked(True)
 
         for i,widget in enumerate(self.li_inputWidgets,2):
-            widget.setValue(float(values[i]))
+            if widget.objectName() != "table":
+                widget.setValue(float(values[i]))
+            else:
+                self.table.setRowCount(0)
+                dataString = values[i].split("----")[:-1]
+                rows = int(len(dataString) / 4)
+                i = 0
+                for row in range(rows):
+                    rowPosition = self.table.rowCount()
+                    self.table.insertRow(rowPosition)
+                    for column in range(4):
+                        self.table.setItem(rowPosition , column, QtWidgets.QTableWidgetItem(str(dataString[i])))
+                        i += 1
 
         self.speicherWindow = Ui_Speicher(float(self.doubleSpinBox_VL_HZG.value()),self.typ)
         self.speicherWindow.LoadProfile(values[-1])
 
     def UseProfile(self):
-
         if self.lineEdit_Profil.text() == "":
             return
 
@@ -250,10 +408,10 @@ class Ui_WP(QWidget):
         data = df[df.values == name].values.flatten().tolist()
         Wärmepumpe = {
             "Art" : self.typ,
-            "Stromverbrauch" : data[2],
-            "COP": data[3],
-            "VL_HZG" : data[4],
-            "VL_KLG" : data[5],
+            "Stromverbrauch" : data[2],            
+            "VL_HZG" : data[3],
+            "VL_KLG" : data[4],
+            "Table" : data[5],
             "speichername" : data[6],
             }
         Import.importGUI.Import_WP(Wärmepumpe)
@@ -271,7 +429,13 @@ class Ui_WP(QWidget):
     
         
 
-
+def is_number_tryexcept(s):
+    """ Returns True if string is a number. """
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 #app = QApplication(sys.argv)
 #main = QWidget()

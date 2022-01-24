@@ -297,7 +297,6 @@ class ColorPickWindow(QWidget):
         self.li_Widgets = []
         self.li_Colors = []
 
-
         for i,item in enumerate(selection):
             lay_horizontal = QtWidgets.QHBoxLayout(self)
 

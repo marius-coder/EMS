@@ -12,8 +12,8 @@ class Wärmepumpe():
 
     def __init__(self, speicher, data_WP, geb_VL_HZG, geb_VL_KLG):
         self.Pel = data_WP["Stromverbrauch"]
-        self.COP = data_WP["COP"]
-        self.COP_betrieb = np.ones(8760) * data_WP["COP"]
+        self.COP = 1
+        self.COP_betrieb = np.ones(8760) * self.COP
         self.speicher = speicher
         self.WP_VL_HZG = data_WP["VL_HZG"]
         self.geb_VL_HZG = geb_VL_HZG
@@ -21,7 +21,41 @@ class Wärmepumpe():
         self.geb_VL_KLG = geb_VL_KLG
         self.Pel_Betrieb = np.zeros(8760)
         self.is_on = np.zeros(8760, dtype = bool)
+        self.SetupCOP(data_WP["Table"])
 
+    def SetupCOP(self,dataString):
+        dataString = dataString.split("----")[:-1]
+        data_x = dataString[ : len(dataString)//2]
+        data_y = dataString[len(dataString)//2 : ]
+
+        data_x = [data_x[i:i + 2] for i in range(0, len(data_x), 2)] 
+        data_y = [data_y[i:i + 2] for i in range(0, len(data_y), 2)] 
+        
+        self.li_range_X = []
+        self.li_k = []
+        self.li_d = []
+
+
+        for i in range(len(data_x)):
+            k = (data_y[1]- data_y[0]) / (data_x[1]- data_x[0])
+            d = data_y[0] - data_x[0] * k
+
+            self.li_k.append(k)
+            self.li_d.append(d)
+            self.li_range_X.append(data_x[0],data_x[1])
+
+    GetCOP(self,t_a):
+        COP = 0
+        for i in range(len(self.li_range_X)):
+            if t_a >= self.li_range_X[i][0] and t_a =< self.li_range_X[i][1]:
+                COP = t_a * self.li_k[i] + self.li_d[i]
+
+        #Falls die Außentemperatur vom Bereich abweicht wird der nächstbeste Wert genommen
+        if COP == 0 and t_a>0:
+            COP = t_a * self.li_k[-1] + self.li_d[-1]
+        elif COP == 0 and t_a<0:
+            COP = t_a * self.li_k[0] + self.li_d[0]
+        return COP
     #--------------------------------------------------------------------------------------------------------------------------------------
 
     def calc_COP_csv(self, path:str, t_Q: int, t_VL:int):

@@ -20,8 +20,7 @@ class Ui_Gebäude(QWidget):
         super(Ui_Gebäude, self).__init__()
 
         self.parent = parent
-        #self.setObjectName("self")
-        self.resize(770, 261)
+        self.resize(770, 330)
         self.setWindowTitle("Gebäude")
         
         self.label = QtWidgets.QLabel(self)
@@ -92,9 +91,18 @@ class Ui_Gebäude(QWidget):
         self.doubleSpinBox_Geschosshoehe.setObjectName("doubleSpinBox_Geschosshoehe")
         self.doubleSpinBox_Geschosshoehe.setRange(0,100)
 
+        self.label_WRG = QtWidgets.QLabel(self)
+        self.label_WRG.setGeometry(QtCore.QRect(10, 260, 121, 16))
+        self.label_WRG.setObjectName("label_WRG")
+        self.label_WRG.setText("Wärmerückgewinnung [%]")
+        self.doubleSpinBox_WRG = QtWidgets.QDoubleSpinBox(self)
+        self.doubleSpinBox_WRG.setGeometry(QtCore.QRect(10, 280, 121, 22))
+        self.doubleSpinBox_WRG.setObjectName("doubleSpinBox_WRG")
+        self.doubleSpinBox_WRG.setRange(0,100)
+
         #Tabelle mit Bauteilen
         self.tableView_BauteilDaten = QtWidgets.QTableWidget(self)
-        self.tableView_BauteilDaten.setGeometry(QtCore.QRect(160, 50, 345, 192))
+        self.tableView_BauteilDaten.setGeometry(QtCore.QRect(160, 50, 345, 150))
         self.tableView_BauteilDaten.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
         self.tableView_BauteilDaten.setObjectName("tableView_BauteilDaten")
         self.tableView_BauteilDaten.setColumnCount(4)
@@ -162,7 +170,7 @@ class Ui_Gebäude(QWidget):
         self.pushButton_UseProfile.clicked.connect(self.UseProfile)
 
         self.li_inputWidgets = [self.doubleSpinBox_BGF,self.doubleSpinBox_GF,self.doubleSpinBox_cp_Gebaeude,
-                                self.doubleSpinBox_Geschosshoehe]
+                                self.doubleSpinBox_Geschosshoehe, self.doubleSpinBox_WRG]
 
     def SaveProfile(self):
         names = list(pd.read_csv("./EMS-Frontend/data/Gebäude_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
@@ -238,7 +246,7 @@ class Ui_Gebäude(QWidget):
                 widget.setValue(int(values[i]))
 
         #Counter sorgt dafür dass die ersten Wigdets geskippt werden
-        counter = 5
+        counter = 6
         for row in range(self.tableView_BauteilDaten.rowCount()):
             for column in range(4):
                 if column != 0:
@@ -267,12 +275,12 @@ class Ui_Gebäude(QWidget):
         ws_params = wb["params"]
         ws_hull = wb["thermal_hull"]
 
-        for row in range(1, 5):
+        for row in range(1, 6):
             ws_params.cell(row=row+1,column=2).value = data[row]
 
-        it = 5
-        for row in range(2, 6): 
-            for column in range(1,5):
+        it = 6
+        for row in range(2, 7): 
+            for column in range(1,4):
                 ws_hull.cell(row=row,column=column).value = data[it]
                 it += 1
         wb.save("./EMS-Backend/data/building.xlsx")
