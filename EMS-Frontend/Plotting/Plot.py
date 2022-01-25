@@ -7,7 +7,7 @@ import numpy as np
 import csv
 from bokeh import plotting, embed, resources
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, Legend
 import importlib
 Import = importlib.import_module("EMS-Backend.Classes.Import")
 
@@ -69,7 +69,14 @@ class Ui_Plotting(QWidget):
                               "Strombedarf [kW]" : None,
                               "Bedarf Heizen [kW]" : None,
                               "Bedarf Kühlen [kW]" : None,
-                              "Bedarf Warmwasser [kW]" : None}
+                              "Bedarf Warmwasser [kW]" : None,
+                              "Transmissionsverluste [kW]" : None,
+                              "Lüftungsverluste [kW]" : None,
+                              "Solare Gewinne [kW]" : None,
+                              "Innere Gewinne (Personen) [kW]" : None,
+                              "Innere Gewinne (Maschinen) [kW]" : None,
+                              "Innere Gewinne (Beleuchtung) [kW]" : None}
+
         self.DataPoints_Warmwasser = {"WP_Wärmeleistung [kW]" : None,
                                    "Speicherstand [%]" : None,
                                    "WP_Status" : None,
@@ -133,6 +140,8 @@ class Ui_Plotting(QWidget):
         li_WP = [self.DataPoints_Heizen_Kühlen,self.DataPoints_Warmwasser]
         li_var = ["HZG","WW"]
         for i,WP in enumerate(li_WP):            
+            print(getattr(self.model, "WP_" + li_var[i]))
+            print(getattr(self.model, "WP_" + li_var[i]).speicher)
             WP["WP_Status"] = getattr(self.model, "WP_" + li_var[i]).is_on 
             WP["WP_Stromverbrauch"] = getattr(self.model, "WP_" + li_var[i]).Pel_Betrieb
             WP["WP_Wärmeleistung [kW]"] = getattr(self.model, "WP_" + li_var[i]).Pel_Betrieb * getattr(self.model, "WP_" + li_var[i]).COP_betrieb
@@ -144,10 +153,19 @@ class Ui_Plotting(QWidget):
         self.DataPoints_Gebäude["Innentemperatur [°C]"] = self.model.ti
         self.DataPoints_Gebäude["Außentemperatur [°C]"] = self.model.ta
         self.DataPoints_Gebäude["Solltemperatur [°C]"] = self.model.t_soll
-        self.DataPoints_Gebäude["Strombedarf [kW]"] = self.model.Pel_gebäude
-        self.DataPoints_Gebäude["Bedarf Heizen [kW]"] = self.model.qh
-        self.DataPoints_Gebäude["Bedarf Kühlen [kW]"] = self.model.qc
-        self.DataPoints_Gebäude["Bedarf Warmwasser [kW]"] = self.model.q_warmwater
+        self.DataPoints_Gebäude["Strombedarf [kW]"] = self.model.Pel_gebäude / 1000
+        self.DataPoints_Gebäude["Bedarf Heizen [kW]"] = self.model.qh / 1000
+        self.DataPoints_Gebäude["Bedarf Kühlen [kW]"] = self.model.qc / 1000
+        self.DataPoints_Gebäude["Bedarf Warmwasser [kW]"] = self.model.q_warmwater / 1000
+        self.DataPoints_Gebäude["Transmissionsverluste [kW]"] = self.model.qt / 1000
+        self.DataPoints_Gebäude["Lüftungsverluste [kW]"] = self.model.qv / 1000
+        self.DataPoints_Gebäude["Solare Gewinne [kW]"] = self.model.qs / 1000
+        self.DataPoints_Gebäude["Innere Gewinne (Personen) [kW]"] = self.model.q_personen / 1000
+        self.DataPoints_Gebäude["Innere Gewinne (Maschinen) [kW]"] = self.model.q_maschinen / 1000
+        self.DataPoints_Gebäude["Innere Gewinne (Beleuchtung) [kW]"] = self.model.q_beleuchtung / 1000
+
+        
+
 
         #Strom
         self.DataPoints_Strom["PV-Ertrag [kW]"] = self.model.Stromnetz.PV_Anlage.PV_EK
@@ -230,24 +248,32 @@ class Ui_Plotting(QWidget):
         for i,item in enumerate(self.selectionList):
             df[item] = getattr(self,"DataPoints_" + self.selectionGroup[i])[item]
             
-        source = ColumnDataSource(df)
         mypalette = self.dlgColorWindow.li_Colors
         
         if len(self.dlgWindow.idList) != 1:
+            self.selectionList = []
+            self.selectionGroup = []
+            self.ListWidget_DataPoints.clearSelection()
             return
         ID = self.dlgWindow.idList[0]
-        p = figure(width=800, height=450)
-        #p.line(source=source, line_width=2)
+        legend_it = []
+        p = figure(width=800, height=450, x_axis_type='datetime')
+        for i,column in enumerate(df):
+            c = p.line(x = df.index.values, y = df[column].values,
+                   line_color = mypalette[i], line_width = 2)
+            legend_it.append((self.selectionList[i], [c]))
 
-        numlines=len(df.columns)
-        p.multi_line(xs=[df.index.values]*numlines,
-                ys=[df[name].values for name in df],
-                line_color=mypalette,
-                line_width=5)
+        p.xaxis.ticker.desired_num_ticks = 12
+        legend = Legend(items = legend_it)
+        legend.click_policy = "mute"
+        p.add_layout(legend, 'below')
+        p.legend.orientation = "horizontal"
 
         html = embed.file_html(p, resources.CDN, "my plot")
         self.li_plots[ID]["Widget"].setHtml(html)
         self.selectionList = []
+        self.selectionGroup = []
+        self.ListWidget_DataPoints.clearSelection()
         
 
     def LoadDatagroup(self):

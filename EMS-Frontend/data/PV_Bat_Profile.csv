@@ -1,4 +1,4 @@
 Name,PV_kWp,Bat_kWh,Entladetiefe [%],Selbstentladung [%/a],Effizienz [%],Leistung [kW],Leistung [%]
-PV_Bat2,3.0,345.0,34,55,70,None,70
 PV_Bat1,3.0,345.0,34,55,70,None,70
 PV_Bat3,3.0,345.0,34,55,70,None,70
+PV_Bat2,150.0,300.0,10,2,95,None,50

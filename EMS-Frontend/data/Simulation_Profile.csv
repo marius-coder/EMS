@@ -1,3 +1,4 @@
 Name,Name_Gebäude,Name_Warmwasser,Name_Erdwärme,Name_WärmepumpeHeizen,Name_WärmepumpeWW,Name_Strombedarf,Name_PV_Batterie
 Sim2,Building3,Sim2,Erdw.2,WP3_HZG,WP2_WW,Sim2,PV_Bat3
 Sim1,Building3,Sim1,Erdw.3,WP1_HZG,WP2_WW,Sim1,PV_Bat3
+SimPräsentation,Building3,SimPräsentation,Erdw.3,WP1_HZG,WP2_WW,SimPräsentation,PV_Bat2

@@ -365,46 +365,89 @@ class Ui_Main(QMainWindow):
                 datapoints = ["Profilname","WW-Verbrauch_Stunde [%]","WW-Verbrauch_Monat [%]","Verbrauchsart"]
                 for it_second in range(len(value)):
                     dicts[it_second][datapoints[it_first]] = value[it_second]
-        
-            value_0 = values[5].split("----")
-            del value_0[-1]
-            value_1 = values[6].split("----")
-            del value_1[-1]
-            if mode == "Strombedarf":
+            if mode == "Warmwasser":
+                #Gesamtfläche
+                value_GesFläche = values[1]
+                #Anteil Fläche
+                value_AntFläche = values[3].split("----")
+                del value_AntFläche[-1]
+                #Liter/m²
                 value_0 = values[4].split("----")
                 del value_0[-1]
+                #Personenanzahl
+                value_personenanzahl = values[5].split("----")
+                del value_personenanzahl[-1]
+                #Liter/Person
+                value_1 = values[6].split("----")
+                del value_1[-1]
+            if mode == "Strombedarf":
+                #Gesamtfläche
+                value_GesFläche = values[1]
+                #Anteil Fläche
+                value_AntFläche = values[3].split("----")
+                del value_AntFläche[-1]
+                #kWh/m²a
+                value_0 = values[4].split("----")
+                del value_0[-1]
+                #kWh/a
                 value_1 = values[5].split("----")
                 del value_1[-1]
+                #Stückanzahl
+                value_stückanzahl = values[6].split("----")
+                del value_stückanzahl[-1]
+                #kW/Stück
                 value_2 = values[7].split("----")
                 del value_2[-1]
             for it in range(len(value_0)):
-                dicts[it]["Verbrauchsart"] = [0,0]
-                try:
-                    dicts[it]["Verbrauchsart"][0] = float(value_0[it])
-                except:
-                    dicts[it]["Verbrauchsart"][0] = value_0[it]
-                try:
-                    dicts[it]["Verbrauchsart"][1] = float(value_1[it])
-                except:
-                    dicts[it]["Verbrauchsart"][1] = value_1[it]
-                if mode == "Strombedarf":
-                    dicts[it]["Verbrauchsart"].append(0)
+                if mode == "Warmwasser":
+                    dicts[it]["Verbrauchsart"] = [0,0] 
+                    dicts[it]["Anteil_Fläche"] = value_AntFläche[it]
+                    dicts[it]["Personenanzahl"] = value_personenanzahl[it]
+                    dicts[it]["Gesamtfläche"] = value_GesFläche
+                    try:                    
+                        dicts[it]["Verbrauchsart"][0] = float(value_0[it])                    
+                    except:
+                        dicts[it]["Verbrauchsart"][0] = value_0[it]
                     try:
-                        dicts[it]["Verbrauchsart"][2] = float(value_1[it])
+                        dicts[it]["Verbrauchsart"][1] = float(value_1[it])
+                    except:
+                        dicts[it]["Verbrauchsart"][1] = value_1[it]
+                if mode == "Strombedarf":
+                    dicts[it]["Verbrauchsart"] = [0,0] 
+                    dicts[it]["Anteil_Fläche"] = value_AntFläche[it]
+                    dicts[it]["Stückanzahl"] = value_stückanzahl[it]
+                    dicts[it]["Gesamtfläche"] = value_GesFläche
+                    dicts[it]["Verbrauchsart"].append(0)
+                    try:                    
+                        dicts[it]["Verbrauchsart"][0] = float(value_0[it])                    
+                    except:
+                        dicts[it]["Verbrauchsart"][0] = value_0[it]
+                    try:
+                        dicts[it]["Verbrauchsart"][1] = float(value_1[it])
+                    except:
+                        dicts[it]["Verbrauchsart"][1] = value_1[it]
+                    try:
+                        dicts[it]["Verbrauchsart"][2] = float(value_2[it])
                     except:
                         dicts[it]["Verbrauchsart"][2] = value_2[it]
 
-            for data in dicts:
+            for rowPosition,data in enumerate(dicts):
                 #Kontrolle auf leere Strings
                 data["WW-Verbrauch_Stunde [%]"][:] = [x for x in data["WW-Verbrauch_Stunde [%]"] if x]
                 data["WW-Verbrauch_Stunde [%]"] = [float(item) for item in data["WW-Verbrauch_Stunde [%]"]]
                 #Kontrolle auf leere Strings
                 data["WW-Verbrauch_Monat [%]"][:] = [x for x in data["WW-Verbrauch_Monat [%]"] if x]
                 data["WW-Verbrauch_Monat [%]"] = [float(item) for item in data["WW-Verbrauch_Monat [%]"]]
-                if mode == "Warmwasser":                    
+                if mode == "Warmwasser": 
                     self.Warmwasser.graphWindow.AddProfile(data)
+                    self.Warmwasser.graphWindow.table.setItem(rowPosition , 1, QtWidgets.QTableWidgetItem(str(data["Anteil_Fläche"])))
+                    self.Warmwasser.graphWindow.table.setItem(rowPosition , 3, QtWidgets.QTableWidgetItem(str(data["Personenanzahl"])))
+                    self.Warmwasser.graphWindow.lineEdit_Fläche.setText(str(data["Gesamtfläche"]))
                 elif mode == "Strombedarf":
                     self.Strombedarf.graphWindow.AddProfile(data)
+                    self.Strombedarf.graphWindow.table.setItem(rowPosition , 1, QtWidgets.QTableWidgetItem(str(data["Anteil_Fläche"])))
+                    self.Strombedarf.graphWindow.table.setItem(rowPosition , 4, QtWidgets.QTableWidgetItem(str(data["Stückanzahl"])))
+                    self.Strombedarf.graphWindow.lineEdit_Fläche.setText(str(data["Gesamtfläche"]))
         df_WW = pd.read_csv("./EMS-Frontend/data/Warmwasser_Nutzungsmischungen.csv", sep = ",", encoding='utf-8')
         Load_Nutzungsmischung(df_WW,"Warmwasser")
         df_Strom = pd.read_csv("./EMS-Frontend/data/Strombedarf_Nutzungsmischungen.csv", sep = ",", encoding='utf-8')

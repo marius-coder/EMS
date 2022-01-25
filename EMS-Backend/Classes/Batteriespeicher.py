@@ -4,7 +4,7 @@ class cla_Batterie():
     
     def __init__(self, var_EntTiefe, var_Effizienz, var_kapMAX, var_LadeEntladeLeistung, var_SelbstEntladung = 0):
         self.Entladetiefe = var_kapMAX * var_EntTiefe / 100  #%
-        self.Effizienz = var_Effizienz # Einheit %/100
+        self.Effizienz = var_Effizienz / 100 # Einheit %/100
         self.Kapazität = 0 #kWh
         self.Kapazität_MAX = var_kapMAX #kWh
         self.Leistung = 0 #kW

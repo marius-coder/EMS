@@ -5,6 +5,8 @@ import numpy as np
 
 global id_counter
 id_counter = 0
+global connection_Counter
+connection_Counter = 0
 
 class Pixel():
     def __init__(self, c, rho, m, t = 20,):
@@ -18,27 +20,50 @@ class Pixel():
         self.Update = 0 #Bool der anzeigt ob mein Pixel geupdated wurde
         self.x = -1 #Position mit -1 initialisiert für Errorchecking
         self.y = -1 #Position mit -1 initialisiert für Errorchecking
+        self.li_connections = []
 
     def __lt__(self, other):
         return self.temperatur > other.temperatur
 
+class Connection():
+    def __init__(self,pxl_1, pxl_2) -> None:
+
+        
+
+        global connection_Counter
+        self.id = connection_Counter
+        connection_Counter += 1
+        self.isCalculated = False
+        self.Pixel_1 = pxl_1
+        #self.Pixel_2 = pxl_2
+
+
+
 class BKA():
-
-
     def __init__(self, pixel_x, pixel_y):
         self.pixel_x = pixel_x
         self.pixel_y = pixel_y
-        self.array = np.zeros([pixel_y,pixel_x], dtype=object)
+        self.pixel_array = np.zeros([pixel_y,pixel_x], dtype=object)
 
         #Erstellt Pixelobjekte
         for y in range(pixel_y):
             for x in range(pixel_x):
-                self.array[y][x] = (Pixel(4.18,1000,1,20)) #
+                self.pixel_array[y][x] = (Pixel(4.18,1000,1,20)) 
+
+        #Außenrand hinzufügen
+
+
+        #Erstellt Connections
+        for y in range(pixel_y):
+            for x in range(pixel_x):
+                while len(self.pixel_array[y][x].li_connections) != 4:
+
+
 
     def Get_Attr_List(self, str_attr):
         #Get_Attr_List nimmt ein beliebiges Attribut von Pixel und gibt dieses für alle Pixel instanzen in Form eines arrays zurück
         li_first = []
-        for first in self.array:
+        for first in self.pixel_array:
             li_second = []
             for second in first:
                 li_second.append(getattr(second,str_attr))
@@ -58,16 +83,7 @@ class BKA():
         array = np.array(nested_list, dtype = object)
         return array
 
-    def Get_Highest_Temperature(self):
-        #Diese Funktion sortiert die Pixelobjekte nach Temperatur. Die Objetke mit der höchsten Temperatur werden an den Anfang gestellt
-        temp_list = self.array.tolist()
-        temp_list = self.Flatten_2D_List(temp_list)
 
-        #Sortiere die Pixelobjekte nach Temperatur
-        sorted_list = sorted(temp_list)
-
-        nested_list = self.Create_2D_Array(sorted_list)
-        return np.array(nested_list)
 
 
     def Init_Sim(self, init_temp):
@@ -79,21 +95,6 @@ class BKA():
                 second.x = x
                 second.y = y
 
-    def Get_Neighbours(self, orig_pixel):
-        #Diese Funktion findet benachbarte Pixel für die Wärmetransmission
-        #Und gibt eine Liste mit id's zurück welche Nachbarn sind
-        x_coord = orig_Pixel.x
-        y_coord = orig_Pixel.y
-        
-        #Liste wird mit -1 initialisiert für Errorchecking
-        li_nachbarn = []
-        li_directions = [[1,0],[-1,0],[0,1],[0,-1]]
-        #Maximale Anzahl an Nachbarn ist 4
-        for i in range(4):
-            if y_coord+li_directions[0] < self.pixel_y or x_coord+li_directions[1] < self.pixel_x:
-                li_nachbarn.append(self.array[y_coord+li_directions[i][0]][x_coord+li_directions[i][1]].id)
-
-        return li_nachbarn
 
         
 
@@ -101,8 +102,7 @@ class BKA():
 
         #1. Initialisiere Simulation
         self.Init_Sim(init_temp)
-        #self.Get_Neighbours()
-        pass
+        
 
 
 
@@ -113,5 +113,4 @@ Test.Simulate(500)
 print(Test.Get_Attr_List("x"))
 print(Test.Get_Attr_List("y"))
 print(Test.Get_Attr_List("temperatur"))
-print(Test.Get_Highest_Temperature())
 print("")

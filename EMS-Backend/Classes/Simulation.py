@@ -83,17 +83,14 @@ class Simulation():
 		self.t_hzg_RL = 25
 		self.t_klg_VL = 8
 		self.t_klg_RL = 12
+		self.t_WW_VL = 50
 
-		#self.Speicher_HZG = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 3, diameter = 3)
-		#self.WP_HZG = ImportWP.Wärmepumpe(10,4.5,self.Speicher_HZG,WP_VL_HZG = 35, geb_VL_HZG = 30, WP_VL_KLG = 6, geb_VL_KLG = 8)
 		self.Speicher_HZG = ImportSpeicher.Wärmespeicher(self.speicher_HZG, self.t_hzg_VL, self.t_hzg_RL)
 		self.WP_HZG = ImportWP.Wärmepumpe(speicher = self.Speicher_HZG,data_WP = self.WP_Heizen, geb_VL_HZG = self.t_hzg_VL, geb_VL_KLG = self.t_klg_VL)
 
 
 		self.Speicher_WW = ImportSpeicher.Wärmespeicher(self.speicher_WW, self.t_hzg_VL, self.t_hzg_RL)
-		self.WP_WW = ImportWP.Wärmepumpe(speicher = self.Speicher_WW,data_WP = self.WP_WW, geb_VL_HZG = self.t_hzg_VL, geb_VL_KLG = self.t_klg_VL)
-		#self.Speicher_WW = ImportSpeicher.Wärmespeicher(dicke_dämmung = 0.1, lambda_dämmung = 0.04,VL = 31, RL = 25, schichten = 10, ladezone = 5, height = 2, diameter = 1)
-		#self.WP_WW = ImportWP.Wärmepumpe(20,4,self.Speicher_WW,WP_VL_HZG = 65, geb_VL_HZG = 60, WP_VL_KLG = 0, geb_VL_KLG = 0)
+		self.WP_WW = ImportWP.Wärmepumpe(speicher = self.Speicher_WW,data_WP = self.WP_WW, geb_VL_HZG = self.t_WW_VL, geb_VL_KLG = 0)
 		self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
 		
 		stat_HL = self.Static_HL()
@@ -250,6 +247,8 @@ class Simulation():
 
 			self.WP_HZG.COP_betrieb[hour] = self.WP_HZG.GetCOP(self.ta[hour])
 			print(f"COP Heizen bei {self.ta[hour]} °C Außentemperatur: {self.WP_HZG.COP_betrieb[hour]}")
+			print(f"Object Heizen: {self.WP_HZG.speicher}")
+			print(f"Object WW: {self.WP_WW.speicher}")
 
 			#Heizen
 			if DetermineMonth(hour) in self.heating_months:
@@ -291,17 +290,14 @@ class Simulation():
 				self.WP_HZG.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = self.t_hzg_RL)
 				#Neue Innentemperatur berechnen
 				self.handle_losses(hour, q_toApply = self.q_soll)
-
-
 			print("Temp nach Heizen: ",self.ti_sim)
-			
-			
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------		
 			#Warmwasser
 			month = DetermineMonth(hour)
 			hourofDay = DetermineHourofDay(hour)
 
 			self.WP_WW.COP_betrieb[hour] = self.WP_WW.GetCOP(self.ta[hour])
-			print(f"COP Warmwasser bei {self.ta[hour]} °C Außentemperatur: {self.WP_HZG.COP_betrieb[hour]}")
+			print(f"COP Warmwasser bei {self.ta[hour]} °C Außentemperatur: {self.WP_WW.COP_betrieb[hour]}")
 			Q_warmwater = self.CalcWarmwaterEnergy(month, hourofDay)
 			self.q_warmwater[hour] = Q_warmwater
 			print(f"Benötigte Warmwasserleistung: {Q_warmwater/1000} kW")
@@ -314,10 +310,12 @@ class Simulation():
 			else:
 				self.WP_WW.Pel_Betrieb[hour] = 0
 			#Energie aus dem Speicher entnehmen
-			self.WP_WW.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = 15)
+			self.WP_WW.speicher.Speicher_Entladen(Q_Entladen = self.q_warmwater[hour], RL = 15)
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			
-			#Strom
+			#Strom			
 			self.Pel_gebäude[hour] = self.CalcStrombedarf(hour, month, hourofDay)
+			print(f"Benötigte Stromleistung: {self.Pel_gebäude[hour]/1000} kW")
 			reslast = self.Stromnetz.CalcResLast(hour,self.Pel_gebäude[hour])
 			self.Stromnetz.CheckResLast(hour,reslast)
 
@@ -328,8 +326,9 @@ class Simulation():
 
 			
 	def CalcWarmwaterEnergy(self, month, hourofDay):
-		m_water = self.import_data.input_Warmwater["hour [l/h]"][month-1][hourofDay] / 3600 #liter/sekunde
-		Q_waterheating = m_water * 4180 * (60-15)
+		m_water = self.import_data.input_Warmwater["hour [l/h]"][month-1][hourofDay]  #liter
+		print(f"Warmwasserverbauch in liter: {m_water}")
+		Q_waterheating = m_water * 4180 * (60-15) /3600
 		return Q_waterheating
 
 	def CalcStrombedarf(self, hour, month, hourofDay):
