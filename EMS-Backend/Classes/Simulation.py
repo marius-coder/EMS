@@ -4,10 +4,8 @@ import numpy as np
 import math
 import seaborn as sns
 import matplotlib.pyplot as plt
-#from Building import Building
-#from Erdwärme import Get_GeothermalData
-#from Import import importGUI
 import importlib
+from bokeh.plotting import figure, show
 
 ImportBuilding = importlib.import_module("EMS-Backend.Classes.Building")
 ImportSpeicher = importlib.import_module("EMS-Backend.Classes.Wärmespeicher")
@@ -15,10 +13,6 @@ ImportWP = importlib.import_module("EMS-Backend.Classes.Wärmepumpe")
 ImportStromnetz = importlib.import_module("EMS-Backend.Classes.Stromnetz")
 ImportErdwärme = importlib.import_module("EMS-Backend.Classes.Erdwärme")
 Import = importlib.import_module("EMS-Backend.Classes.Import")
-
-
-
-from bokeh.plotting import figure, show
 
 
 class Simulation():
@@ -111,6 +105,7 @@ class Simulation():
 			"rho" : 2600}
 		self.Erd_Sim = ImportErdwärme.BKA(data_Sim, data_Boden, self.import_data.input_GeoData)
 		self.Erd_Sim.Init_Sim()
+		self.li_Sondenfeld = []
 
 		stat_HL = self.Static_HL()
 		stat_KL = self.Static_KL()
@@ -341,14 +336,17 @@ class Simulation():
 			Q_toDump = self.WP_WW.Pel_Betrieb[hour] + self.WP_HZG.Pel_Betrieb[hour] +\
 						self.q_warmwater[hour] + self.q_soll
 			self.Erd_Sim.Simulate(Q_toDump)
-			
+			self.li_Sondenfeld.append(self.Erd_Sim.Get_Attr_List("temperatur"))
 
 			print("---------------------------------------------------------------")
 		print(f"MAXIMALE TEMPERATUR: {max(self.ti)}")
 		print(f"MINIMALE TEMPERATUR: {min(self.ti)}")
-
-		sns.heatmap(self.Erd_Sim.Get_Attr_List("temperatur"), square=True, cmap='viridis')
+		plt.clf()
+		sns.heatmap(self.Erd_Sim.Get_Attr_List("temperatur"), square=True, cmap='viridis',cbar_kws={'label': 'Temperatur [°C]'})
+		plt.title("Temperaturfeld der Erdwärmesonden")
 		plt.show()
+
+
 
 
 			

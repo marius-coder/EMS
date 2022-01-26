@@ -2,12 +2,18 @@
 import os
 import sys
 from bokeh.models.widgets.tables import SelectEditor
+import seaborn as sns
+import matplotlib
+matplotlib.use('Qt5Agg')
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 import pandas as pd
 import numpy as np
 import csv
 from bokeh import plotting, embed, resources
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Legend
+
 import importlib
 Import = importlib.import_module("EMS-Backend.Classes.Import")
 
@@ -19,6 +25,7 @@ from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import QPixmap
 
 class Ui_Plotting(QWidget):
 
@@ -32,6 +39,7 @@ class Ui_Plotting(QWidget):
 
         self.dlgWindow = DialogWindow(self)
         self.dlgColorWindow = ColorPickWindow(self)
+        self.WindowTemperaturFeld = WindowTemperaturFeld(self)
         self.move = True
         self.model = None
         
@@ -81,13 +89,13 @@ class Ui_Plotting(QWidget):
         self.DataPoints_Warmwasser = {"WP_Wärmeleistung [kW]" : None,
                                    "Speicherstand [%]" : None,
                                    "WP_Status" : None,
-                                   "WP_Stromverbrauch" : None,
+                                   "WP_Stromverbrauch [kW]" : None,
                                    "Mittlere Speichertemperatur [°C]" : None,
                                    "COP" : None}
         self.DataPoints_Heizen_Kühlen = {"WP_Wärmeleistung [kW]" : None,
                                    "Speicherstand [%]" : None,
                                    "WP_Status" : None,
-                                   "WP_Stromverbrauch" : None,
+                                   "WP_Stromverbrauch [kW]" : None,
                                    "Mittlere Speichertemperatur [°C]" : None,
                                    "COP" : None}
         self.DataPoints_Strom = { 
@@ -120,8 +128,13 @@ class Ui_Plotting(QWidget):
 
         self.pushButton_ResetSelection = QtWidgets.QPushButton(self)
         self.pushButton_ResetSelection.setText("Reset Selection") 
-        self.pushButton_ResetSelection.clicked.connect(self.AddFigure)
+        self.pushButton_ResetSelection.clicked.connect(self.ResetSelection)
         self.lay_Vertical.addWidget(self.pushButton_ResetSelection)
+
+        self.pushButton_SpecialPLots = QtWidgets.QPushButton(self)
+        self.pushButton_SpecialPLots.setText("Spezialplots") 
+        self.pushButton_SpecialPLots.clicked.connect(self.ShowSpecialPlots)
+        self.lay_Vertical.addWidget(self.pushButton_SpecialPLots)
 
         self.pushButton_DisplayPlot = QtWidgets.QPushButton(self)
         self.pushButton_DisplayPlot.setText("Draw Plot") 
@@ -133,8 +146,17 @@ class Ui_Plotting(QWidget):
         for i in range(len(self.li_coords)):
             self.AddFigure(i)
 
+    def ShowSpecialPlots(self):
+        self.WindowTemperaturFeld.showMaximized()
+        
+
     def SetDataGroup(self):
         self.selectedGroup = self.comboBox_SelectDatagroup.currentText()
+
+    def ResetSelection(self):
+        self.selectionList = []
+        self.selectionGroup = []
+        self.ListWidget_DataPoints.clearSelection()
 
     def SetupModel(self):
         if self.model == None:
@@ -147,7 +169,7 @@ class Ui_Plotting(QWidget):
             print(getattr(self.model, "WP_" + li_var[i]))
             print(getattr(self.model, "WP_" + li_var[i]).speicher)
             WP["WP_Status"] = getattr(self.model, "WP_" + li_var[i]).is_on 
-            WP["WP_Stromverbrauch"] = getattr(self.model, "WP_" + li_var[i]).Pel_Betrieb
+            WP["WP_Stromverbrauch [kW]"] = getattr(self.model, "WP_" + li_var[i]).Pel_Betrieb
             WP["WP_Wärmeleistung [kW]"] = getattr(self.model, "WP_" + li_var[i]).Pel_Betrieb * getattr(self.model, "WP_" + li_var[i]).COP_betrieb
             WP["Speicherstand [%]"] = getattr(self.model, "WP_" + li_var[i]).speicher.ladezustand
             WP["Mittlere Speichertemperatur [°C]"] = getattr(self.model, "WP_" + li_var[i]).speicher.t_mean
@@ -254,14 +276,10 @@ class Ui_Plotting(QWidget):
         mypalette = self.dlgColorWindow.li_Colors
 
         if hasattr(self.dlgWindow, "idList") == False:
-            self.selectionList = []
-            self.selectionGroup = []
-            self.ListWidget_DataPoints.clearSelection()
+            self.ResetSelection()
             return
         if len(self.dlgWindow.idList) != 1:
-            self.selectionList = []
-            self.selectionGroup = []
-            self.ListWidget_DataPoints.clearSelection()
+            self.ResetSelection()
             return
         ID = self.dlgWindow.idList[0]
         legend_it = []
@@ -279,9 +297,8 @@ class Ui_Plotting(QWidget):
 
         html = embed.file_html(p, resources.CDN, "my plot")
         self.li_plots[ID]["Widget"].setHtml(html)
-        self.selectionList = []
-        self.selectionGroup = []
-        self.ListWidget_DataPoints.clearSelection()
+        self.ResetSelection()
+
         
 
     def LoadDatagroup(self):
@@ -428,3 +445,51 @@ class DialogWindow(QWidget):
         for i,button in enumerate(self.btn_grp.buttons()):
             if button.isChecked():
                 self.idList.append(i)
+
+class WindowTemperaturFeld(QWidget):
+    def __init__(self, parent):
+        super(WindowTemperaturFeld, self).__init__()
+        self.setWindowTitle("Erdsonden Temperaturfeld")
+        self.parent = parent
+
+        self.lay_base = QtWidgets.QVBoxLayout(self)
+
+
+
+        self.fig = Figure()
+        self.ax = self.fig.add_subplot(111)
+        self.canvas = FigureCanvasQTAgg(self.fig)
+        self.canvas.setSizePolicy(QtWidgets.QSizePolicy.Expanding, 
+                                  QtWidgets.QSizePolicy.Expanding)
+        self.canvas.updateGeometry()
+
+        self.lay_base.addWidget(self.canvas,9)
+
+        self.slider = QtWidgets.QSlider(Qt.Horizontal)
+        self.slider.setMaximum(8759)
+        self.slider.valueChanged.connect(self.UpdatePlot)
+        self.spinBox = QtWidgets.QSpinBox(self)
+        self.spinBox.setMaximum(8759)
+        self.spinBox.valueChanged['int'].connect(self.slider.setValue) # type: ignore
+        self.slider.valueChanged['int'].connect(self.spinBox.setValue) # type: ignore
+        self.lay_hori = QtWidgets.QHBoxLayout(self)
+        self.lay_hori.addWidget(self.spinBox,1)
+        self.lay_hori.addWidget(self.slider,9)
+
+        self.lay_base.addLayout(self.lay_hori,1)
+
+
+
+    def UpdatePlot(self):    
+
+        self.canvas.clear()
+        self.fig.clear()
+        
+        hour = self.spinBox.value()
+        model = self.parent.parent.model.li_Sondenfeld[hour]
+
+        sns.heatmap(model, square=True, cmap='viridis',cbar_kws={'label': 'Temperatur [°C]'}, ax = self.ax)
+        self.ax.set_title("Temperaturfeld in Stunde: " + str(hour))
+        self.fig.canvas.draw_idle()
+
+

@@ -29,6 +29,7 @@ class Ui_Main(QMainWindow):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(750, 230)
+        Form.setWindowTitle("Simulationsmodell")
 
         self.Erdärme = Ui_Erdwärme(parent=self)
         self.Gebäude = Ui_Gebäude(parent=self)
@@ -75,7 +76,7 @@ class Ui_Main(QMainWindow):
         self.pushButton_openWärmepumpe_HZG = QtWidgets.QPushButton(Form)
         self.pushButton_openWärmepumpe_HZG.setGeometry(QtCore.QRect(20, 140, 75, 23))
         self.pushButton_openWärmepumpe_HZG.setObjectName("pushButton_openWärmepumpe_HZG")
-        self.pushButton_openWärmepumpe_HZG.setText("Wärmepumpe Heizen/Kühlen")
+        self.pushButton_openWärmepumpe_HZG.setText("WP Heizen/Kühlen")
         self.pushButton_openWärmepumpe_HZG.clicked.connect(self.OpenWP_Heizen)
         self.lineEdit_Wärmepumpe_HZG = QtWidgets.QLineEdit(Form)
         self.lineEdit_Wärmepumpe_HZG.setGeometry(QtCore.QRect(110, 140, 130, 20))
@@ -86,7 +87,7 @@ class Ui_Main(QMainWindow):
         self.pushButton_openWärmepumpe_WW = QtWidgets.QPushButton(Form)
         self.pushButton_openWärmepumpe_WW.setGeometry(QtCore.QRect(20, 180, 75, 23))
         self.pushButton_openWärmepumpe_WW.setObjectName("pushButton_openWärmepumpe_WW")
-        self.pushButton_openWärmepumpe_WW.setText("Wärmepumpe Warmwasser")
+        self.pushButton_openWärmepumpe_WW.setText("WP Warmwasser")
         self.pushButton_openWärmepumpe_WW.clicked.connect(self.OpenWP_WW)
         self.lineEdit_Wärmepumpe_WW = QtWidgets.QLineEdit(Form)
         self.lineEdit_Wärmepumpe_WW.setGeometry(QtCore.QRect(110, 180, 130, 20))
@@ -115,16 +116,16 @@ class Ui_Main(QMainWindow):
         self.lineEdit_PVBatterie.setObjectName("lineEdit_PVBatterie")
 
 
-        self.pushButton_openEnergiedaten = QtWidgets.QPushButton(Form)
-        self.pushButton_openEnergiedaten.setGeometry(QtCore.QRect(270, 100, 75, 23))
-        self.pushButton_openEnergiedaten.setObjectName("pushButton_openEnergiedaten")
-        self.pushButton_openEnergiedaten.setText("Energiedaten")
+        #self.pushButton_openEnergiedaten = QtWidgets.QPushButton(Form)
+        #self.pushButton_openEnergiedaten.setGeometry(QtCore.QRect(270, 100, 75, 23))
+        #self.pushButton_openEnergiedaten.setObjectName("pushButton_openEnergiedaten")
+        #self.pushButton_openEnergiedaten.setText("Energiedaten")
 
 
-        self.pushButton_openKosten = QtWidgets.QPushButton(Form)
-        self.pushButton_openKosten.setGeometry(QtCore.QRect(270, 140, 75, 23))
-        self.pushButton_openKosten.setObjectName("pushButton_openKosten")
-        self.pushButton_openKosten.setText("Kosten")
+        #self.pushButton_openKosten = QtWidgets.QPushButton(Form)
+        #self.pushButton_openKosten.setGeometry(QtCore.QRect(270, 140, 75, 23))
+        #self.pushButton_openKosten.setObjectName("pushButton_openKosten")
+        #self.pushButton_openKosten.setText("Kosten")
 
 
         self.pushButton_Simulate = QtWidgets.QPushButton(Form)

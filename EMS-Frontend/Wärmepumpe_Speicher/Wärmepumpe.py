@@ -5,6 +5,7 @@ import pandas as pd
 import csv
 from bokeh import plotting, embed, resources
 from bokeh.plotting import figure
+from bokeh.models import DataRange1d
 import importlib
 Import = importlib.import_module("EMS-Backend.Classes.Import")
 #Speicher = importlib.import_module("EMS-Frontend.Wärmepumpe_Speicher.Wärmespeicher")
@@ -290,7 +291,7 @@ class Ui_WP(QWidget):
                     self.y.append(COP1)
                     self.y.append(COP2)
 
-            p = figure(width=440, height=240,
+            p = figure(width=440, height=240,y_range=DataRange1d(start=0),
                        title="COP-Kennlinie", x_axis_label= "Außentemperatur [°C]", y_axis_label = "COP")  
             p.line(x=self.x, y=self.y, line_width=3, color="black")
                   
