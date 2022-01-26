@@ -29,7 +29,6 @@ class Wärmepumpe():
         data_y = []
 
         dataString = [dataString[i:i + 2] for i in range(0, len(dataString), 2)] 
-
         for i in range(0,len(dataString)//2+2,2):
             data_x.append(dataString[i])
             data_y.append(dataString[i+1])
@@ -37,7 +36,6 @@ class Wärmepumpe():
         self.li_range_X = []
         self.li_k = []
         self.li_d = []
-
 
         for i in range(len(data_x)):
             k = (float(data_y[i][1])- float(data_y[i][0])) / (float(data_x[i][1])- float(data_x[i][0]))

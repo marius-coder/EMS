@@ -2,6 +2,8 @@
 import pandas as pd
 import numpy as np
 import math
+import seaborn as sns
+import matplotlib.pyplot as plt
 #from Building import Building
 #from Erdwärme import Get_GeothermalData
 #from Import import importGUI
@@ -11,6 +13,7 @@ ImportBuilding = importlib.import_module("EMS-Backend.Classes.Building")
 ImportSpeicher = importlib.import_module("EMS-Backend.Classes.Wärmespeicher")
 ImportWP = importlib.import_module("EMS-Backend.Classes.Wärmepumpe")
 ImportStromnetz = importlib.import_module("EMS-Backend.Classes.Stromnetz")
+ImportErdwärme = importlib.import_module("EMS-Backend.Classes.Erdwärme")
 Import = importlib.import_module("EMS-Backend.Classes.Import")
 
 
@@ -93,6 +96,22 @@ class Simulation():
 		self.WP_WW = ImportWP.Wärmepumpe(speicher = self.Speicher_WW,data_WP = self.WP_WW, geb_VL_HZG = self.t_WW_VL, geb_VL_KLG = 0)
 		self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
 		
+		
+		data_Sim = {
+			"Punkte X" : 60,
+			"Punkte Y" : 60,
+			"Länge Punkt [m]" : 0.5,
+			"Länge Sonde [m]" : 0.2,
+			}
+
+		data_Boden = {
+			"Temperatur" : 6,
+			"Temperatur Einspeisung" : 11,
+			"cp" : 1000,
+			"rho" : 2600}
+		self.Erd_Sim = ImportErdwärme.BKA(data_Sim, data_Boden, self.import_data.input_GeoData)
+		self.Erd_Sim.Init_Sim()
+
 		stat_HL = self.Static_HL()
 		stat_KL = self.Static_KL()
 
@@ -312,16 +331,24 @@ class Simulation():
 			#Energie aus dem Speicher entnehmen
 			self.WP_WW.speicher.Speicher_Entladen(Q_Entladen = self.q_warmwater[hour], RL = 15)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-			
 			#Strom			
 			self.Pel_gebäude[hour] = self.CalcStrombedarf(hour, month, hourofDay)
 			print(f"Benötigte Stromleistung: {self.Pel_gebäude[hour]/1000} kW")
 			reslast = self.Stromnetz.CalcResLast(hour,self.Pel_gebäude[hour])
 			self.Stromnetz.CheckResLast(hour,reslast)
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+			#Simulation-Bodenerwärmung
+			Q_toDump = self.WP_WW.Pel_Betrieb[hour] + self.WP_HZG.Pel_Betrieb[hour] +\
+						self.q_warmwater[hour] + self.q_soll
+			self.Erd_Sim.Simulate(Q_toDump)
+			
 
 			print("---------------------------------------------------------------")
 		print(f"MAXIMALE TEMPERATUR: {max(self.ti)}")
 		print(f"MINIMALE TEMPERATUR: {min(self.ti)}")
+
+		sns.heatmap(self.Erd_Sim.Get_Attr_List("temperatur"), square=True, cmap='viridis')
+		plt.show()
 
 
 			

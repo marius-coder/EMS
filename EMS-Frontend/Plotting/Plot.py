@@ -60,6 +60,7 @@ class Ui_Plotting(QWidget):
 
         self.ListWidget_DataPoints = QListWidget()
         self.ListWidget_DataPoints.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.ListWidget_DataPoints.currentItemChanged.connect(self.SetDataGroup)
         self.lay_Vertical.addWidget(self.ListWidget_DataPoints)
         self.selectionList = []
         self.selectionGroup = []
@@ -132,6 +133,9 @@ class Ui_Plotting(QWidget):
         for i in range(len(self.li_coords)):
             self.AddFigure(i)
 
+    def SetDataGroup(self):
+        self.selectedGroup = self.comboBox_SelectDatagroup.currentText()
+
     def SetupModel(self):
         if self.model == None:
             return
@@ -183,7 +187,6 @@ class Ui_Plotting(QWidget):
             self.dlgWindow.sender = "Reset"
         else:
             self.dlgWindow.sender = "Draw"
-        print(self.dlgWindow.sender)
         for button in self.dlgWindow.btn_grp.buttons():
             button.setStyleSheet('background-color: red')
             button.setChecked(False)
@@ -191,7 +194,7 @@ class Ui_Plotting(QWidget):
         selection = self.ListWidget_DataPoints.selectedItems()
         for item in selection:
             self.selectionList.append(item.text())
-            self.selectionGroup.append(self.comboBox_SelectDatagroup.currentText())
+            self.selectionGroup.append(self.selectedGroup)
 
         self.dlgColorWindow.SetupSelection(self.selectionList)
         self.dlgColorWindow.show()
@@ -249,7 +252,12 @@ class Ui_Plotting(QWidget):
             df[item] = getattr(self,"DataPoints_" + self.selectionGroup[i])[item]
             
         mypalette = self.dlgColorWindow.li_Colors
-        
+
+        if hasattr(self.dlgWindow, "idList") == False:
+            self.selectionList = []
+            self.selectionGroup = []
+            self.ListWidget_DataPoints.clearSelection()
+            return
         if len(self.dlgWindow.idList) != 1:
             self.selectionList = []
             self.selectionGroup = []
@@ -280,7 +288,8 @@ class Ui_Plotting(QWidget):
         selection = self.ListWidget_DataPoints.selectedItems()
         for item in selection:
             self.selectionList.append(item.text())
-            self.selectionGroup.append(self.comboBox_SelectDatagroup.currentText())
+            self.selectionGroup.append(self.selectedGroup)
+        self.selectedGroup = self.comboBox_SelectDatagroup.currentText()
         name = self.comboBox_SelectDatagroup.currentText()
         Datapoints = getattr(self,"DataPoints_" + name)
         self.ListWidget_DataPoints.clear()

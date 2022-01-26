@@ -1,8 +1,8 @@
 
-
+import seaborn as sns
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-np.set_printoptions(threshold=np.inf)
 import random
 import math
 
@@ -153,10 +153,20 @@ class BKA():
         pixel_1 = con.Pixel_1
         pixel_2 = con.Pixel_2
 
-        t_misch = (pixel_1.temperatur * pixel_1.masse + pixel_2.temperatur * pixel_2.masse) / (pixel_1.masse + pixel_2.masse)
-        
-        pixel_1.temperatur = t_misch
-        pixel_2.temperatur = t_misch
+        t1 = pixel_1.temperatur
+        t2 = pixel_2.temperatur
+
+        #Leistung zwischen Pixel
+        Q = self.data_erd["WM_spez"] * self.fläche_Seite * ((t1-t2)/self.data_sim["Länge Punkt [m]"])
+
+        #Temperaturänderung
+        dt = ((Q * 3600)/(self.masse * self.data_pixel["cp"]))
+
+        t1_neu = t1 - dt
+        t2_neu = dt + t2
+        pixel_1.temperatur = t1_neu
+        pixel_2.temperatur = t2_neu
+
 
     def Get_Attr_List(self, str_attr):
         #Get_Attr_List nimmt ein beliebiges Attribut von Pixel und gibt dieses für alle Pixel instanzen in Form eines arrays zurück
@@ -215,8 +225,8 @@ data_Erdwärme = {
             "WM_spez" : 2}
 
 data_Sim = {
-    "Punkte X" : 20,
-    "Punkte Y" : 20,
+    "Punkte X" : 30,
+    "Punkte Y" : 30,
     "Länge Punkt [m]" : 0.5,
     "Länge Sonde [m]" : 0.2,
     }
@@ -227,10 +237,9 @@ data_Boden = {
     "cp" : 1000,
     "rho" : 2600}
 
-#Dimension: 1 = 50cm
+#Dimension: 1 Punkt = 50cm
 Test = BKA(data_Sim, data_Boden, data_Erdwärme)
 Test.Simulate()
-print(Test.Get_Attr_List("x"))
-print(Test.Get_Attr_List("y"))
-print(Test.Get_Attr_List("temperatur"))
-print("")
+
+sns.heatmap(Test.Get_Attr_List("temperatur"), square=True, cmap='viridis')
+plt.show()

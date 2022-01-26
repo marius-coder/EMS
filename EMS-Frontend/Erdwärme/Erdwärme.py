@@ -106,15 +106,15 @@ class Ui_Erdwärme(QWidget):
         self.lineEdit_WM_spez.setGeometry(QtCore.QRect(190, 180, 50, 20))
         self.lineEdit_WM_spez.setReadOnly(True)
         self.lineEdit_WM_spez.setObjectName("lineEdit_WM_spez")
-        self.label_Leistung = QtWidgets.QLabel(self)
-        self.label_Leistung.setGeometry(QtCore.QRect(300, 145, 100, 32))
-        self.label_Leistung.setObjectName("label_WM_spez")
-        self.label_Leistung.setText("Leistung [kW] (5K Spreizung)")
-        self.label_Leistung.setWordWrap(True)
-        self.lineEdit_Leistung = QtWidgets.QLineEdit(self)
-        self.lineEdit_Leistung.setGeometry(QtCore.QRect(300, 180, 50, 20))
-        self.lineEdit_Leistung.setReadOnly(True)
-        self.lineEdit_Leistung.setObjectName("lineEdit_ReadOnly")
+        #self.label_Leistung = QtWidgets.QLabel(self)
+        #self.label_Leistung.setGeometry(QtCore.QRect(300, 145, 100, 32))
+        #self.label_Leistung.setObjectName("label_WM_spez")
+        #self.label_Leistung.setText("Leistung [kW] (5K Spreizung)")
+        #self.label_Leistung.setWordWrap(True)
+        #self.lineEdit_Leistung = QtWidgets.QLineEdit(self)
+        #self.lineEdit_Leistung.setGeometry(QtCore.QRect(300, 180, 50, 20))
+        #self.lineEdit_Leistung.setReadOnly(True)
+        #self.lineEdit_Leistung.setObjectName("lineEdit_ReadOnly")
 
         #Profil Stuff (Laden,Speichern,löschen etc.)
         self.pushButton_SaveProfile = QtWidgets.QPushButton(self)
@@ -262,7 +262,7 @@ class Ui_Erdwärme(QWidget):
 								"Anzahl_Sonden" : self.spinBox_AnzSonden.value()}
         Output_GeoData = BackErdwärme.Get_GeothermalData(input_GeoData)
         self.lineEdit_WM_spez.setText(str(round(Output_GeoData["MW_WL"],3)))
-        self.lineEdit_Leistung.setText(str(round(float(self.lineEdit_WM_spez.text()) * float(self.spinBox_AnzSonden.value()) * float(self.doubleSpinBox_Bohrtiefe.value()) * 5/1000,3)))
+        #self.lineEdit_Leistung.setText(str(round(float(self.lineEdit_WM_spez.text()) * float(self.spinBox_AnzSonden.value()) * float(self.doubleSpinBox_Bohrtiefe.value()) * 5/1000,3)))
 
 
         self.SaveProfile()
@@ -276,12 +276,12 @@ class Ui_Erdwärme(QWidget):
                              "background-color : lightgreen;"
                              "}")
         Erdwärme = {
-            "Adresse" : data[1],
-            "Bohrtiefe": data[2],
-            "Anzahl_Sonden" : data[3],
+            "Adresse" : data[1],            
+            "Anzahl_Sonden" : data[2],
+            "Bohrtiefe": data[3],
             "Abstand_Sonden" : data[4],
-            "WM_spez" : self.lineEdit_WM_spez.text(),
-            "Leistung" : self.lineEdit_Leistung.text()}
+            "WM_spez" : self.lineEdit_WM_spez.text()}
+            #"Leistung" : self.lineEdit_Leistung.text()}
         Import.importGUI.Import_Geothermal(Erdwärme)
         self.parent.lineEdit_Erdwärme.setText(self.lineEdit_Profil.text())
 
@@ -295,7 +295,7 @@ class Ui_Erdwärme(QWidget):
 								"Anzahl_Sonden" : self.spinBox_AnzSonden.value()}
         Output_GeoData = BackErdwärme.Get_GeothermalData(input_GeoData)
         self.lineEdit_WM_spez.setText(str(round(Output_GeoData["MW_WL"],3)))
-        self.lineEdit_Leistung.setText(str(round(float(self.lineEdit_WM_spez.text()) * float(self.spinBox_AnzSonden.value()) * float(self.doubleSpinBox_Bohrtiefe.value()) * 5/1000,3)))
+        #self.lineEdit_Leistung.setText(str(round(float(self.lineEdit_WM_spez.text()) * float(self.spinBox_AnzSonden.value()) * float(self.doubleSpinBox_Bohrtiefe.value()) * 5/1000,3)))
         self.windowKarte.UpdatePlot(self.lineEdit_InputAdresse.text(),Output_GeoData["Layer"])
         self.windowKarte.show()
 
