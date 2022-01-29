@@ -209,6 +209,8 @@ class WindowGesamtprofil_Warmwasser(QWidget):
 
 
     def UpdatePlot(self):
+        fläche = self.parent.Gebäude.doubleSpinBox_BGF.value()
+        self.lineEdit_Fläche.setText(str(fläche))
         try:
             if self.radioButton_month.isChecked():
                 self.y_choose = self.y_month

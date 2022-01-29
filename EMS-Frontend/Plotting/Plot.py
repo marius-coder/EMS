@@ -7,18 +7,20 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import csv
 from bokeh import plotting, embed, resources
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Legend
-
+import math
+from colour import Color
 import importlib
 Import = importlib.import_module("EMS-Backend.Classes.Import")
 
 import warnings
-warnings.filterwarnings("error")
+#warnings.filterwarnings("error")
 
 from PyQt5 import *
 from PyQt5 import QtGui
@@ -453,17 +455,44 @@ class WindowTemperaturFeld(QWidget):
         self.parent = parent
 
         self.lay_base = QtWidgets.QVBoxLayout(self)
+        self.lay_horiz = QtWidgets.QHBoxLayout(self)
 
+        self.hasRunOnce = False
+        self.vmax = 0
+        self.vmax_HZG = 0
+        self.vmax_WW = 0
+        
+        self.vmin = 9999
+        self.vmin_HZG = 9999
+        self.vmin_WW = 9999
 
+        self.li_vmax = [self.vmax,self.vmax_HZG,self.vmax_WW]
+        self.li_vmin = [self.vmin,self.vmin_HZG,self.vmin_WW]
 
-        self.fig = Figure()
-        self.ax = self.fig.add_subplot(111)
-        self.canvas = FigureCanvasQTAgg(self.fig)
-        self.canvas.setSizePolicy(QtWidgets.QSizePolicy.Expanding, 
-                                  QtWidgets.QSizePolicy.Expanding)
-        self.canvas.updateGeometry()
+        def CreatePlot():
 
-        self.lay_base.addWidget(self.canvas,9)
+            fig = Figure()
+            ax = fig.add_subplot()
+
+            canvas = FigureCanvasQTAgg(fig)
+            canvas.setSizePolicy(QtWidgets.QSizePolicy.Expanding,QtWidgets.QSizePolicy.Expanding)
+            canvas.updateGeometry()
+            return fig,ax,canvas
+
+        self.li_fig = []
+        self.li_ax = []
+        self.li_canvas = []
+        self.li_cb = [None,None,None]
+        
+        li_widths = [4,2,2]
+        for i in range(3):
+            ret = CreatePlot()
+            self.li_fig.append(ret[0])
+            self.li_ax.append(ret[1])
+            self.li_canvas.append(ret[2])
+            self.lay_horiz.addWidget(self.li_canvas[i],li_widths[i])
+        
+        self.lay_base.addLayout(self.lay_horiz,9)
 
         self.slider = QtWidgets.QSlider(Qt.Horizontal)
         self.slider.setMaximum(8759)
@@ -478,18 +507,54 @@ class WindowTemperaturFeld(QWidget):
 
         self.lay_base.addLayout(self.lay_hori,1)
 
+    def GetVmax(self):
+        i = 0
+        for li,attr in zip(["li_Sondenfeld","li_speicherTemperatur_HZG","li_speicherTemperatur_WW"],["vmax","vmax_HZG","vmax_WW"]):
+            var = getattr(self.parent.parent.model, li)
+            #var_attr = getattr(self, attr)
+            for arr in var:
+                maxValue = np.amax(arr)
+                if maxValue > self.li_vmax[i]:
+                    self.li_vmax[i] = math.ceil(maxValue)
+            i += 1
+
+    def GetVmin(self):
+        i = 0
+        for li,attr in zip(["li_Sondenfeld","li_speicherTemperatur_HZG","li_speicherTemperatur_WW"],["vmin","vmin_HZG","vmin_WW"]):
+            var = getattr(self.parent.parent.model, li)
+            #var_attr = getattr(self, attr)
+            for arr in var:
+                minValue = np.amin(arr)
+                if minValue < self.li_vmin[i]:
+                    self.li_vmin[i] = math.floor(minValue)
+            i += 1
+                
+       
 
 
-    def UpdatePlot(self):    
-
-        self.canvas.clear()
-        self.fig.clear()
+    def UpdatePlot(self):         
         
-        hour = self.spinBox.value()
-        model = self.parent.parent.model.li_Sondenfeld[hour]
+        for i,li in enumerate(["li_Sondenfeld","li_speicherTemperatur_HZG","li_speicherTemperatur_WW"]):
+            hour = self.spinBox.value()
+            self.li_ax[i].clear()
+            model = getattr(self.parent.parent.model, li)[hour]
 
-        sns.heatmap(model, square=True, cmap='viridis',cbar_kws={'label': 'Temperatur [°C]'}, ax = self.ax)
-        self.ax.set_title("Temperaturfeld in Stunde: " + str(hour))
-        self.fig.canvas.draw_idle()
+            if self.hasRunOnce == False:
+                self.GetVmax()
+                self.GetVmin()
 
+            if self.hasRunOnce == True:
+                self.li_cb[i].remove() 
 
+            if i == 0:
+                img = self.li_ax[i].imshow(model, cmap='hot', interpolation='nearest',vmin=self.li_vmin[i], vmax=self.li_vmax[i])
+            else:
+                arr = np.array(model)
+                img = self.li_ax[i].imshow(np.expand_dims(arr, axis=1),vmin=self.li_vmin[i], vmax=self.li_vmax[i])
+
+            self.li_cb[i] = self.li_fig[i].colorbar(img)
+            self.li_cb[i].set_label("Temperatur [°C]")
+
+            self.li_ax[i].set_title("Temperaturfeld Erdsondenfeld in Stunde: " + str(hour))
+            self.li_fig[i].canvas.draw_idle()
+        self.hasRunOnce = True

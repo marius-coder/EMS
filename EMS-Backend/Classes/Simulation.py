@@ -92,20 +92,21 @@ class Simulation():
 		
 		
 		data_Sim = {
-			"Punkte X" : 60,
-			"Punkte Y" : 60,
+			"Punkte X" : 100,
+			"Punkte Y" : 100,
 			"Länge Punkt [m]" : 0.5,
 			"Länge Sonde [m]" : 0.2,
 			}
 
 		data_Boden = {
 			"Temperatur" : 6,
-			"Temperatur Einspeisung" : 11,
 			"cp" : 1000,
 			"rho" : 2600}
 		self.Erd_Sim = ImportErdwärme.BKA(data_Sim, data_Boden, self.import_data.input_GeoData)
 		self.Erd_Sim.Init_Sim()
 		self.li_Sondenfeld = []
+		self.li_speicherTemperatur_HZG = []
+		self.li_speicherTemperatur_WW = []
 
 		stat_HL = self.Static_HL()
 		stat_KL = self.Static_KL()
@@ -171,10 +172,6 @@ class Simulation():
 
 	def heating_power(self, ti_s, ti, cp, A):
 		return cp * A * (ti_s - ti)
-
-	def handle_heating(self, t, ):
-		pass
-
 
 	def Static_HL(self):
 		min_ta = min(self.ta)
@@ -261,10 +258,9 @@ class Simulation():
 
 			self.WP_HZG.COP_betrieb[hour] = self.WP_HZG.GetCOP(self.ta[hour])
 			print(f"COP Heizen bei {self.ta[hour]} °C Außentemperatur: {self.WP_HZG.COP_betrieb[hour]}")
-			print(f"Object Heizen: {self.WP_HZG.speicher}")
-			print(f"Object WW: {self.WP_WW.speicher}")
 
 			#Heizen
+			self.Q_entladen_HZG = 0
 			if DetermineMonth(hour) in self.heating_months:
 
 				#Check_SpeicherHeizen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
@@ -280,9 +276,11 @@ class Simulation():
 				self.qh[hour] = self.q_soll
 
 				#Energie aus dem Speicher entnehmen
-				self.WP_HZG.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = self.t_hzg_RL)
-				#Neue Innentemperatur berechnen
-				self.handle_losses(hour, q_toApply = self.q_soll)
+				if self.WP_HZG.speicher.li_schichten[-1]["Temperatur [°C]"] > self.t_hzg_VL:
+					self.Q_entladen_HZG = self.q_soll
+					self.WP_HZG.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = self.t_hzg_RL)
+					#Neue Innentemperatur berechnen
+					self.handle_losses(hour, q_toApply = self.q_soll)
 
 
 
@@ -301,15 +299,18 @@ class Simulation():
 				self.qc[hour] = self.q_soll
 
 				#Energie aus dem Speicher entnehmen
-				self.WP_HZG.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = self.t_hzg_RL)
-				#Neue Innentemperatur berechnen
-				self.handle_losses(hour, q_toApply = self.q_soll)
+				if self.WP_HZG.speicher.li_schichten[-1]["Temperatur [°C]"] < self.t_klg_VL:
+					self.Q_entladen_HZG = self.q_soll
+					self.WP_HZG.speicher.Speicher_Entladen(Q_Entladen = self.q_soll, RL = self.t_hzg_RL)
+					#Neue Innentemperatur berechnen
+					self.handle_losses(hour, q_toApply = self.q_soll)
 			print("Temp nach Heizen: ",self.ti_sim)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------		
 			#Warmwasser
 			month = DetermineMonth(hour)
 			hourofDay = DetermineHourofDay(hour)
 
+			self.Q_entladen_WW = 0
 			self.WP_WW.COP_betrieb[hour] = self.WP_WW.GetCOP(self.ta[hour])
 			print(f"COP Warmwasser bei {self.ta[hour]} °C Außentemperatur: {self.WP_WW.COP_betrieb[hour]}")
 			Q_warmwater = self.CalcWarmwaterEnergy(month, hourofDay)
@@ -324,7 +325,9 @@ class Simulation():
 			else:
 				self.WP_WW.Pel_Betrieb[hour] = 0
 			#Energie aus dem Speicher entnehmen
-			self.WP_WW.speicher.Speicher_Entladen(Q_Entladen = self.q_warmwater[hour], RL = 15)
+			if self.WP_WW.speicher.li_schichten[-1]["Temperatur [°C]"] > self.t_WW_VL:
+				self.Q_entladen_WW = self.q_warmwater[hour]
+				self.WP_WW.speicher.Speicher_Entladen(Q_Entladen = self.q_warmwater[hour], RL = 15)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			#Strom			
 			self.Pel_gebäude[hour] = self.CalcStrombedarf(hour, month, hourofDay)
@@ -334,17 +337,19 @@ class Simulation():
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			#Simulation-Bodenerwärmung
 			Q_toDump = self.WP_WW.Pel_Betrieb[hour] + self.WP_HZG.Pel_Betrieb[hour] +\
-						self.q_warmwater[hour] + self.q_soll
+						self.Q_entladen_WW * -1 + self.Q_entladen_HZG * -1
 			self.Erd_Sim.Simulate(Q_toDump)
 			self.li_Sondenfeld.append(self.Erd_Sim.Get_Attr_List("temperatur"))
+			self.li_speicherTemperatur_HZG.append(self.WP_HZG.speicher.GetSpeicherTemperaturen())
+			self.li_speicherTemperatur_WW.append(self.WP_WW.speicher.GetSpeicherTemperaturen())
 
 			print("---------------------------------------------------------------")
 		print(f"MAXIMALE TEMPERATUR: {max(self.ti)}")
 		print(f"MINIMALE TEMPERATUR: {min(self.ti)}")
-		plt.clf()
-		sns.heatmap(self.Erd_Sim.Get_Attr_List("temperatur"), square=True, cmap='viridis',cbar_kws={'label': 'Temperatur [°C]'})
-		plt.title("Temperaturfeld der Erdwärmesonden")
-		plt.show()
+		#plt.clf()
+		#sns.heatmap(self.Erd_Sim.Get_Attr_List("temperatur"), square=True, cmap='viridis',cbar_kws={'label': 'Temperatur [°C]'})
+		#plt.title("Temperaturfeld der Erdwärmesonden")
+		#plt.show()
 
 
 

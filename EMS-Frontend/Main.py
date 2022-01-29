@@ -39,6 +39,7 @@ class Ui_Main(QMainWindow):
         self.WP_Heizen = Ui_WP("Heizen",parent=self)
         self.WP_WW = Ui_WP("Warmwasser",parent=self)
         self.Ergebnisse = Ui_Plotting(parent=self)
+        
 
         self.pushButton_Gebäude = QtWidgets.QPushButton(Form)
         self.pushButton_Gebäude.setGeometry(QtCore.QRect(20, 20, 75, 23))

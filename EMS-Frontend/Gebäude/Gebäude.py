@@ -233,7 +233,7 @@ class Ui_Gebäude(QWidget):
      
         df = pd.read_csv("./EMS-Frontend/data/Gebäude_Profile.csv", delimiter = ",", encoding='utf-8')
 
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
 
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()

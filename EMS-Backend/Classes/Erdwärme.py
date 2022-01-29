@@ -289,6 +289,16 @@ class BKA():
         self.li_connections = self.li_connections_ordered
         random.shuffle(self.li_connections)
 
+    def ResetOuterTemperatures(self):
+                
+        for y in range(self.pixel_y+2):
+            self.pixel_array[y][0].temperatur = self.data_pixel["Temperatur"]
+            self.pixel_array[y][-1].temperatur = self.data_pixel["Temperatur"]
+            
+        for x in range(self.pixel_x+2):
+            self.pixel_array[0][x].temperatur = self.data_pixel["Temperatur"]
+            self.pixel_array[-1][x].temperatur = self.data_pixel["Temperatur"]
+
     def PlaceSonden(self):
         l_Quadrat = math.ceil(math.sqrt(self.anz_Sonden))
 
@@ -379,6 +389,7 @@ class BKA():
 
     def Simulate(self, Q_toDump):
         #Temperaturen der SondenPixel setzen
+        self.ResetOuterTemperatures()
         self.DumpEnergy(Q_toDump) #Watt
         for con in self.li_connections:
             self.CalculateConnection(con)

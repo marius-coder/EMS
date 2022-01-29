@@ -235,7 +235,7 @@ class Ui_PV_Batterie(QWidget):
      
         df = pd.read_csv("./EMS-Frontend/data/PV_Bat_Profile.csv", delimiter = ",", encoding='utf-8')
 
-        name = self.comboBox_SelectProfile.currentText()
+        name = self.lineEdit_Profil.text()
 
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()

@@ -119,6 +119,7 @@ class Ui_WP(QWidget):
         #Eingabe Stromverbrauch
         self.doubleSpinBox_Stromverbrauch = QtWidgets.QDoubleSpinBox(self)
         self.doubleSpinBox_Stromverbrauch.setObjectName("doubleSpinBox_Stromverbrauch")
+        self.doubleSpinBox_Stromverbrauch.setRange(0,9999)
         self.label_Stromverbrauch = QtWidgets.QLabel(self)
         self.label_Stromverbrauch.setObjectName("label_Stromverbrauch")
         self.label_Stromverbrauch.setText("Stromverbrauch [kW]")

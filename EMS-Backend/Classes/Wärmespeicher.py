@@ -397,6 +397,15 @@ class Wärmespeicher():
 		self.t_mean[hour] = var_temp / self.anz_schichten
 		self.ladezustand[hour] = VL / self.t_mean[hour] * 100
 
+	def GetSpeicherTemperaturen(self):
+		li_temps = []
+		schichten = self.li_schichten
+		schichten.reverse()
+		for schicht in schichten:
+			li_temps.append(schicht["Temperatur [°C]"])
+
+		return li_temps
+
 	def UpdateSpeicher(self, hour, VL):
 		"""Diese Funktion führt zu jeder Stunde die Verlustrechnung sowie die natürliche Konvektion durch"""
 		self.CalcLadezustand(hour, VL)
