@@ -92,8 +92,8 @@ class Simulation():
 		
 		
 		data_Sim = {
-			"Punkte X" : 100,
-			"Punkte Y" : 100,
+			"Punkte X" : 60,
+			"Punkte Y" : 60,
 			"Länge Punkt [m]" : 0.5,
 			"Länge Sonde [m]" : 0.2,
 			}
@@ -108,16 +108,16 @@ class Simulation():
 		self.li_speicherTemperatur_HZG = []
 		self.li_speicherTemperatur_WW = []
 
-		stat_HL = self.Static_HL()
-		stat_KL = self.Static_KL()
+		self.stat_HL = self.Static_HL()
+		self.stat_KL = self.Static_KL()
 
 		self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]
 		self.cooling_months = [4, 5, 6, 7, 8, 9]
 
 
 		
-		print(f"Die statische Heizlast beträgt {round(stat_HL['Heizlast [W]'] / 1000,2)} kW")
-		print(f"Die statische Kühllast beträgt {round(stat_KL['Kühllast [W]'] / 1000,2)} kW")
+		print(f"Die statische Heizlast beträgt {round(self.stat_HL['Heizlast [W]'] / 1000,2)} kW")
+		print(f"Die statische Kühllast beträgt {round(self.stat_KL['Kühllast [W]'] / 1000,2)} kW")
 
 
 	   

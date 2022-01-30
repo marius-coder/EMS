@@ -42,6 +42,7 @@ class Ui_Plotting(QWidget):
         self.dlgWindow = DialogWindow(self)
         self.dlgColorWindow = ColorPickWindow(self)
         self.WindowTemperaturFeld = WindowTemperaturFeld(self)
+        
         self.move = True
         self.model = None
         
@@ -151,6 +152,7 @@ class Ui_Plotting(QWidget):
     def ShowSpecialPlots(self):
         self.WindowTemperaturFeld.showMaximized()
         
+
 
     def SetDataGroup(self):
         self.selectedGroup = self.comboBox_SelectDatagroup.currentText()
@@ -532,10 +534,11 @@ class WindowTemperaturFeld(QWidget):
        
 
 
-    def UpdatePlot(self):         
-        
+    def UpdatePlot(self):   
+        hour = self.spinBox.value()
+        li_titles = [f"Temperaturfeld Erdsondenfeld in Stunde: {hour}",f"Temperaturen Schichtspeicher\nHeizen in Stunde: {hour}",f"Temperaturen Schichtspeicher\nWarmwasser in Stunde: {hour}"]
         for i,li in enumerate(["li_Sondenfeld","li_speicherTemperatur_HZG","li_speicherTemperatur_WW"]):
-            hour = self.spinBox.value()
+            
             self.li_ax[i].clear()
             model = getattr(self.parent.parent.model, li)[hour]
 
@@ -550,11 +553,19 @@ class WindowTemperaturFeld(QWidget):
                 img = self.li_ax[i].imshow(model, cmap='hot', interpolation='nearest',vmin=self.li_vmin[i], vmax=self.li_vmax[i])
             else:
                 arr = np.array(model)
-                img = self.li_ax[i].imshow(np.expand_dims(arr, axis=1),vmin=self.li_vmin[i], vmax=self.li_vmax[i])
+                img = self.li_ax[i].imshow(np.expand_dims(arr, axis=1),aspect='auto',vmin=self.li_vmin[i], vmax=self.li_vmax[i])
+                self.li_ax[i].tick_params(
+                    axis='both',          # changes apply to both axis
+                    which='both',      # both major and minor ticks are affected
+                    bottom=False,      # ticks along the bottom edge are off
+                    top=False,         # ticks along the top edge are off
+                    labelbottom=False)
 
             self.li_cb[i] = self.li_fig[i].colorbar(img)
             self.li_cb[i].set_label("Temperatur [°C]")
 
-            self.li_ax[i].set_title("Temperaturfeld Erdsondenfeld in Stunde: " + str(hour))
+            self.li_ax[i].set_title(li_titles[i])
             self.li_fig[i].canvas.draw_idle()
         self.hasRunOnce = True
+
+

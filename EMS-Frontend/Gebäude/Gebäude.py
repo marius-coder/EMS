@@ -59,7 +59,7 @@ class Ui_Gebäude(QWidget):
         self.label_6 = QtWidgets.QLabel(self)
         self.label_6.setGeometry(QtCore.QRect(10, 50, 121, 16))
         self.label_6.setObjectName("label_6")
-        self.label_6.setText("Brutogeschossfläche [m²]")
+        self.label_6.setText("Bruttogeschossfläche [m²]")
         self.doubleSpinBox_BGF = QtWidgets.QDoubleSpinBox(self)
         self.doubleSpinBox_BGF.setGeometry(QtCore.QRect(10, 70, 121, 22))
         self.doubleSpinBox_BGF.setObjectName("doubleSpinBox_BGF")

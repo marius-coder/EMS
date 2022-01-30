@@ -306,7 +306,7 @@ class Wärmespeicher():
 				#Zwischenvariablen definieren zwecks Übersichtlichkeit
 				schicht_unten = self.li_schichten[i]
 				schicht_oben = self.li_schichten[i+1]
-			
+				
 				#Zwischenvariable
 				schicht_oben["Masse"] = schicht_oben["Volumen [m³]"] * water_data["rho"]
 
