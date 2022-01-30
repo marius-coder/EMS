@@ -95,9 +95,7 @@ class Wärmespeicher():
 
 	def Heat_Transmission(self, schicht):
 		r1 = self.geometry["Radius [m]"] 
-		r2 = self.geometry["Radius [m]"] + self.dicke_dämmung	
-		oben = 2 * (math.pi * schicht["Höhe [m]"] * (schicht["Temperatur [°C]"] - self.t_umg))
-		unten = ((1/self.lambda_dämmung)* math.log(r2/r1))
+		r2 = self.geometry["Radius [m]"] + self.dicke_dämmung			
 		q_HT = 2 * (math.pi * schicht["Höhe [m]"] * (schicht["Temperatur [°C]"] - self.t_umg)) / ((1/self.lambda_dämmung)* math.log(r2/r1)) #Watt
 		return q_HT
 	
@@ -126,9 +124,6 @@ class Wärmespeicher():
 				q_top = self.Heat_Transmission_BodenDeckel(self.li_schichten[-1])
 				q_toApply = q_schicht + q_top
 				self.li_schichten[i]["Temperatur [°C]"] = self.New_Temperature(q_toApply, self.li_schichten[i])
-				
-				
-				#print("Temp: ", self.li_schichten[i]["Temperatur [°C]"])
 			else:
 				q_toApply = q_schicht
 				self.li_schichten[i]["Temperatur [°C]"] = self.New_Temperature(q_toApply, self.li_schichten[i])
@@ -164,7 +159,7 @@ class Wärmespeicher():
 		#print("Prandtlzahl ist: ", PR)
 
 		#Rayleigh Zahl berechnen
-		RA = GR / PR
+		RA = GR * PR
 		#print("Rayleighzahl ist: ", RA)
 
 		#Nusselt Zahl berechnen

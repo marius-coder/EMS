@@ -336,8 +336,13 @@ class Simulation():
 			self.Stromnetz.CheckResLast(hour,reslast)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			#Simulation-Bodenerwärmung
-			Q_toDump = self.WP_WW.Pel_Betrieb[hour] + self.WP_HZG.Pel_Betrieb[hour] +\
-						self.Q_entladen_WW * -1 + self.Q_entladen_HZG * -1
+			if DetermineMonth(hour) in self.heating_months:
+				Q_toDump = self.Q_entladen_WW * -1 + self.Q_entladen_HZG * -1
+
+			elif DetermineMonth(hour) in self.cooling_months:
+				Q_toDump = self.WP_WW.Pel_Betrieb[hour] + self.WP_HZG.Pel_Betrieb[hour] +\
+							self.Q_entladen_WW + self.Q_entladen_HZG 
+				print("")
 			self.Erd_Sim.Simulate(Q_toDump)
 			self.li_Sondenfeld.append(self.Erd_Sim.Get_Attr_List("temperatur"))
 			self.li_speicherTemperatur_HZG.append(self.WP_HZG.speicher.GetSpeicherTemperaturen())
@@ -358,7 +363,7 @@ class Simulation():
 	def CalcWarmwaterEnergy(self, month, hourofDay):
 		m_water = self.import_data.input_Warmwater["hour [l/h]"][month-1][hourofDay]  #liter
 		print(f"Warmwasserverbauch in liter: {m_water}")
-		Q_waterheating = m_water * 4180 * (60-15) /3600
+		Q_waterheating = m_water * 4180 * (self.t_WW_VL-15) /3600
 		return Q_waterheating
 
 	def CalcStrombedarf(self, hour, month, hourofDay):
