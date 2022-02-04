@@ -21,6 +21,7 @@ class Wärmepumpe():
         self.Pel_Betrieb = np.zeros(8760)
         self.is_on = np.zeros(8760, dtype = bool)
         self.SetupCOP(data_WP["Table"])
+        self.Q_toLoad = 0
 
     def SetupCOP(self,dataString):
         dataString = dataString.split("----")[:-1]
@@ -65,8 +66,7 @@ class Wärmepumpe():
         """Diese Funktion kontrolliert zu jeder Stunde den dazugehörigen Speicher auf Temperatur
            Wenn die Temperatur außerhalb des Sollwertes liegt wird WP_TurnOn aufgerufen"""
 
-        #Verlust und Ausgleichsvorgänge
-        self.speicher.UpdateSpeicher(hour, self.WP_VL_HZG)
+
 
         schichttoCheck = int(self.speicher.anz_schichten / 2) #Wenn der Speicher halb durchgeladen ist wird abgedreht
         schichtEinschalten = int(self.speicher.anz_schichten * 4/5)
@@ -74,7 +74,7 @@ class Wärmepumpe():
         print("Kontrollschicht Einschalten: ", self.speicher.li_schichten[schichtEinschalten]["Temperatur [°C]"], " °C")
         print("Kontrollschicht Aussschalten: ", self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"], " °C")
                 
-        if self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"] > self.geb_VL_HZG:
+        if self.speicher.li_schichten[schichttoCheck]["Temperatur [°C]"] > self.geb_VL_HZG+2:
             print("TurnOff1")
             self.is_on[hour] = False
             self.WP_TurnOff()
@@ -115,9 +115,10 @@ class Wärmepumpe():
         
     def WP_TurnOn(self, t_VL, COP):
         temp_RL = self.speicher.li_schichten[0]["Temperatur [°C]"]
-        Q_toLoad = self.Pel * COP * 1000
-        m_toLoad = Q_toLoad / (4180 * abs(t_VL - temp_RL)) * 3600               
-        self.speicher.Speicher_Laden(m_toLoad, VL = t_VL)
+        self.Q_toLoad = self.Pel * COP * 1000 #W
+        m_toLoad = self.Q_toLoad / (4180 * abs(t_VL - temp_RL)) * 3600 #kg   obsolet        
+        self.speicher.Speicher_Laden(self.Q_toLoad, VL = t_VL)
+        
         
     def WP_TurnOff(self):
         pass

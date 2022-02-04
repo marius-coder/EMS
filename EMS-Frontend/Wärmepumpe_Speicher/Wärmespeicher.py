@@ -109,17 +109,7 @@ class Ui_Speicher(QWidget):
         self.verticalLayout_6.setObjectName("verticalLayout_6")
 
         #Eingabe Ladeschicht
-        self.label_Ladeschicht = QtWidgets.QLabel(self.widget)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.label_Ladeschicht.setFont(font)
-        self.label_Ladeschicht.setObjectName("label_Ladeschicht")
-        self.label_Ladeschicht.setText("Ladeschicht")
-        self.verticalLayout_6.addWidget(self.label_Ladeschicht)
-        self.spinBox_Ladeschicht = QtWidgets.QSpinBox(self.widget)
-        self.spinBox_Ladeschicht.setObjectName("spinBox_Ladeschicht")
-        self.verticalLayout_6.addWidget(self.spinBox_Ladeschicht)
-        self.gridLayout.addLayout(self.verticalLayout_6, 2, 1, 1, 1)
+
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
         self.verticalLayout_3.setObjectName("verticalLayout_3")
 
@@ -258,7 +248,7 @@ class Ui_Speicher(QWidget):
         self.pushButton_UseProfile.clicked.connect(self.UseProfile)
         
         self.li_inputWidgets = [self.doubleSpinBox_Radius, self.doubleSpinBox_Durchmesser, self.doubleSpinBox_Volumen,
-                                self.doubleSpinBox_Hohe,self.spinBox_anzSchichten,self.spinBox_Ladeschicht,
+                                self.doubleSpinBox_Hohe,self.spinBox_anzSchichten,
                                 self.doubleSpinBox_dickeDammung,self.doubleSpinBox_lamdaDammung]
      
     def UpdateSpeicher(self):
@@ -382,9 +372,8 @@ class Ui_Speicher(QWidget):
             "Volumen" : data[3],
             "Höhe" : data[4],
             "anz_Schichten" : data[5],
-            "Ladeschicht" : data[6],
-            "Dämmdicke" : data[7],
-            "Lambda_Dämmung" : data[8],
+            "Dämmdicke" : data[6],
+            "Lambda_Dämmung" : data[7],
             }
         Import.importGUI.Import_Speicher(Wärmespeicher)
         #Import.importGUI.Import_Wärmespeicherterie()

@@ -1,5 +1,5 @@
 # -*- coding: latin-1 -*-
-  
+import numpy as np
 class cla_Batterie():
     
     def __init__(self, var_EntTiefe, var_Effizienz, var_kapMAX, var_LadeEntladeLeistung, var_SelbstEntladung = 0):
@@ -11,6 +11,7 @@ class cla_Batterie():
         self.Leistung_MAX = var_LadeEntladeLeistung #kW
         self.Verlust = 0 #kW
         self.Selbstentladung = var_SelbstEntladung / 8760 #in %/Stunde
+        self.Verluste = np.zeros(8760)
 
     def StehVerluste(self):
         self.Kapazität = self.Kapazität - self.Kapazität * self.Selbstentladung

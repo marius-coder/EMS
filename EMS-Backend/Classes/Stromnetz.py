@@ -48,7 +48,7 @@ class Stromnetz():
 
         self.Batterie.StehVerluste()
         self.Batterieladung[hour] = self.Batterie.Kapazität
-
+        self.Batterie.Verluste[hour] = self.Batterie.Verlust
 
     def CalcResLast(self, hour, Strombedarf):
         return (self.PV_Anlage.PV_EK[hour] * 1000) - Strombedarf

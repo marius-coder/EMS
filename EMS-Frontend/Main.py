@@ -233,7 +233,7 @@ class Ui_Main(QMainWindow):
         self.Ergebnisse.showMaximized()
 
     def Simulate(self):
-        self.model = Sim.Simulation(b_geothermal = False)
+        self.model = Sim.Simulation()
         self.model.Setup_Simulation()
         self.model.Simulate()
         self.Ergebnisse.model = self.model

@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "OLD", "EMS\OLD.pyproj", "{11CF7EA1-15F4-498E-9BDF-E6318BBC46D7}"
-EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "EMS-Frontend", "EMS-Frontend\EMS-Frontend.pyproj", "{B9625333-417A-424B-B315-F3821D4925DB}"
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "EMS-Backend", "EMS-Backend\EMS-Backend.pyproj", "{246DA768-F2AA-4E23-8E67-6810683FE9DC}"
@@ -15,8 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{11CF7EA1-15F4-498E-9BDF-E6318BBC46D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{11CF7EA1-15F4-498E-9BDF-E6318BBC46D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9625333-417A-424B-B315-F3821D4925DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B9625333-417A-424B-B315-F3821D4925DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{246DA768-F2AA-4E23-8E67-6810683FE9DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

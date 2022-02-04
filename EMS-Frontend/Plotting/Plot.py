@@ -66,7 +66,7 @@ class Ui_Plotting(QWidget):
         self.comboBox_SelectDatagroup = QtWidgets.QComboBox(self)
         self.comboBox_SelectDatagroup.activated.connect(self.LoadDatagroup)
         self.lay_Vertical.addWidget(self.comboBox_SelectDatagroup)
-        li_DataGroup = ["Gebäude","Warmwasser","Heizen_Kühlen","Strom","Erdwärme","Energiedaten"]
+        li_DataGroup = ["Gebäude","Warmwasser","Heizen_Kühlen","Strom","Debug"]
         self.comboBox_SelectDatagroup.addItems(li_DataGroup)
 
         self.ListWidget_DataPoints = QListWidget()
@@ -77,6 +77,7 @@ class Ui_Plotting(QWidget):
         self.selectionGroup = []
         self.DataPoints_Gebäude = {"Innentemperatur [°C]" : None,
                               "Außentemperatur [°C]" : None,
+                              "Mittlere Außentemp [°C]" : None,
                               "Solltemperatur [°C]" : None,
                               "Strombedarf [kW]" : None,
                               "Bedarf Heizen [kW]" : None,
@@ -109,8 +110,11 @@ class Ui_Plotting(QWidget):
             "Batterieentladung [kW]" : None,
             "Netzeinspeisung [kW]" : None,
             "Netzbezug [kW]" : None,}
-        self.DataPoints_Erdwärme = {}
-        self.DataPoints_Energiedaten = {}
+
+        self.DataPoints_Debug = {"Fehler Heizung" : None,
+                                   "Fehler Warmwasser" : None,
+                                   "Fehler Batterie" : None}
+
 
 
         self.lay_GridRadiobuttons = QtWidgets.QGridLayout(self)
@@ -182,6 +186,7 @@ class Ui_Plotting(QWidget):
         #Gebäude
         self.DataPoints_Gebäude["Innentemperatur [°C]"] = self.model.ti
         self.DataPoints_Gebäude["Außentemperatur [°C]"] = self.model.ta
+        self.DataPoints_Gebäude["Mittlere Außentemp [°C]"] = self.model.li_meanTemp        
         self.DataPoints_Gebäude["Solltemperatur [°C]"] = self.model.t_soll
         self.DataPoints_Gebäude["Strombedarf [kW]"] = self.model.Pel_gebäude / 1000
         self.DataPoints_Gebäude["Bedarf Heizen [kW]"] = self.model.qh / 1000
@@ -194,9 +199,6 @@ class Ui_Plotting(QWidget):
         self.DataPoints_Gebäude["Innere Gewinne (Maschinen) [kW]"] = self.model.q_maschinen / 1000
         self.DataPoints_Gebäude["Innere Gewinne (Beleuchtung) [kW]"] = self.model.q_beleuchtung / 1000
 
-        
-
-
         #Strom
         self.DataPoints_Strom["PV-Ertrag [kW]"] = self.model.Stromnetz.PV_Anlage.PV_EK
         li_temp = np.ones(8760) *  self.model.Stromnetz.Batterie.Kapazität_MAX
@@ -207,6 +209,10 @@ class Ui_Plotting(QWidget):
         self.DataPoints_Strom["Netzeinspeisung [kW]"] = self.model.Stromnetz.Netzeinspeisung
         self.DataPoints_Strom["Netzbezug [kW]"] = self.model.Stromnetz.Netzbezug
 
+        #Debug
+        self.DataPoints_Debug["Fehler Heizung"] = self.model.fehler_HZG_Speicher
+        self.DataPoints_Debug["Fehler Warmwasser"] = self.model.fehler_WW_Speicher
+        self.DataPoints_Debug["Fehler Batterie"] = self.model.fehler_Stromnetz
 
     def OpenDialog(self): 
         if self.sender().objectName() == "pushButton_ResetPlots":
@@ -268,14 +274,17 @@ class Ui_Plotting(QWidget):
         elif self.radioButton_Jahr.isChecked() == True:
             self.x_timeframe = "y"
 
-    def DrawPlot(self):        
-
+    def DrawPlot(self):   
+        self.SetTimeframe()
         time = np.arange('2022-01-01', '2023-01-01', dtype='datetime64[h]')
 
         df = pd.DataFrame(index = time)            
         
         for i,item in enumerate(self.selectionList):
             df[item] = getattr(self,"DataPoints_" + self.selectionGroup[i])[item]
+          
+        #Set timeframe
+        df = df.resample(self.x_timeframe).mean()
             
         mypalette = self.dlgColorWindow.li_Colors
 
@@ -287,11 +296,25 @@ class Ui_Plotting(QWidget):
             return
         ID = self.dlgWindow.idList[0]
         legend_it = []
-        p = figure(width=800, height=450, x_axis_type='datetime')
+        
+        #Betreffende Figur erstellen
+        if self.x_timeframe == "y":
+            p = figure(x_range=df.index.values, height=450)
+        else:
+            p = figure(width=800, height=450, x_axis_type='datetime')
+
+        #Figur befüllen
         for i,column in enumerate(df):
-            c = p.line(x = df.index.values, y = df[column].values,
-                   line_color = mypalette[i], line_width = 2)
-            legend_it.append((self.selectionList[i], [c]))
+            if self.x_timeframe == "y":                
+                c = p.vbar(x = df.index.values, top = df[column].values,
+                       line_color = mypalette[i], line_width = 2)
+                legend_it.append((self.selectionList[i], [c]))
+            else:                
+                c = p.line(x = df.index.values, y = df[column].values,
+                       line_color = mypalette[i], line_width = 2)
+                legend_it.append((self.selectionList[i], [c]))
+
+
 
         p.xaxis.ticker.desired_num_ticks = 12
         legend = Legend(items = legend_it)

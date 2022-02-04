@@ -14,17 +14,9 @@ ImportStromnetz = importlib.import_module("EMS-Backend.Classes.Stromnetz")
 ImportErdwärme = importlib.import_module("EMS-Backend.Classes.Erdwärme")
 Import = importlib.import_module("EMS-Backend.Classes.Import")
 
-
 class Simulation():
 
-	def __init__(self,b_geothermal = False, b_PV = False, b_battery = False, b_districtHeating = False, b_heatPump = False, b_solarPower = False, ):
-		 self.b_geothermal = b_geothermal 
-		 self.b_PV = b_PV
-		 self.b_battery = b_battery
-		 self.b_districtHeating = b_districtHeating
-		 self.b_heatPump = b_heatPump
-		 self.b_solarPower = b_solarPower
-		 
+	def __init__(self):		 
 		 self.building = ImportBuilding.Building("./EMS-Backend/data/building.xlsx")
 		 self.df_usage = pd.read_csv("./EMS-Backend/data/usage_profiles.csv", encoding="cp1252")
 		 self.ta = np.genfromtxt("./EMS-Backend/data/climate.csv", delimiter=";", usecols = (1), skip_header = 1) #°C
@@ -45,15 +37,11 @@ class Simulation():
 		self.ach_v = self.df_usage["Luftwechsel_Anlage_1_h"].to_numpy() #Air change per hour through ventilation
 		self.ach_i = self.df_usage["Luftwechsel_Infiltration_1_h"].to_numpy() #Air change per hour through infiltration
 		self.anz_personen = self.df_usage["Pers/m2"] 
-		#self.q_warmwater = self.df_usage["Warmwasserbedarf_W_m2"] 
 		self.q_warmwater = np.zeros(8760)
 		self.q_maschinen = self.df_usage['Aufzug, Regelung etc._W_m2']
 		self.q_beleuchtung = self.df_usage["Beleuchtung_W_m2"]
 		self.Pel_gebäude = np.zeros(8760)
 
-
-
-		
 		self.qv = np.zeros(8760)        #Ventilation losses
 		self.qt = np.zeros(8760)        #transmission losses
 		self.ti = np.zeros(8760)        #indoor temperature
@@ -89,14 +77,12 @@ class Simulation():
 		self.Speicher_WW = ImportSpeicher.Wärmespeicher(self.speicher_WW, self.t_hzg_VL, self.t_hzg_RL)
 		self.WP_WW = ImportWP.Wärmepumpe(speicher = self.Speicher_WW,data_WP = self.WP_WW, geb_VL_HZG = self.t_WW_VL, geb_VL_KLG = 0)
 		self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
-		
-		
+
 		data_Sim = {
 			"Punkte X" : 60,
 			"Punkte Y" : 60,
 			"Länge Punkt [m]" : 0.5,
-			"Länge Sonde [m]" : 0.2,
-			}
+			"Länge Sonde [m]" : 0.2}
 
 		data_Boden = {
 			"Temperatur" : 6,
@@ -111,11 +97,23 @@ class Simulation():
 		self.stat_HL = self.Static_HL()
 		self.stat_KL = self.Static_KL()
 
-		self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]
-		self.cooling_months = [4, 5, 6, 7, 8, 9]
+		self.heating_months = [1, 2, 3, 4, 5, 6, 9, 10, 11, 12]
+		self.cooling_months = [7, 8]
 
+		self.fehler_HZG_Speicher = np.zeros(8760)
+		self.fehler_WW_Speicher = np.zeros(8760)
+		self.fehler_Stromnetz = np.zeros(8760)
 
-		
+		self.li_Verluste = np.zeros(8760)
+		self.li_Verluste_Speicher = np.zeros(8760)
+		self.li_Laden = np.zeros(8760)
+		self.li_Entladen = np.zeros(8760)
+
+		self.li_meanTemp = np.zeros(8760)
+
+		self.HZG_GrenzTemp = self.SetHeizgrenzTemperatur(self.stat_HL['Heizlast [W]'], self.building.fußboden["Fläche"])
+
+		print(f"Heizgrenztemperatur: {self.HZG_GrenzTemp} °C")
 		print(f"Die statische Heizlast beträgt {round(self.stat_HL['Heizlast [W]'] / 1000,2)} kW")
 		print(f"Die statische Kühllast beträgt {round(self.stat_KL['Kühllast [W]'] / 1000,2)} kW")
 
@@ -124,7 +122,7 @@ class Simulation():
 	def calc_t_Zul(self, hour):
 		WRG = self.building.WRG
 		self.t_Abl[hour] = self.ti[hour]
-		self.t_Zul[hour] = self.t_Abl[hour] * WRG + self.t_Abl[hour] * (1 - WRG)
+		self.t_Zul[hour+1] = self.t_Abl[hour] * WRG + self.t_Abl[hour] * (1 - WRG)
 		print(f"Zulufttemperatur: {self.t_Zul[hour]} °C")
 
 	def calc_QV(self, ach_v, ach_i, t_Zul, ta, ti ):
@@ -153,7 +151,7 @@ class Simulation():
 		#N.V.
 
 		#Transmissionsverlust von beheizten Räumen an das Erdreich
-		dT_boden = 6 - ti #Annahme das der Boden konstant 6°C hat.
+		dT_boden = 10 - ti #Annahme das der Boden konstant 10°C hat.
 		q_fußboden = self.building.fußboden["LT"] * dT_boden
 
 		#Gesamttransmissionswärmeverlust in Watt
@@ -253,15 +251,28 @@ class Simulation():
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			print("Stunde: ",hour)
 			print("Verluste: ",self.q_gesamt)
+			print(f"Tsim: {self.ti_sim}")
 			print("Temp vor Heizen: ",self.ti_sim)
 			self.ti[hour] = self.ti_sim
 
 			self.WP_HZG.COP_betrieb[hour] = self.WP_HZG.GetCOP(self.ta[hour])
-			print(f"COP Heizen bei {self.ta[hour]} °C Außentemperatur: {self.WP_HZG.COP_betrieb[hour]}")
+			#print(f"COP Heizen bei {self.ta[hour]} °C Außentemperatur: {self.WP_HZG.COP_betrieb[hour]}")
 
+			#if DetermineMonth(hour) == 2:
+			#	print(f"Gesamt Verluste: {sum(self.li_Verluste) / 1000} kW")
+			#	print(f"Gesamt Laden: {sum(self.li_Laden) / 1000} kW")
+			#	print(f"Gesamt Entladen: {sum(self.li_Entladen) / 1000} kW")
+			#	print(f"Gesamt Speicherverluste: {sum(self.li_Verluste_Speicher) / 1000} kW")
+
+
+			self.li_meanTemp[hour] = self.GetMeanTemp(hour)
 			#Heizen
 			self.Q_entladen_HZG = 0
+			
+			#Verlust und Ausgleichsvorgänge
+			self.WP_HZG.speicher.UpdateSpeicher(hour, self.WP_HZG.WP_VL_HZG)
 			if DetermineMonth(hour) in self.heating_months:
+			#if self.GetMeanTemp(hour) < self.HZG_GrenzTemp:
 
 				#Check_SpeicherHeizen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
 				#Wenn notwendig schaltet diese Funktion auch die WP ein
@@ -285,6 +296,7 @@ class Simulation():
 
 
 			elif DetermineMonth(hour) in self.cooling_months:
+			#elif self.GetMeanTemp < self.HZG_GrenzTemp
 
 				#Check_SpeicherKühlen kontrolliert die Speichertemperatur und führt die Verlustvorgänge für den Speicher durch
 				#Wenn notwendig schaltet diese Funktion auch die WP ein
@@ -310,9 +322,12 @@ class Simulation():
 			month = DetermineMonth(hour)
 			hourofDay = DetermineHourofDay(hour)
 
+			#Verlust und Ausgleichsvorgänge
+			self.WP_WW.speicher.UpdateSpeicher(hour, self.WP_WW.WP_VL_HZG)
+
 			self.Q_entladen_WW = 0
 			self.WP_WW.COP_betrieb[hour] = self.WP_WW.GetCOP(self.ta[hour])
-			print(f"COP Warmwasser bei {self.ta[hour]} °C Außentemperatur: {self.WP_WW.COP_betrieb[hour]}")
+			#print(f"COP Warmwasser bei {self.ta[hour]} °C Außentemperatur: {self.WP_WW.COP_betrieb[hour]}")
 			Q_warmwater = self.CalcWarmwaterEnergy(month, hourofDay)
 			self.q_warmwater[hour] = Q_warmwater
 			print(f"Benötigte Warmwasserleistung: {Q_warmwater/1000} kW")
@@ -342,13 +357,32 @@ class Simulation():
 			elif DetermineMonth(hour) in self.cooling_months:
 				Q_toDump = self.WP_WW.Pel_Betrieb[hour] + self.WP_HZG.Pel_Betrieb[hour] +\
 							self.Q_entladen_WW + self.Q_entladen_HZG 
-				print("")
 			self.Erd_Sim.Simulate(Q_toDump)
 			self.li_Sondenfeld.append(self.Erd_Sim.Get_Attr_List("temperatur"))
 			self.li_speicherTemperatur_HZG.append(self.WP_HZG.speicher.GetSpeicherTemperaturen())
 			self.li_speicherTemperatur_WW.append(self.WP_WW.speicher.GetSpeicherTemperaturen())
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+			#Bilanzgrenzentest
+			self.fehler_HZG_Speicher[hour] = TestBilanzgrenze(li_input = [self.WP_HZG.Q_toLoad],
+															li_output = [self.Q_entladen_HZG,self.WP_HZG.speicher.q_trans_Sum])
+			self.fehler_WW_Speicher[hour] = TestBilanzgrenze(li_input = [self.WP_WW.Q_toLoad],
+															li_output = [self.Q_entladen_WW,self.WP_WW.speicher.q_trans_Sum])
+			self.fehler_Stromnetz[hour] = TestBilanzgrenze(li_input = [self.Stromnetz.Batterieeinspeisung[hour]],
+															li_output = [self.Stromnetz.Batterieentladung[hour],self.Stromnetz.Batterie.Verluste[hour]])
+			self.li_Verluste[hour] = self.q_gesamt
+			self.li_Verluste_Speicher[hour] = self.WP_HZG.speicher.q_trans_Sum
+			self.li_Laden[hour] = self.WP_HZG.Q_toLoad
+			self.WP_HZG.Q_toLoad = 0
+			self.li_Entladen[hour] = self.Q_entladen_HZG
+
 			print("---------------------------------------------------------------")
+		print(f"Gesamt Verluste: {sum(self.li_Verluste) / 1000} kW")
+		print(f"Gesamt Laden: {sum(self.li_Laden) / 1000} kW")
+		print(f"Gesamt Entladen: {sum(self.li_Entladen) / 1000} kW")
+		print(f"Gesamtfehler Heizen: {sum(self.fehler_HZG_Speicher) / 1000} kW")
+		print(f"Gesamtfehler Warmwasser: {sum(self.fehler_WW_Speicher) / 1000} kW")
+		print(f"Gesamtfehler Batterie: {sum(self.fehler_Stromnetz) / 1000} kW")
 		print(f"MAXIMALE TEMPERATUR: {max(self.ti)}")
 		print(f"MINIMALE TEMPERATUR: {min(self.ti)}")
 		#plt.clf()
@@ -375,6 +409,35 @@ class Simulation():
 		#Hinzufügen der Wärmepumpen
 		P_profile += self.WP_HZG.Pel_Betrieb[hour] + self.WP_WW.Pel_Betrieb[hour]
 		return P_profile
+
+	def GetMeanTemp(self, hour):
+		"""Diese Funktion gibt die Mittlere Tagesaußentemperatur zurück
+			Mit dieser soll bestimmt werden ob geheizt oder gekühlt werden soll"""
+		#Errorcheck BAD HACK
+		#Zum glück muss man in den ersten zwei Jännerwochen immer heizen
+		if hour < 360:
+			return 0
+		meanTemp = np.mean(self.ta[hour - 360:hour])
+
+		return meanTemp
+
+	def SetHeizgrenzTemperatur(self, HL, fläche):
+		HL_spez = abs(HL) / fläche
+
+		if 120 < HL_spez: #W/m² Altbau vor 1977
+			return 18 #°C
+		elif 80 < HL_spez < 120: #W/m² Altbau von 1977 bis 1995
+			return 17 #°C
+		elif 60 < HL_spez < 80: #W/m² Altbau von 1995 bis 2002
+			return 16 #°C
+		elif 40 < HL_spez < 60: #W/m² Gebäude nach EnEV
+			return 15 #°C
+		elif 20 < HL_spez < 40: #W/m² Niedrigenergiehaus
+			return 14 #°C
+		elif 0 < HL_spez < 20: #W/m² Passivhaus
+			return 13 #°C
+
+
 
 def DetermineHourofDay(hour):
 	return (hour+1) % 24
@@ -405,6 +468,18 @@ def DetermineMonth(hour):
 		return 11
 	elif 8016 < hour <= 8760:
 		return 12
+
+def TestBilanzgrenze(li_input, li_output):
+	var_input = 0
+	var_output = 0
+	for var_in,var_out in zip(li_input,li_output):
+		var_input += abs(var_in)
+		var_output += abs(var_out)
+	return var_input - var_output
+
+
+
+
 
 
 
