@@ -41,7 +41,7 @@ def Get_GeothermalData(input_GeoData : dict)-> dict:
     for feature in data["features"]:
         li_coordinates = []
     
-        #Liest die Längen der einzelnen Features aus
+        #Liest die Laengen der einzelnen Features aus
         #Manche Features haben vernestete Koordinaten die in einem Loop ausgelesen werden müssen
         li_lengths_feature.append(len(feature["geometry"]["coordinates"]))
         if len(feature["geometry"]["coordinates"]) == 1:
@@ -59,7 +59,7 @@ def Get_GeothermalData(input_GeoData : dict)-> dict:
     it_floor = 0
     it_ceiling = 0
     li_lengths_new = []
-    #Dieser Loop berechnet nun die richtige länge der einzelnen Features 
+    #Dieser Loop berechnet nun die richtige Laenge der einzelnen Features 
     for it,item in enumerate(li_lengths_feature, start = 1):
         it_ceiling = sum(li_lengths_feature[0:it])
         item = sum(li_lengths[it_floor:it_ceiling])
@@ -206,7 +206,6 @@ class Connection():
         global connection_Counter
         self.id = connection_Counter
         connection_Counter += 1
-        self.isCalculated = False
         self.Pixel_1 = pxl_1
         self.Pixel_2 = pxl_2
 
@@ -231,11 +230,11 @@ class BKA():
         self.anz_Sonden = float(data_erd["Anzahl_Sonden"])
         self.abs_Sonden = float(data_erd["Abstand_Sonden"]) #m
 
-        fläche = data_sim["Länge Punkt [m]"] * data_sim["Länge Punkt [m]"] #m²
+        fläche = data_sim["Laenge Punkt [m]"] * data_sim["Laenge Punkt [m]"] #m²
         volumen = fläche * bohrtiefe #m³
         self.masse = volumen * rho #kg
-        self.U = float(data_erd["WM_spez"]) /  data_sim["Länge Punkt [m]"] #W/m²K
-        self.fläche_Seite = bohrtiefe * data_sim["Länge Punkt [m]"]
+        self.U = float(data_erd["WM_spez"]) /  data_sim["Laenge Punkt [m]"] #W/m²K
+        self.fläche_Seite = bohrtiefe * data_sim["Laenge Punkt [m]"]
  
         #Außenrand hinzufügen
         for y in range(self.pixel_y+2):
@@ -303,10 +302,11 @@ class BKA():
         l_Quadrat = math.ceil(math.sqrt(self.anz_Sonden))
 
         mPoint_base = self.data_sim["Punkte X"] // 2
-        abs_sonde = float(self.data_erd["Abstand_Sonden"]) / 2 / self.data_sim["Länge Punkt [m]"] 
+        abs_sonde = float(self.data_erd["Abstand_Sonden"]) / 2 / self.data_sim["Laenge Punkt [m]"] 
 
         sonden = self.anz_Sonden
         self.li_Coords = []
+        
         x_beg = mPoint_base - l_Quadrat/2 * abs_sonde - abs_sonde/2
         x = x_beg
         y = mPoint_base - l_Quadrat/2 * abs_sonde - abs_sonde/2
@@ -338,7 +338,7 @@ class BKA():
         t2 = pixel_2.temperatur
 
         #Leistung zwischen Pixel
-        Q = float(self.data_erd["WM_spez"]) * self.fläche_Seite * ((t1-t2)/self.data_sim["Länge Punkt [m]"])
+        Q = float(self.data_erd["WM_spez"]) * self.fläche_Seite * ((t1-t2)/self.data_sim["Laenge Punkt [m]"])
 
         #Temperaturänderung
         dt = ((Q * 3600)/(self.masse * self.data_pixel["cp"]))
@@ -379,17 +379,18 @@ class BKA():
                 second.x = x
                 second.y = y
 
-        #Shuffle Simulation Order of connections
-        self.CreateSimulationOrder()
+
         #Sonden im Array platzieren
         self.PlaceSonden()
         print("Init_Sim DONE")
         
         
 
-    def Simulate(self, Q_toDump):
-        #Temperaturen der SondenPixel setzen
+    def Simulate(self, Q_toDump):        
+        #Shuffle Simulation Order of connections
+        self.CreateSimulationOrder()
         self.ResetOuterTemperatures()
+        #Temperaturen der SondenPixel setzen
         self.DumpEnergy(Q_toDump) #Watt
         for con in self.li_connections:
             self.CalculateConnection(con)
@@ -405,8 +406,8 @@ class BKA():
 #data_Sim = {
 #    "Punkte X" : 40,
 #    "Punkte Y" : 30,
-#    "Länge Punkt [m]" : 0.5,
-#    "Länge Sonde [m]" : 0.2,
+#    "Laenge Punkt [m]" : 0.5,
+#    "Laenge Sonde [m]" : 0.2,
 #    }
 
 #data_Boden = {

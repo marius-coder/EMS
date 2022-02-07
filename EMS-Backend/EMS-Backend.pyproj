@@ -24,6 +24,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Classes\Building - Copy.py" />
     <Compile Include="Classes\Stromnetz.py" />
     <Compile Include="Classes\Warmwasser.py" />
     <Compile Include="Classes\Wärmespeicher.py" />

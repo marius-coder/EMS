@@ -280,7 +280,7 @@ class Ui_Erdwärme(QWidget):
             "Anzahl_Sonden" : data[2],
             "Bohrtiefe": data[3],
             "Abstand_Sonden" : data[4],
-            "WM_spez" : self.lineEdit_WM_spez.text()}
+            "WM_spez" : float(self.lineEdit_WM_spez.text())}
             #"Leistung" : self.lineEdit_Leistung.text()}
         Import.importGUI.Import_Geothermal(Erdwärme)
         self.parent.lineEdit_Erdwärme.setText(self.lineEdit_Profil.text())
