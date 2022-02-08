@@ -1,4 +1,2 @@
-Name,Adresse,Sondenanzahl,Bohrtiefe,Sondenabstand
-Erdw.2,"Stephansplatz, Wien, Österreich",1,10.0,10.0
-Erdw.1,"Stephansplatz, Wien, Österreich",4,50.0,10.0
-Erdw.3,"Höchstädtplatz 6, 1200 Wien",49,200.0,10.0
+Name,Adresse,Sondenanzahl,Sondenabstand,Bodentemperatur,cp,Dichte,Bohrtiefe,Wärmeleitfähigkeit,Seitenlänge,LängePixel,Typ
+fgdh,"Höchstädtplatz 6, 1200 Wien",1,1,1,1,1,1,30,30,1,Python

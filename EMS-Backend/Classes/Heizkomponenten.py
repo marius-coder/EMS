@@ -1,6 +1,6 @@
 # -*- coding: latin-1 -*-
 
-import pybind11module
+import ErdSimCPP
 import numpy as np
 from timeit import default_timer as timer
 data_Sim = {
@@ -21,7 +21,7 @@ data_Boden = {
 	}
 
 start = timer()
-da = pybind11module.ErdSim(data_Sim, data_Pixel, data_Boden)
+da = ErdSimCPP.ErdSim(data_Sim, data_Pixel, data_Boden)
 da.Simulate(1000000)
 end = timer()
 print(end - start)

@@ -6,7 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import importlib
 from bokeh.plotting import figure, show
-import pybind11module
+import ErdSimCPP
 from timeit import default_timer as timer
 
 ImportBuilding = importlib.import_module("EMS-Backend.Classes.Building")
@@ -90,8 +90,9 @@ class Simulation():
 			"cp" : 1000,
 			"rho" : 2600}
 		self.Erd_Sim = ImportErdwärme.BKA(data_Sim, data_Boden, self.import_data.input_GeoData)
-		self.Erd_SimCPP = pybind11module.ErdSim(data_Sim, self.import_data.input_GeoData, data_Boden)
 		self.Erd_Sim.Init_Sim()
+		self.Erd_SimCPP = ErdSimCPP.ErdSim(data_Sim, self.import_data.input_GeoData, data_Boden)
+		
 		self.li_timePython = []
 		self.li_timeCPP = []
 		self.li_Sondenfeld = []

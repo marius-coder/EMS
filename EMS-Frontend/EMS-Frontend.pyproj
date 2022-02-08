@@ -23,6 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="data\Stylesheets.py" />
+    <Compile Include="Erdwärme\Erdwärme - Copy.py" />
     <Compile Include="Erdwärme\Erdwärme.py" />
     <Compile Include="Erdwärme\Erdwärme_Karte.py" />
     <Compile Include="Gebäude\Gebäude.py" />
