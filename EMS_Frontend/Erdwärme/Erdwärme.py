@@ -357,6 +357,10 @@ class Ui_Erdwärme(QWidget):
                                 self.doubleSpinBox_Bodentemperatur,self.spinBox_cp,self.spinBox_Dichte,
                                 self.doubleSpinBox_Bohrtiefe,self.doubleSpinBox_WM_spez,self.spinBox_Seitenlange,
                                 self.doublespinBox_LangePixel]
+
+        for widget in self.li_inputWidgets[1:]:
+            widget.setRange(0,99999)
+
         #Combobox befüllen mit vorhandenen Daten
         names = list(pd.read_csv("./EMS-Frontend/data/Erdwärme_Profile.csv", usecols = [0], delimiter = ",", encoding='utf-8')["Name"])
         self.comboBox_SelectProfile.addItems(names)
@@ -442,6 +446,8 @@ class Ui_Erdwärme(QWidget):
 
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()
+        if values == []:
+            return
 
         for i,widget in enumerate(self.li_inputWidgets,1):
             if widget.objectName() == "lineEdit_InputAdresse":
@@ -466,7 +472,7 @@ class Ui_Erdwärme(QWidget):
 								"Bohrtiefe" : self.doubleSpinBox_Bohrtiefe.value(),
 								"Anzahl_Sonden" : self.spinBox_AnzSonden.value()}
         Output_GeoData = BackErdwärme.Get_GeothermalData(input_GeoData)
-        self.lineEdit_WM_spez.setText(str(round(Output_GeoData["MW_WL"],3)))
+        self.doubleSpinBox_WM_spez.setValue(float(round(Output_GeoData["MW_WL"],3)))
         #self.lineEdit_Leistung.setText(str(round(float(self.lineEdit_WM_spez.text()) * float(self.spinBox_AnzSonden.value()) * float(self.doubleSpinBox_Bohrtiefe.value()) * 5/1000,3)))
 
 
@@ -483,9 +489,16 @@ class Ui_Erdwärme(QWidget):
         Erdwärme = {
             "Adresse" : data[1],            
             "Anzahl_Sonden" : data[2],
-            "Bohrtiefe": data[3],
-            "Abstand_Sonden" : data[4],
-            "WM_spez" : float(self.lineEdit_WM_spez.text())}
+            "Abstand_Sonden": data[3],
+            "Temperatur" : data[4],
+            "cp" : data[5],
+            "rho" : data[6],
+            "Bohrtiefe" : data[7],
+            "WM_spez" : data[8],
+            "Punkte X" : data[9],
+            "Punkte Y" : data[9],
+            "Laenge Punkt [m]" : data[10],
+            "Typ" : data[11],}
         Import.importGUI.Import_Geothermal(Erdwärme)
         self.parent.lineEdit_Erdwärme.setText(self.lineEdit_Profil.text())
 

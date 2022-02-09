@@ -375,6 +375,8 @@ class Ui_WP(QWidget):
 
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()
+        if values == []:
+            return
         if values[1] == "Heizen":
             self.radioButton_Heizen.setChecked(True)
         elif values[1] == "Warmwasser":

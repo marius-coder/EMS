@@ -81,17 +81,17 @@ class Simulation():
 		self.Stromnetz = ImportStromnetz.Stromnetz(self.PV_Bat_data)
 
 		data_Sim = {
-			"Punkte X" : 300,
-			"Punkte Y" : 300,
-			"Laenge Punkt [m]" : 0.1,}
+			"Punkte X" : 50,
+			"Punkte Y" : 50,
+			"Laenge Punkt [m]" : 0.5,}
 
 		data_Boden = {
 			"Temperatur" : 6,
 			"cp" : 1000,
 			"rho" : 2600}
-		self.Erd_Sim = ImportErdwärme.BKA(data_Sim, data_Boden, self.import_data.input_GeoData)
+		self.Erd_Sim = ImportErdwärme.BKA(self.import_data.input_GeoData, self.import_data.input_GeoData, self.import_data.input_GeoData)
 		self.Erd_Sim.Init_Sim()
-		self.Erd_SimCPP = ErdSimCPP.ErdSim(data_Sim, self.import_data.input_GeoData, data_Boden)
+		self.Erd_SimCPP = ErdSimCPP.ErdSim(self.import_data.input_GeoData, self.import_data.input_GeoData, self.import_data.input_GeoData)
 		
 		self.li_timePython = []
 		self.li_timeCPP = []
@@ -361,26 +361,31 @@ class Simulation():
 			elif DetermineMonth(hour) in self.cooling_months:
 				Q_toDump = self.WP_WW.Pel_Betrieb[hour] + self.WP_HZG.Pel_Betrieb[hour] +\
 							self.Q_entladen_WW + self.Q_entladen_HZG 
-			start = timer()
-			self.Erd_Sim.Simulate(Q_toDump)
-			end = timer()
-			print(f"Python: {end - start} Sekunden")
-			self.li_timePython.append(end - start)
-			self.li_Sondenfeld.append(self.Erd_Sim.Get_Attr_List("temperatur"))
-			self.li_speicherTemperatur_HZG.append(self.WP_HZG.speicher.GetSpeicherTemperaturen())
-			self.li_speicherTemperatur_WW.append(self.WP_WW.speicher.GetSpeicherTemperaturen())
+			if self.import_data.input_GeoData["Typ"] == "Python":
+				start = timer()
+				self.Erd_Sim.Simulate(Q_toDump)
+				end = timer()
+				print(f"Python: {end - start} Sekunden")
+				self.li_timePython.append(end - start)
+				self.li_Sondenfeld.append(self.Erd_Sim.Get_Attr_List("temperatur"))
+			
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-			#Simulation-Bodenerwärmung C++			
-			start = timer()
-			#da = pybind11module.ErdSim(data_Sim, data_Pixel, data_Boden)
-			self.Erd_SimCPP.Simulate(Q_toDump)
-			end = timer()
-			test = self.Erd_SimCPP.GetTemperatures()
-			print(f"C++: {end - start} Sekunden")
-			self.li_timeCPP.append(end - start)
+			#Simulation-Bodenerwärmung C++		
+			elif self.import_data.input_GeoData["Typ"] == "CPP":	
+				start = timer()
+				#da = pybind11module.ErdSim(data_Sim, data_Pixel, data_Boden)
+				self.Erd_SimCPP.Simulate(Q_toDump)
+				end = timer()
+				Erd_Sim_Temps = self.Erd_SimCPP.GetTemperatures()
+				print(f"C++: {end - start} Sekunden")
+				self.li_timeCPP.append(end - start)
+				self.li_Sondenfeld.append(Erd_Sim_Temps)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			#Bilanzgrenzentest
+			self.li_speicherTemperatur_HZG.append(self.WP_HZG.speicher.GetSpeicherTemperaturen())
+			self.li_speicherTemperatur_WW.append(self.WP_WW.speicher.GetSpeicherTemperaturen())
+
 			self.fehler_HZG_Speicher[hour] = TestBilanzgrenze(li_input = [self.WP_HZG.Q_toLoad],
 															li_output = [self.Q_entladen_HZG,self.WP_HZG.speicher.q_trans_Sum])
 			self.fehler_WW_Speicher[hour] = TestBilanzgrenze(li_input = [self.WP_WW.Q_toLoad],
@@ -402,14 +407,14 @@ class Simulation():
 		print(f"Gesamtfehler Batterie: {sum(self.fehler_Stromnetz) / 1000} kW")
 		print(f"MAXIMALE TEMPERATUR: {max(self.ti)}")
 		print(f"MINIMALE TEMPERATUR: {min(self.ti)}")
-		print(f"Mean Python: {np.mean(self.li_timePython)}")
-		print(f"std Python: {np.std(self.li_timePython)}")
-		print(f"Mean C++: {np.mean(self.li_timeCPP)}")
-		print(f"std C++: {np.std(self.li_timeCPP)}")
-		plt.clf()
-		sns.heatmap(test, square=True, cmap='viridis',cbar_kws={'label': 'Temperatur [°C]'})
-		plt.title("Temperaturfeld der Erdwärmesonden")
-		plt.show()
+		#print(f"Mean Python: {np.mean(self.li_timePython)}")
+		#print(f"std Python: {np.std(self.li_timePython)}")
+		#print(f"Mean C++: {np.mean(self.li_timeCPP)}")
+		#print(f"std C++: {np.std(self.li_timeCPP)}")
+		#plt.clf()
+		#sns.heatmap(test, square=True, cbar_kws={'label': 'Temperatur [°C]'})
+		#plt.title("Temperaturfeld der Erdwärmesonden")
+		#plt.show()
 
 
 

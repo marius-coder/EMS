@@ -349,6 +349,8 @@ class Ui_Speicher(QWidget):
         df = pd.read_csv("./EMS-Frontend/data/Wärmespeicher_Profile.csv", delimiter = ",", encoding='utf-8')
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()
+        if values == []:
+            return
         
         for i,widget in enumerate(self.li_inputWidgets,1):
             try:

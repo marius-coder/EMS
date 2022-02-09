@@ -12,8 +12,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
 import importlib
-Sim = importlib.import_module("EMS-Backend.Classes.Simulation")
-Import = importlib.import_module("EMS-Backend.Classes.Import")
+Sim = importlib.import_module("EMS_Backend.Classes.Simulation")
+Import = importlib.import_module("EMS_Backend.Classes.Import")
 
 from Gebäude.Gebäude import Ui_Gebäude
 from Strom.Strom import Ui_Strombedarf

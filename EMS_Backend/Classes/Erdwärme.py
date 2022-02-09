@@ -301,8 +301,8 @@ class BKA():
     def PlaceSonden(self):
         l_Quadrat = math.ceil(math.sqrt(self.anz_Sonden))
 
-        mPoint_base = self.data_sim["Punkte X"] // 2
-        abs_sonde = float(self.data_erd["Abstand_Sonden"]) / 2 / self.data_sim["Laenge Punkt [m]"] 
+        mPoint_base = (self.data_sim["Punkte X"]+2) // 2
+        abs_sonde = float(self.data_erd["Abstand_Sonden"]) / self.data_sim["Laenge Punkt [m]"] + 1
 
         sonden = self.anz_Sonden
         self.li_Coords = []

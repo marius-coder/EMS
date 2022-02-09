@@ -237,6 +237,8 @@ class Ui_Gebäude(QWidget):
 
         self.lineEdit_Profil.setText(name)
         values = df[df.values == name].values.flatten().tolist()
+        if values == []:
+            return
         df = df[df.values == name]
 
         for i,widget in enumerate(self.li_inputWidgets,1):

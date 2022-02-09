@@ -573,7 +573,7 @@ class WindowTemperaturFeld(QWidget):
                 self.li_cb[i].remove() 
 
             if i == 0:
-                img = self.li_ax[i].imshow(model, cmap='hot', interpolation='nearest',vmin=self.li_vmin[i], vmax=self.li_vmax[i])
+                img = self.li_ax[i].imshow(model, cmap='viridis', interpolation='nearest',vmin=self.li_vmin[i], vmax=self.li_vmax[i])
             else:
                 arr = np.array(model)
                 img = self.li_ax[i].imshow(np.expand_dims(arr, axis=1),aspect='auto',vmin=self.li_vmin[i], vmax=self.li_vmax[i])

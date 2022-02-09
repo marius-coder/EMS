@@ -1,2 +1,3 @@
 Name,Adresse,Sondenanzahl,Sondenabstand,Bodentemperatur,cp,Dichte,Bohrtiefe,Wärmeleitfähigkeit,Seitenlänge,LängePixel,Typ
 fgdh,"Höchstädtplatz 6, 1200 Wien",1,1,1,1,1,1,30,30,1,Python
+Erdw.3,"Höchstädtplatz 6, 1200 Wien",49,5.0,6.0,1000,2600,200.0,1.82,50,1.0,CPP

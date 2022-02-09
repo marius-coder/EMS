@@ -10,7 +10,7 @@
     </SearchPath>
     <WorkingDirectory>$(SolutionDir)</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>EMS-Backend</Name>
+    <Name>EMS_Backend</Name>
     <RootNamespace>EMS_Backend</RootNamespace>
     <IsWindowsApplication>False</IsWindowsApplication>
     <InterpreterId>Global|PythonCore|3.9</InterpreterId>
@@ -24,7 +24,6 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Classes\Building - Copy.py" />
     <Compile Include="Classes\Stromnetz.py" />
     <Compile Include="Classes\Warmwasser.py" />
     <Compile Include="Classes\Wärmespeicher.py" />
