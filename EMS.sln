@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "EMS-Frontend", "EMS-Frontend\EMS-Frontend.pyproj", "{B9625333-417A-424B-B315-F3821D4925DB}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "EMS_Frontend", "EMS-Frontend\EMS_Frontend.pyproj", "{B9625333-417A-424B-B315-F3821D4925DB}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "EMS-Backend", "EMS-Backend\EMS-Backend.pyproj", "{246DA768-F2AA-4E23-8E67-6810683FE9DC}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "EMS_Backend", "EMS-Backend\EMS_Backend.pyproj", "{246DA768-F2AA-4E23-8E67-6810683FE9DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
